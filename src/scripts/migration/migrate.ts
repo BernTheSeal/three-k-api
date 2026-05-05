@@ -66,8 +66,9 @@ async function migrate() {
 
           console.log(`${file} completed successfully`);
         } catch (error) {
+          console.error("Migration failed!");
           console.error(
-            `${file} failed:`,
+            `${file}:`,
             error instanceof Error ? error.message : error,
           );
           process.exit(1);

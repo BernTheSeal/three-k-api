@@ -26,5 +26,4 @@ Thumbs.db
 # TypeScript
 *.tsbuildinfo
 
-
-deneme.ts
+/src/scripts/test
