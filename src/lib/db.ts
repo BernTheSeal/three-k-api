@@ -6,6 +6,9 @@ const pool = new Pool({
   database: process.env.DB_NAME,
   password: process.env.DB_PASSWORD,
   port: parseInt(process.env.DB_PORT || "5432", 10),
+  max: 10,
+  connectionTimeoutMillis: 5000,
+  idleTimeoutMillis: 30000,
 });
 
 /**
@@ -16,13 +19,13 @@ export const query = async <T extends QueryResultRow>(
   text: string,
   params?: any[],
 ): Promise<QueryResult<T>> => {
-  try {
-    const res = await pool.query<T>(text, params);
-    return res;
-  } catch (error) {
-    console.error("Database Error:", error);
-    throw error;
-  }
+  return await pool.query<T>(text, params);
+};
+
+export const getExecutor = <T extends QueryResultRow>(client?: PoolClient) => {
+  return client
+    ? (text: string, params: any[]) => client.query<T>(text, params)
+    : (text: string, params: any[]) => query<T>(text, params);
 };
 
 export const withTransaction = async <T>(
