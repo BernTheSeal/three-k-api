@@ -1,9 +1,8 @@
 import first_3000_word from "../import/first_3000_words.json";
 import { PoolClient } from "pg";
+import { logger } from "../../scriptLogger";
 
 export const seedWordPosLevels = async (client: PoolClient) => {
-  console.log("📝 Seeding word pos levels...");
-
   const wordsRes = await client.query(`SELECT word_id, word FROM words`);
   const posRes = await client.query(`SELECT pos_id, pos FROM pos`);
   const levelsRes = await client.query(`SELECT level_id, level FROM levels`);
@@ -32,9 +31,9 @@ export const seedWordPosLevels = async (client: PoolClient) => {
       );
 
       total++;
-      process.stdout.write(`\r ${total} word pos levels inserted...`);
+      logger.running(`${total} word pos levels inserted...`, true);
     }
   }
-
-  console.log(`\n✅ Word pos levels seeded!`);
+  process.stdout.write(`\n`);
+  logger.done("Word pos levels seeded! \n");
 };

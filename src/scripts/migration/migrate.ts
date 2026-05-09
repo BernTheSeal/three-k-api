@@ -3,6 +3,7 @@ import path from "path";
 import { pathToFileURL } from "url";
 import { PoolClient } from "pg";
 import { withTransaction } from "../../lib/db";
+import { logger } from "../scriptLogger";
 
 interface Migration {
   version: number;
@@ -11,7 +12,9 @@ interface Migration {
 }
 
 async function migrate() {
-  console.log("Migration starting...\n");
+  console.log("\n========================================");
+  console.log("        MIGRATION STARTING...");
+  console.log("========================================\n");
 
   await withTransaction(async (client) => {
     await client.query(`
@@ -35,19 +38,29 @@ async function migrate() {
       .filter((f) => f.endsWith(".ts"))
       .sort();
 
+    let prevVersion = 0;
+
     for (const file of migrationFiles) {
       const versionString = file.split("_")[0];
 
-      if (!versionString) {
+      if (!versionString || !/^\d{3}$/.test(versionString)) {
         throw new Error(
-          `Migration file must start with a version number: ${file}`,
+          `Migration filenames must start with a 3-digit version number and follow the format "001_name.ts": ${file}`,
         );
       }
 
       const version = parseInt(versionString);
 
+      if (version - prevVersion !== 1) {
+        throw new Error(
+          `Migration versions must be sequential: expected ${prevVersion + 1}, but got ${version} in "${file}"`,
+        );
+      }
+
+      prevVersion += 1;
+
       if (!executedVersions.includes(version)) {
-        console.log(`Running...: ${file}`);
+        logger.running(`${file}`);
 
         try {
           const migrationPath = path.join(__dirname, "/migrations", file);
@@ -57,6 +70,12 @@ async function migrate() {
           const migration = migrationModule.default as Migration;
           const migrationName = file.replace(".ts", "");
 
+          if (migration.version !== version) {
+            throw new Error(
+              `Version mismatch in "${file}": filename declares version ${version}, but migration exports version ${migration.version}`,
+            );
+          }
+
           await migration.up(client);
 
           await client.query(
@@ -64,26 +83,31 @@ async function migrate() {
             [version, migrationName],
           );
 
-          console.log(`${file} completed successfully`);
-        } catch (error) {
-          console.error("Migration failed!");
-          console.error(
-            `${file}:`,
-            error instanceof Error ? error.message : error,
-          );
+          logger.done(`${file} completed successfully! \n`);
+        } catch (error: any) {
+          if (error.constraint === "migrations_version_key") {
+            logger.error(
+              `Duplicate version detected in "${file}": version ${version} already exists in migrations table`,
+            );
+          } else {
+            logger.error(error instanceof Error ? error.message : error);
+          }
+
           process.exit(1);
         }
       } else {
-        console.log(`-> Skipping ${file} (already executed)`);
+        logger.skip(`${file} (already executed) \n`);
       }
     }
   });
 
-  console.log("Migration completed successfully!");
+  console.log("\n========================================");
+  console.log("      MIGRATION COMPLETED!");
+  console.log("========================================\n");
   process.exit(0);
 }
 
 migrate().catch((error) => {
-  console.error("Migration failed:", error);
+  logger.error(error.message);
   process.exit(1);
 });

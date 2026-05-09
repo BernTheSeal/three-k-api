@@ -1,17 +1,15 @@
 import { PoolClient } from "pg";
+import { logger } from "../../scriptLogger";
 
 export const seedLevels = async (client: PoolClient) => {
-  console.log("📝 Seeding levels...");
-
   const levels = ["a1", "a2", "b1", "b2", "c1", "c2"];
 
   const total = levels.length;
 
   for (let i = 0; i < total; i++) {
     await client.query(`INSERT INTO levels (level) VALUES ($1)`, [levels[i]]);
-
-    process.stdout.write(`\r ${i + 1}/${total} level inserted...`);
+    logger.running(` ${i + 1}/${total} level inserted...`, true);
   }
-
-  console.log("✅ Levels seeded.");
+  process.stdout.write("\n");
+  logger.done("Levels seeded! \n");
 };

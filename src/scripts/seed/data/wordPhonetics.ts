@@ -1,9 +1,8 @@
 import first_3000_word from "../import/first_3000_words.json";
 import { PoolClient } from "pg";
+import { logger } from "../../scriptLogger";
 
 export const seedWordPhonetics = async (client: PoolClient) => {
-  console.log("📝 Seeding words phonetics...");
-
   const words = first_3000_word;
   let total = 0;
 
@@ -26,9 +25,9 @@ export const seedWordPhonetics = async (client: PoolClient) => {
         [word_id, locale, val.text, val.mp3],
       );
       total++;
-      process.stdout.write(`\r ${total} phonetics inserted...`);
+      logger.running(` ${total} phonetics inserted...`, true);
     }
   }
-
-  console.log("✅ Words phonetics seeded!");
+  process.stdout.write(`\n`);
+  logger.done("Words phonetics seeded! \n");
 };

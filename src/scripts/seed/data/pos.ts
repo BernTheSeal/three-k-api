@@ -1,9 +1,8 @@
 import first_3000_word from "../import/first_3000_words.json";
 import { PoolClient } from "pg";
+import { logger } from "../../scriptLogger";
 
 export const seedPos = async (client: PoolClient) => {
-  console.log("📝 Seeding pos...");
-
   const pos = [
     ...new Set(first_3000_word.flatMap((w) => w.details.map((d) => d.pos))),
   ];
@@ -11,9 +10,8 @@ export const seedPos = async (client: PoolClient) => {
 
   for (let i = 0; i < total; i++) {
     await client.query(`INSERT INTO pos (pos) VALUES ($1)`, [pos[i]]);
-
-    process.stdout.write(`\r ${i + 1}/${total} pos inserted...`);
+    logger.running(`${i + 1}/${total} pos inserted...`, true);
   }
-
-  console.log("✅ Pos seeded!");
+  process.stdout.write(`\n`);
+  logger.done("Pos seeded! \n");
 };

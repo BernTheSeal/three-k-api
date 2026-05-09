@@ -11,6 +11,8 @@ import readline from "readline";
 import { withTransaction } from "../../lib/db";
 import { PoolClient } from "pg";
 
+import { logger } from "../scriptLogger";
+
 const confirm = async (message: string): Promise<boolean> => {
   const rl = readline.createInterface({
     input: process.stdin,
@@ -34,7 +36,7 @@ const truncateTables = async (client: PoolClient) => {
     "levels",
   ];
 
-  console.log("🗑️ Truncating tables...");
+  logger.running("Truncating tables...");
 
   for (const table of tables) {
     const exists = await client.query(
@@ -46,21 +48,19 @@ const truncateTables = async (client: PoolClient) => {
     );
 
     if (!exists.rows[0].exists) {
-      console.log(`⚠️ ${table} does not exist, skipping...`);
+      logger.skip(`${table} does not exist`);
       continue;
     }
 
     await client.query(`TRUNCATE TABLE ${table} RESTART IDENTITY CASCADE`);
-    console.log(`   ✓ ${table} cleared`);
+    logger.done(`${table} cleared`);
   }
 
-  console.log("✅ All tables cleared successfully.");
+  console.log("\n");
 };
 
 export const seed = async () => {
-  console.log(
-    "⚠️ WARNING: This will delete all existing data and reseed the database.",
-  );
+  logger.warning("This will delete all existing data and reseed the database.");
 
   const confirmed = await confirm("Are you sure you want to continue?");
 
@@ -68,8 +68,9 @@ export const seed = async () => {
     console.log("Seed operation cancelled.");
     process.exit(0);
   }
-
-  console.log("Starting seed operation...");
+  console.log("\n========================================");
+  console.log("      SEED OPERATION STARTING...");
+  console.log("========================================\n");
 
   try {
     await withTransaction(async (client) => {
@@ -81,10 +82,14 @@ export const seed = async () => {
       await seedWordPosLevels(client);
     });
 
-    console.log("✅ Seed operation completed successfully.");
+    console.log("\n========================================");
+    console.log("      SEED OPERATION COMPLETED!");
+    console.log("========================================\n");
+
     process.exit(0);
   } catch (err) {
-    console.error("❌ Seed operation failed:", err);
+    logger.error("Seed operation failed!");
+    console.error(err);
     process.exit(1);
   }
 };
