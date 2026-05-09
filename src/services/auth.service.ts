@@ -14,6 +14,10 @@ import { authRepo } from "../repositories/auth.repo";
 import { User } from "../types/entities/user";
 import { comparePassword } from "../utils/auth";
 
+import { Profile } from "passport-google-oauth20";
+
+import { query } from "../lib/db";
+
 type AuthService = {
   register: (
     data: Pick<User, "email" | "username"> & { password: string },
@@ -24,6 +28,12 @@ type AuthService = {
   }>;
 
   login: (data: Pick<User, "email"> & { password: string }) => Promise<{
+    accessToken: string;
+    refreshToken: string;
+    user: Omit<User, "password_hash">;
+  }>;
+
+  loginGoogle: (data: { userGoogle: Profile }) => Promise<{
     accessToken: string;
     refreshToken: string;
     user: Omit<User, "password_hash">;
@@ -107,6 +117,59 @@ export const authService: AuthService = {
       user_id: user.user_id,
       family_id: familyId,
       expires_at: expiresAt,
+    });
+
+    const accessToken = generateAccessToken(user.user_id);
+
+    return { user, accessToken, refreshToken: rt };
+  },
+
+  async loginGoogle(data) {
+    const { userGoogle } = data;
+
+    if (!userGoogle) {
+      throw new UnauthorizedError(
+        "Google authentication failed!",
+        "GOOGLE_AUTH_FAILED",
+      );
+    }
+
+    const rt = generateRawToken();
+    const hashedRt = hashToken(rt);
+    const familyId = generateFamilyId();
+    const expiresAt = calcExpiresAt(14);
+
+    const user = await withTransaction(async (client) => {
+      const { email, sub, picture, email_verified } = userGoogle._json;
+
+      if (!email) {
+        throw new UnauthorizedError(
+          "Google account does not have an email address!",
+          "GOOGLE_NO_EMAIL",
+        );
+      }
+
+      const user = await userRepo.createWithGoogle(
+        {
+          email,
+          google_id: sub,
+          photo_url: picture ?? null,
+          is_email_verified: email_verified ?? false,
+        },
+        client,
+      );
+
+      await authRepo.createRt(
+        {
+          token_hash: hashedRt,
+          user_id: user.user_id,
+          family_id: familyId,
+          expires_at: expiresAt,
+        },
+        client,
+      );
+
+      return user;
     });
 
     const accessToken = generateAccessToken(user.user_id);

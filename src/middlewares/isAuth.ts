@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import { UnauthorizedError } from "../errors";
+import { env } from "../config/env";
 
 export const isAuth = (req: Request, res: Response, next: NextFunction) => {
   const authHeader = req.headers.authorization;
@@ -22,7 +23,7 @@ export const isAuth = (req: Request, res: Response, next: NextFunction) => {
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET!);
+    const decoded = jwt.verify(token, env.jwtSecret);
 
     if (typeof decoded === "string" || !decoded || !("userId" in decoded)) {
       throw new UnauthorizedError(

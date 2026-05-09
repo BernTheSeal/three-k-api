@@ -1,22 +1,17 @@
 import passport from "passport";
-import { Strategy as LocalStrategy } from "passport-local";
+import { Strategy as GoogleStrategy } from "passport-google-oauth20";
+import { env } from "./env";
 
 passport.use(
-  new LocalStrategy(
-    { usernameField: "email" },
-    async (email, password, done) => {
+  new GoogleStrategy(
+    {
+      clientID: env.google.clientId,
+      clientSecret: env.google.clientSecret,
+      callbackURL: env.google.callbackUrl,
+    },
+    async (accessToken, refreshToken, profile, done) => {
       try {
-        const fakeUser = { id: 1, email: "test@test.com", password: "123456" };
-
-        if (email !== fakeUser.email) {
-          return done(null, false, { message: "User not found" });
-        }
-
-        if (password !== fakeUser.password) {
-          return done(null, false, { message: "Wrong password" });
-        }
-
-        return done(null, fakeUser);
+        return done(null, profile);
       } catch (err) {
         return done(err);
       }

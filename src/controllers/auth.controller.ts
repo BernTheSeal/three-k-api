@@ -2,23 +2,29 @@ import { RequestHandler } from "express";
 import { RegisterDto, LoginDto } from "../schemas/validators/auth.validator";
 import { clearRefreshCookie, setRefreshCookie } from "../utils/cookie";
 import { authService } from "../services/auth.service";
+import { sendSuccessResponse } from "../utils/response";
+import { HTTP_STATUS } from "../constants/httpStatus";
+
+import { Profile } from "passport-google-oauth20";
 
 type AuthController = {
   me: RequestHandler<{}, any, {}, {}, { userId: number }>;
   register: RequestHandler<{}, any, {}, {}, RegisterDto>;
   login: RequestHandler<{}, any, {}, {}, LoginDto>;
-  refresh: RequestHandler<{}, any, {}, {}, {}>;
-  logout: RequestHandler<{}, any, {}, {}, {}>;
+  refresh: RequestHandler;
+  logout: RequestHandler;
+  googleCallback: RequestHandler;
 };
 
 export const authController: AuthController = {
-  async me(req, res, next) {
+  async me(_req, res, next) {
     const userId = res.locals.userId;
-    return res.status(200).json({
-      success: true,
-      message: "you are logged in!",
-      yourId: userId,
+
+    sendSuccessResponse(res, HTTP_STATUS.success.OK, "User is logged in!", {
+      userId,
     });
+
+    return;
   },
 
   async register(_req, res) {
@@ -32,10 +38,11 @@ export const authController: AuthController = {
 
     setRefreshCookie(res, refreshToken, 14);
 
-    return res.status(201).json({
-      success: true,
-      message: "user successfully created!",
-      data: {
+    sendSuccessResponse(
+      res,
+      HTTP_STATUS.success.CREATED,
+      "user successfully created!",
+      {
         accessToken,
         user: {
           id: newUser.user_id,
@@ -48,7 +55,9 @@ export const authController: AuthController = {
           updatedAt: newUser.updated_at,
         },
       },
-    });
+    );
+
+    return;
   },
 
   async login(_req, res) {
@@ -61,10 +70,11 @@ export const authController: AuthController = {
 
     setRefreshCookie(res, refreshToken, 14);
 
-    return res.status(200).json({
-      success: true,
-      message: "user successfully login!",
-      data: {
+    sendSuccessResponse(
+      res,
+      HTTP_STATUS.success.OK,
+      "user successfully login!",
+      {
         accessToken,
         user: {
           id: user.user_id,
@@ -77,7 +87,9 @@ export const authController: AuthController = {
           updatedAt: user.updated_at,
         },
       },
-    });
+    );
+
+    return;
   },
 
   async refresh(req, res) {
@@ -89,11 +101,14 @@ export const authController: AuthController = {
 
     setRefreshCookie(res, refreshToken, 14);
 
-    return res.status(201).json({
-      success: true,
-      message: "New access token is successfully created!",
-      data: { accessToken },
-    });
+    sendSuccessResponse(
+      res,
+      HTTP_STATUS.success.OK,
+      "New access token is successfully created!",
+      { accessToken },
+    );
+
+    return;
   },
 
   async logout(req, res) {
@@ -103,11 +118,29 @@ export const authController: AuthController = {
 
     clearRefreshCookie(res);
 
-    return res.status(200).json({
-      success: true,
-      message: isAlreadyLoggedOut
+    sendSuccessResponse(
+      res,
+      HTTP_STATUS.success.OK,
+      isAlreadyLoggedOut
         ? "User already logged out!"
         : "User successfully logged out!",
+    );
+  },
+
+  async googleCallback(req, res) {
+    const userGoogle = req.user as Profile;
+
+    const { user, accessToken, refreshToken } = await authService.loginGoogle({
+      userGoogle,
     });
+
+    setRefreshCookie(res, refreshToken, 14);
+
+    sendSuccessResponse(
+      res,
+      HTTP_STATUS.success.CREATED,
+      "User successfully login with Google account!",
+      { accessToken, user },
+    );
   },
 };

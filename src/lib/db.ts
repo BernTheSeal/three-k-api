@@ -1,11 +1,12 @@
 import { Pool, QueryResult, QueryResultRow, PoolClient } from "pg";
+import { env } from "../config/env";
 
 const pool = new Pool({
-  user: process.env.DB_USER,
-  host: process.env.DB_HOST,
-  database: process.env.DB_NAME,
-  password: process.env.DB_PASSWORD,
-  port: parseInt(process.env.DB_PORT || "5432", 10),
+  user: env.db.user,
+  host: env.db.host,
+  database: env.db.name,
+  password: env.db.password,
+  port: parseInt(env.db.port || "5432", 10),
   max: 10,
   connectionTimeoutMillis: 5000,
   idleTimeoutMillis: 30000,

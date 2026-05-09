@@ -1,4 +1,5 @@
 import "dotenv/config";
+import { env } from "./config/env";
 import express from "express";
 import cookieParser from "cookie-parser";
 import { router } from "./routes";
@@ -13,6 +14,4 @@ app.use("/api", router);
 app.use(dbErrorHandler);
 app.use(globalErrorHandler);
 
-app.listen(process.env.PORT || 3000, () =>
-  console.log("Server running on port 3000"),
-);
+app.listen(env.port, () => console.log(`Server running on port ${env.port}`));

@@ -1,6 +1,7 @@
 import { getExecutor, query } from "../lib/db";
 import { PoolClient } from "pg";
 import { RefreshToken } from "../types/entities/refreshToken";
+import { User } from "../types/entities/user";
 
 type AuthRepo = {
   createRt: (
