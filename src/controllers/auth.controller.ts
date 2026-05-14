@@ -30,7 +30,7 @@ export const authController: AuthController = {
   async register(_req, res) {
     const { username, email, password } = res.locals.body;
 
-    const { accessToken, refreshToken, newUser } = await authService.register({
+    const { accessToken, refreshToken, user } = await authService.register({
       email,
       username,
       password,
@@ -45,14 +45,13 @@ export const authController: AuthController = {
       {
         accessToken,
         user: {
-          id: newUser.user_id,
-          email: newUser.email,
-          username: newUser.username,
-          googleId: newUser.google_id,
-          photoUrl: newUser.photo_url,
-          isEmailVerified: newUser.is_email_verified,
-          createdAt: newUser.created_at,
-          updatedAt: newUser.updated_at,
+          id: user.user_id,
+          email: user.email,
+          username: user.username,
+          provider: user.provider,
+          providerAccountId: user.provider_account_id,
+          isVerified: user.is_verified,
+          isActive: user.is_active,
         },
       },
     );
@@ -78,13 +77,12 @@ export const authController: AuthController = {
         accessToken,
         user: {
           id: user.user_id,
-          email: user.email,
           username: user.username,
-          googleId: user.google_id,
-          photoUrl: user.photo_url,
-          isEmailVerified: user.is_email_verified,
-          createdAt: user.created_at,
-          updatedAt: user.updated_at,
+          isActive: user.is_active,
+          email: user.email,
+          provdier: user.provider,
+          isVerified: user.is_verified,
+          providerAccountId: user.provider_account_id,
         },
       },
     );

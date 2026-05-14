@@ -1,32 +1,6 @@
 import { getExecutor, query } from "../lib/db";
-import { PoolClient } from "pg";
-import { RefreshToken } from "../types/entities/refreshToken";
-import { User } from "../types/entities/user";
-
-type AuthRepo = {
-  createRt: (
-    data: Pick<
-      RefreshToken,
-      "token_hash" | "user_id" | "family_id" | "expires_at"
-    >,
-    client?: PoolClient,
-  ) => Promise<void>;
-
-  getRt: (
-    data: Pick<RefreshToken, "token_hash">,
-  ) => Promise<RefreshToken | undefined>;
-
-  getRtForUpdate: (
-    data: Pick<RefreshToken, "token_hash">,
-    client: PoolClient,
-  ) => Promise<RefreshToken | undefined>;
-
-  revokeRt: (
-    by: Pick<RefreshToken, "token_hash"> | Pick<RefreshToken, "family_id">,
-    reason: Exclude<RefreshToken["revoked_reason"], null>,
-    client?: PoolClient,
-  ) => Promise<void>;
-};
+import { AuthAccount, RefreshToken } from "../types/entities";
+import { AuthRepo } from "../types/repositories/auth.repo.types";
 
 export const authRepo: AuthRepo = {
   async createRt(data, client) {
@@ -87,5 +61,59 @@ export const authRepo: AuthRepo = {
         [reason, by.family_id],
       );
     }
+  },
+
+  async createAuthAccount(data, client) {
+    const {
+      user_id,
+      provider,
+      provider_account_id,
+      email,
+      password_hash,
+      is_verified,
+    } = data;
+
+    await client.query(
+      `
+      INSERT INTO auth_accounts (user_id, provider, provider_account_id, email, password_hash, is_verified)
+      VALUES($1, $2, $3, $4, $5 , $6)
+      `,
+      [
+        user_id,
+        provider,
+        provider_account_id,
+        email,
+        password_hash,
+        is_verified,
+      ],
+    );
+  },
+
+  async getAuthAccountWithPassword(data) {
+    const { provider, provider_account_id } = data;
+
+    const response = await query<AuthAccount>(
+      `
+      SELECT * FROM auth_accounts
+      WHERE provider = $1 AND provider_account_id = $2
+    `,
+      [provider, provider_account_id],
+    );
+
+    return response.rows[0];
+  },
+
+  async getAuthAccount(data) {
+    const { provider, provider_account_id } = data;
+
+    const response = await query<Omit<AuthAccount, "password_hash">>(
+      `
+      SELECT * FROM auth_accounts
+      WHERE provider = $1 AND provider_account_id = $2
+    `,
+      [provider, provider_account_id],
+    );
+
+    return response.rows[0];
   },
 };

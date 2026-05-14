@@ -3,21 +3,23 @@ import { NotFoundError, ConflictError } from "../errors";
 import { AppError } from "../errors/AppError";
 import { ErrorRequestHandler } from "express";
 
+import { constraints } from "../types/constraints";
+
 const dbErrorMapper: Record<string, () => AppError> = {
-  uq_users_email: () =>
-    new ConflictError("Email already exists", "EMAIL_ALREADY_EXISTS"),
-  uq_users_username: () =>
-    new ConflictError("Username already exists", "USERNAME_ALREADY_EXISTS"),
-  uq_users_google_id: () =>
-    new ConflictError(
-      "Google account already linked",
-      "GOOGLE_ID_ALREADY_EXISTS",
-    ),
-  fk_user_words_word: () =>
+  [constraints.user.uq_username]: () =>
+    new ConflictError("Username already exists!", "USERNAME_ALREADY_EXISTS"),
+  [constraints.userWords.fk_word]: () =>
     new NotFoundError("Word not found", "WORD_NOT_FOUND"),
-  fk_user_words_user: () =>
+  [constraints.authAccounts.uq_provider_account]: () =>
+    new ConflictError("Account already exists!", "ACCOUNT_ALREADY_EXISTS"),
+
+  [constraints.authAccounts.uq_user_provider]: () =>
+    new ConflictError("Provider already linked!", "PROVIDER_ALREADY_LINKED"),
+
+  [constraints.userWords.fk_user]: () =>
     new NotFoundError("User not found", "USER_NOT_FOUND"),
-  pk_user_words: () =>
+
+  [constraints.userWords.pk]: () =>
     new ConflictError("Word already saved", "WORD_ALREADY_SAVED"),
 };
 

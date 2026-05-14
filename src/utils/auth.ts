@@ -16,4 +16,14 @@ const generateAccessToken = (userId: number) => {
   });
 };
 
-export { hashPassword, comparePassword, generateAccessToken };
+const generateUsername = (email: string) => {
+  const base = email
+    .split("@")[0]!
+    .replace(/[^a-zA-Z0-9]/g, "")
+    .slice(0, 15);
+
+  const suffix = Date.now().toString(36);
+  return `${base}_${suffix}`;
+};
+
+export { hashPassword, comparePassword, generateAccessToken, generateUsername };

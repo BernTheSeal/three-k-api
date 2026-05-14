@@ -1,52 +1,19 @@
-import { hashPassword } from "../utils/auth";
+import { hashPassword, comparePassword, generateUsername } from "../utils/auth";
 import {
   generateRawToken,
   hashToken,
   generateFamilyId,
   calcExpiresAt,
 } from "../utils/token";
-
-import { UnauthorizedError } from "../errors";
 import { generateAccessToken } from "../utils/auth";
+
+import { NotFoundError, UnauthorizedError } from "../errors";
+
 import { withTransaction } from "../lib/db";
 import { userRepo } from "../repositories/user.repo";
 import { authRepo } from "../repositories/auth.repo";
-import { User } from "../types/entities/user";
-import { comparePassword } from "../utils/auth";
 
-import { Profile } from "passport-google-oauth20";
-
-import { query } from "../lib/db";
-
-type AuthService = {
-  register: (
-    data: Pick<User, "email" | "username"> & { password: string },
-  ) => Promise<{
-    accessToken: string;
-    refreshToken: string;
-    newUser: Omit<User, "password_hash">;
-  }>;
-
-  login: (data: Pick<User, "email"> & { password: string }) => Promise<{
-    accessToken: string;
-    refreshToken: string;
-    user: Omit<User, "password_hash">;
-  }>;
-
-  loginGoogle: (data: { userGoogle: Profile }) => Promise<{
-    accessToken: string;
-    refreshToken: string;
-    user: Omit<User, "password_hash">;
-  }>;
-
-  refresh: (data: {
-    cookieRt?: string;
-  }) => Promise<{ accessToken: string; refreshToken: string }>;
-
-  logout: (data: {
-    cookieRt?: string;
-  }) => Promise<{ isAlreadyLoggedOut: boolean }>;
-};
+import { AuthService } from "../types/services/auth.service.type";
 
 export const authService: AuthService = {
   async register(data) {
@@ -58,47 +25,64 @@ export const authService: AuthService = {
     const familyId = generateFamilyId();
     const expiresAt = calcExpiresAt(14);
 
-    const newUser = await withTransaction(async (client) => {
+    const user = await withTransaction(async (client) => {
       const userResponse = await userRepo.create(
-        {
-          username,
-          email,
-          password_hash: passwordHash,
-        },
+        { username, is_active: false },
+        client,
+      );
+
+      const { user_id, is_active } = userResponse;
+
+      const authAccountData = {
+        user_id,
+        provider: "local" as const,
+        provider_account_id: email,
+        email,
+        is_verified: false,
+      };
+
+      await authRepo.createAuthAccount(
+        { ...authAccountData, password_hash: passwordHash },
         client,
       );
 
       await authRepo.createRt(
         {
+          user_id,
           token_hash: hashedRt,
-          user_id: userResponse.user_id,
           family_id: familyId,
           expires_at: expiresAt,
         },
         client,
       );
 
-      return userResponse;
+      return { ...authAccountData, username, is_active };
     });
 
-    const accessToken = generateAccessToken(newUser.user_id);
+    const accessToken = generateAccessToken(user.user_id);
 
-    return { accessToken, refreshToken: rt, newUser };
+    return { accessToken, refreshToken: rt, user };
   },
 
   async login(data) {
     const { email, password } = data;
 
-    const user = await userRepo.getWithPassword({ email });
+    const authAccountResponse = await authRepo.getAuthAccountWithPassword({
+      provider: "local",
+      provider_account_id: email,
+    });
 
-    if (!user) {
+    if (!authAccountResponse || !authAccountResponse.password_hash) {
       throw new UnauthorizedError(
         "Email or password is not correct!",
         "EMAIL_OR_PASSWORD_NOT_CORRECT",
       );
     }
 
-    const isMatch = await comparePassword(password, user.password_hash);
+    const isMatch = await comparePassword(
+      password,
+      authAccountResponse.password_hash,
+    );
 
     if (!isMatch) {
       throw new UnauthorizedError(
@@ -107,6 +91,8 @@ export const authService: AuthService = {
       );
     }
 
+    const user_id = authAccountResponse.user_id;
+
     const rt = generateRawToken();
     const hashedRt = hashToken(rt);
     const familyId = generateFamilyId();
@@ -114,14 +100,30 @@ export const authService: AuthService = {
 
     await authRepo.createRt({
       token_hash: hashedRt,
-      user_id: user.user_id,
+      user_id: user_id,
       family_id: familyId,
       expires_at: expiresAt,
     });
 
-    const accessToken = generateAccessToken(user.user_id);
+    const user = await userRepo.getById({ user_id });
 
-    return { user, accessToken, refreshToken: rt };
+    if (!user) throw new NotFoundError("User not found!", "USER_NOT_FOUND");
+
+    const accessToken = generateAccessToken(user_id);
+
+    return {
+      user: {
+        user_id: user.user_id,
+        username: user.username,
+        is_active: user.is_active,
+        provider: authAccountResponse.provider,
+        provider_account_id: authAccountResponse.provider_account_id,
+        email: authAccountResponse.email,
+        is_verified: authAccountResponse.is_verified,
+      },
+      accessToken,
+      refreshToken: rt,
+    };
   },
 
   async loginGoogle(data) {
@@ -134,47 +136,98 @@ export const authService: AuthService = {
       );
     }
 
+    const { email, sub } = userGoogle._json;
+
+    if (!email) {
+      throw new UnauthorizedError(
+        "Google account does not have an email address!",
+        "GOOGLE_NO_EMAIL",
+      );
+    }
+
+    const authAccountResponse = await authRepo.getAuthAccount({
+      provider: "google",
+      provider_account_id: sub,
+    });
+
     const rt = generateRawToken();
     const hashedRt = hashToken(rt);
     const familyId = generateFamilyId();
     const expiresAt = calcExpiresAt(14);
 
-    const user = await withTransaction(async (client) => {
-      const { email, sub, picture, email_verified } = userGoogle._json;
+    if (authAccountResponse) {
+      const userResponse = await userRepo.getById({
+        user_id: authAccountResponse.user_id,
+      });
 
-      if (!email) {
-        throw new UnauthorizedError(
-          "Google account does not have an email address!",
-          "GOOGLE_NO_EMAIL",
+      if (!userResponse)
+        throw new NotFoundError("User not found!", "USER_NOT_FOUND");
+
+      await authRepo.createRt({
+        user_id: userResponse.user_id,
+        token_hash: hashedRt,
+        family_id: familyId,
+        expires_at: expiresAt,
+      });
+
+      const accessToken = generateAccessToken(userResponse.user_id);
+
+      const user = {
+        user_id: userResponse.user_id,
+        username: userResponse.username,
+        is_active: userResponse.is_active,
+        provider: authAccountResponse.provider,
+        provider_account_id: authAccountResponse.provider_account_id,
+        email: authAccountResponse.email,
+        is_verified: authAccountResponse.is_verified,
+      };
+
+      return { user, accessToken, refreshToken: rt };
+    } else {
+      const randomUsername = generateUsername(email);
+
+      const newUser = await withTransaction(async (client) => {
+        const userResponse = await userRepo.create(
+          { username: randomUsername, is_active: true },
+          client,
         );
-      }
 
-      const user = await userRepo.createWithGoogle(
-        {
+        const authAccountData = {
+          user_id: userResponse.user_id,
+          provider: "google" as const,
+          provider_account_id: sub,
+          email: email,
+          is_verified: true,
+          password_hash: null,
+        };
+
+        await authRepo.createAuthAccount(authAccountData, client);
+
+        await authRepo.createRt(
+          {
+            user_id: userResponse.user_id,
+            token_hash: hashedRt,
+            family_id: familyId,
+            expires_at: expiresAt,
+          },
+          client,
+        );
+
+        return {
+          user_id: userResponse.user_id,
+          username: randomUsername,
+          is_active: userResponse.is_active,
+          provider: authAccountData.provider,
+          provider_account_id: sub,
           email,
-          google_id: sub,
-          photo_url: picture ?? null,
-          is_email_verified: email_verified ?? false,
-        },
-        client,
-      );
+          is_verified: true,
+        };
+      });
 
-      await authRepo.createRt(
-        {
-          token_hash: hashedRt,
-          user_id: user.user_id,
-          family_id: familyId,
-          expires_at: expiresAt,
-        },
-        client,
-      );
+      const accessToken = generateAccessToken(newUser.user_id);
 
-      return user;
-    });
-
-    const accessToken = generateAccessToken(user.user_id);
-
-    return { user, accessToken, refreshToken: rt };
+      return { user: newUser, accessToken, refreshToken: rt };
+    }
   },
 
   async refresh(data) {
