@@ -8,7 +8,8 @@
     "type-check": "tsc --noEmit --watch",
     "db:migrate": "npx tsx --env-file=.env src/scripts/migration/migrate.ts",
     "db:seed": "npx tsx --env-file=.env src/scripts/seed/seed.ts",
-    "db:setup": "npm run db:migrate && npm run db:seed"
+    "db:setup": "npm run db:migrate && npm run db:seed",
+    "test:k6": "k6 run src/scripts/test/k6-testing.ts"
   },
   "keywords": [],
   "author": "",
@@ -25,6 +26,7 @@
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
     "pg": "^8.20.0",
+    "resend": "^6.12.3",
     "zod": "^4.3.6"
   },
   "devDependencies": {

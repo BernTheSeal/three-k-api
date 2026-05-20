@@ -1,5 +1,9 @@
 import { RequestHandler } from "express";
-import { RegisterDto, LoginDto } from "../schemas/validators/auth.validator";
+import {
+  RegisterDto,
+  LoginDto,
+  VerifyEmailDto,
+} from "../schemas/validators/auth.validator";
 import { clearRefreshCookie, setRefreshCookie } from "../utils/cookie";
 import { authService } from "../services/auth.service";
 import { sendSuccessResponse } from "../utils/response";
@@ -9,11 +13,19 @@ import { Profile } from "passport-google-oauth20";
 
 type AuthController = {
   me: RequestHandler<{}, any, {}, {}, { userId: number }>;
-  register: RequestHandler<{}, any, {}, {}, RegisterDto>;
-  login: RequestHandler<{}, any, {}, {}, LoginDto>;
+  register: RequestHandler<{}, any, {}, {}, { reqData: RegisterDto }>;
+  login: RequestHandler<{}, any, {}, {}, { reqData: LoginDto }>;
   refresh: RequestHandler;
   logout: RequestHandler;
   googleCallback: RequestHandler;
+  requestEmailVerification: RequestHandler<{}, any, {}, {}, { userId: number }>;
+  verifyEmail: RequestHandler<
+    {},
+    any,
+    {},
+    {},
+    { reqData: VerifyEmailDto; userId: number }
+  >;
 };
 
 export const authController: AuthController = {
@@ -28,7 +40,7 @@ export const authController: AuthController = {
   },
 
   async register(_req, res) {
-    const { username, email, password } = res.locals.body;
+    const { username, email, password } = res.locals.reqData.body;
 
     const { accessToken, refreshToken, user } = await authService.register({
       email,
@@ -60,7 +72,7 @@ export const authController: AuthController = {
   },
 
   async login(_req, res) {
-    const { email, password } = res.locals.body;
+    const { email, password } = res.locals.reqData.body;
 
     const { user, accessToken, refreshToken } = await authService.login({
       email,
@@ -139,6 +151,36 @@ export const authController: AuthController = {
       HTTP_STATUS.success.CREATED,
       "User successfully login with Google account!",
       { accessToken, user },
+    );
+  },
+
+  async requestEmailVerification(req, res) {
+    const userId = res.locals.userId;
+
+    const { expires_in } = await authService.requestEmailVerification({
+      user_id: userId,
+    });
+
+    sendSuccessResponse(
+      res,
+      HTTP_STATUS.success.OK,
+      "Verification code has been sent to your email address.",
+      { expiresIn: expires_in },
+    );
+
+    return;
+  },
+
+  async verifyEmail(req, res) {
+    const userId = res.locals.userId;
+    const { code } = res.locals.reqData.body;
+
+    await authService.verifyEmail({ code, user_id: userId });
+
+    sendSuccessResponse(
+      res,
+      HTTP_STATUS.success.OK,
+      " Your account is successfully verified!",
     );
   },
 };

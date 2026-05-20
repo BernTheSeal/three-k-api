@@ -44,4 +44,10 @@ export type AuthService = {
   logout: (data: {
     cookieRt?: string;
   }) => Promise<{ isAlreadyLoggedOut: boolean }>;
+
+  requestEmailVerification: (
+    data: Pick<User, "user_id">,
+  ) => Promise<{ expires_in: number }>;
+
+  verifyEmail: (data: { code: string; user_id: number }) => Promise<void>;
 };

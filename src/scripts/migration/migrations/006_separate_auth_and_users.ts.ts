@@ -32,7 +32,7 @@ const migration = {
         created_at TIMESTAMP NOT NULL DEFAULT NOW(),
         updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
 
-        CONSTRAINT uq_auth_provider_account UNIQUE (provider, provider_account_id),
+        CONSTRAINT uq_auth_provider_account UNIQUE (provider_account_id, provider),
         CONSTRAINT uq_auth_user_provider UNIQUE (user_id, provider)
     );
 

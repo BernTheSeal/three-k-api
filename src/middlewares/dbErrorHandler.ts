@@ -6,8 +6,13 @@ import { ErrorRequestHandler } from "express";
 import { constraints } from "../types/constraints";
 
 const dbErrorMapper: Record<string, () => AppError> = {
-  [constraints.user.uq_username]: () =>
+  [constraints.users.uq_username]: () =>
     new ConflictError("Username already exists!", "USERNAME_ALREADY_EXISTS"),
+  [constraints.verificationTokens.uq_one_active_token]: () =>
+    new ConflictError(
+      "Verification token is already active!",
+      "VERIFICATION_TOKEN_ACTIVE",
+    ),
   [constraints.userWords.fk_word]: () =>
     new NotFoundError("Word not found", "WORD_NOT_FOUND"),
   [constraints.authAccounts.uq_provider_account]: () =>

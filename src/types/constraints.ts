@@ -1,6 +1,9 @@
 export const constraints = {
-  user: {
+  users: {
     uq_username: "uq_users_username",
+  } as const,
+  verificationTokens: {
+    uq_one_active_token: "idx_one_active_token",
   } as const,
   authAccounts: {
     uq_provider_account: "uq_auth_provider_account",

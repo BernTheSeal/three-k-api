@@ -33,6 +33,7 @@ export const isAuth = (req: Request, res: Response, next: NextFunction) => {
     }
 
     res.locals.userId = decoded.userId;
+
     next();
   } catch (err) {
     if (err instanceof UnauthorizedError) throw err;

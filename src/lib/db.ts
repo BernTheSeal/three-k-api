@@ -29,6 +29,8 @@ export const getExecutor = <T extends QueryResultRow>(client?: PoolClient) => {
     : (text: string, params: any[]) => query<T>(text, params);
 };
 
+export const getLock = (lock?: boolean) => (lock ? "FOR UPDATE" : "");
+
 export const withTransaction = async <T>(
   fn: (client: PoolClient) => Promise<T>,
 ): Promise<T> => {

@@ -23,5 +23,12 @@ export const loginSchema = z.object({
   }),
 });
 
+export const verifiyEmailSchema = z.object({
+  body: z.object({
+    code: stringSchema("code", { min: 1, max: 6 }),
+  }),
+});
+
 export type RegisterDto = z.infer<typeof registerSchema>;
 export type LoginDto = z.infer<typeof loginSchema>;
+export type VerifyEmailDto = z.infer<typeof verifiyEmailSchema>;

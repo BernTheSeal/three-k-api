@@ -10,6 +10,8 @@ const requiredEnvs = [
   "GOOGLE_CLIENT_ID",
   "GOOGLE_CLIENT_SECRET",
   "GOOGLE_CALLBACK_URL",
+  "RESEND_API_KEY",
+  "RESEND_TO_EMAIL",
 ];
 
 requiredEnvs.forEach((env) => {
@@ -33,5 +35,9 @@ export const env = {
     clientId: process.env.GOOGLE_CLIENT_ID!,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     callbackUrl: process.env.GOOGLE_CALLBACK_URL!,
+  },
+  email: {
+    api: process.env.RESEND_API_KEY!,
+    to: process.env.RESEND_TO_EMAIL!,
   },
 };

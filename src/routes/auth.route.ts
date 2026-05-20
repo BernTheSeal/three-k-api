@@ -4,6 +4,7 @@ import { validate } from "../middlewares/validate";
 import {
   loginSchema,
   registerSchema,
+  verifiyEmailSchema,
 } from "../schemas/validators/auth.validator";
 import { isAuth } from "../middlewares/isAuth";
 import passport from "../config/passport";
@@ -25,6 +26,19 @@ authRouter.get(
   "/google/callback",
   passport.authenticate("google", { session: false }),
   authController.googleCallback,
+);
+
+authRouter.post(
+  "/verify-email/send",
+  isAuth,
+  authController.requestEmailVerification,
+);
+
+authRouter.post(
+  "/verify-email/confirm",
+  isAuth,
+  validate(verifiyEmailSchema),
+  authController.verifyEmail,
 );
 
 export { authRouter };
