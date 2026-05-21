@@ -3,6 +3,7 @@ import {
   RegisterDto,
   LoginDto,
   VerifyEmailDto,
+  ChangePasswordDto,
 } from "../schemas/validators/auth.validator";
 import { clearRefreshCookie, setRefreshCookie } from "../utils/cookie";
 import { authService } from "../services/auth.service";
@@ -25,6 +26,13 @@ type AuthController = {
     {},
     {},
     { reqData: VerifyEmailDto; userId: number }
+  >;
+  changePassword: RequestHandler<
+    {},
+    any,
+    {},
+    {},
+    { reqData: ChangePasswordDto; userId: number }
   >;
 };
 
@@ -181,6 +189,25 @@ export const authController: AuthController = {
       res,
       HTTP_STATUS.success.OK,
       " Your account is successfully verified!",
+    );
+  },
+
+  async changePassword(req, res) {
+    const userId = res.locals.userId;
+    const { currentPassword, newPassword, newPasswordConfirm } =
+      res.locals.reqData.body;
+
+    await authService.changePassword({
+      currentPassword,
+      newPassword,
+      newPasswordConfirm,
+      user_id: userId,
+    });
+
+    sendSuccessResponse(
+      res,
+      HTTP_STATUS.success.OK,
+      "Password changed successfully!",
     );
   },
 };

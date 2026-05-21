@@ -29,6 +29,23 @@ export const verifiyEmailSchema = z.object({
   }),
 });
 
+export const changePasswordSchema = z.object({
+  body: z.object({
+    currentPassword: stringSchema("password", { min: 1, max: 255 }),
+    newPassword: stringSchema("new password", {
+      min: 8,
+      max: 255,
+      requireLowercase: true,
+      requireNumber: true,
+      requireUppercase: true,
+    }),
+    newPasswordConfirm: stringSchema("new password confirm", {
+      min: 8,
+    }),
+  }),
+});
+
 export type RegisterDto = z.infer<typeof registerSchema>;
 export type LoginDto = z.infer<typeof loginSchema>;
 export type VerifyEmailDto = z.infer<typeof verifiyEmailSchema>;
+export type ChangePasswordDto = z.infer<typeof changePasswordSchema>;

@@ -5,6 +5,7 @@ import {
   loginSchema,
   registerSchema,
   verifiyEmailSchema,
+  changePasswordSchema,
 } from "../schemas/validators/auth.validator";
 import { isAuth } from "../middlewares/isAuth";
 import passport from "../config/passport";
@@ -39,6 +40,13 @@ authRouter.post(
   isAuth,
   validate(verifiyEmailSchema),
   authController.verifyEmail,
+);
+
+authRouter.patch(
+  "/password/change",
+  isAuth,
+  validate(changePasswordSchema),
+  authController.changePassword,
 );
 
 export { authRouter };

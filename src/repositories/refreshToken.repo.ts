@@ -48,12 +48,19 @@ export const refreshTokenRepo: RefreshTokenRepo = {
        WHERE token_hash = $2`,
         [reason, by.token_hash],
       );
-    } else {
+    } else if ("family_id" in by) {
       await executor(
         `UPDATE refresh_tokens
        SET is_revoked = true, revoked_reason = $1, revoked_at = NOW()
        WHERE family_id = $2 AND is_revoked = false`,
         [reason, by.family_id],
+      );
+    } else if ("user_id" in by) {
+      await executor(
+        `UPDATE refresh_tokens
+       SET is_revoked = true, revoked_reason = $1, revoked_at = NOW()
+       WHERE user_id = $2 AND is_revoked = false`,
+        [reason, by.user_id],
       );
     }
   },

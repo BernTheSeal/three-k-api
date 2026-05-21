@@ -50,4 +50,12 @@ export type AuthService = {
   ) => Promise<{ expires_in: number }>;
 
   verifyEmail: (data: { code: string; user_id: number }) => Promise<void>;
+
+  changePassword: (
+    data: {
+      currentPassword: string;
+      newPassword: string;
+      newPasswordConfirm: string;
+    } & Pick<User, "user_id">,
+  ) => Promise<void>;
 };

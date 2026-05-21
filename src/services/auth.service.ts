@@ -468,4 +468,74 @@ export const authService: AuthService = {
 
     return;
   },
+
+  async changePassword(data) {
+    const { currentPassword, newPassword, newPasswordConfirm, user_id } = data;
+
+    if (newPassword !== newPasswordConfirm) {
+      throw new BadRequestError(
+        "New passwords do not match!",
+        "PASSWORD_MISMATCH",
+      );
+    }
+
+    const newPasswordHashed = await hashPassword(newPassword);
+
+    await withTransaction(async (client) => {
+      const authAccount = await authAccountRepo.findByUserId(
+        {
+          user_id,
+          provider: "local",
+        },
+        { client, lock: true },
+      );
+
+      if (!authAccount || authAccount.provider !== "local") {
+        throw new BadRequestError(
+          "No local account found.",
+          "NO_LOCAL_ACCOUNT",
+        );
+      }
+
+      const isCurrentPasswordCorrect = await comparePassword(
+        currentPassword,
+        authAccount.password_hash,
+      );
+
+      if (!isCurrentPasswordCorrect) {
+        throw new BadRequestError(
+          "Current password is incorrect.",
+          "INVALID_CURRENT_PASSWORD",
+        );
+      }
+
+      const isNewPasswordSame = await comparePassword(
+        newPassword,
+        authAccount.password_hash,
+      );
+
+      if (isNewPasswordSame) {
+        throw new BadRequestError(
+          "New password cannot be the same as current password.",
+          "PASSWORD_SAME_AS_CURRENT",
+        );
+      }
+
+      await authAccountRepo.updatePassword(
+        {
+          user_id,
+          password_hash: newPasswordHashed,
+        },
+        { client },
+      );
+
+      await refreshTokenRepo.revoke(
+        {
+          by: { user_id },
+          reason: "password_change",
+        },
+        { client },
+      );
+    });
+  },
 };

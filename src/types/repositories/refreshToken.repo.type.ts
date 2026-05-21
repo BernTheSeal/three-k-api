@@ -17,7 +17,10 @@ export type RefreshTokenRepo = {
 
   revoke: (
     data: {
-      by: Pick<RefreshToken, "token_hash"> | Pick<RefreshToken, "family_id">;
+      by:
+        | Pick<RefreshToken, "token_hash">
+        | Pick<RefreshToken, "family_id">
+        | Pick<RefreshToken, "user_id">;
       reason: Exclude<RefreshToken["revoked_reason"], null>;
     },
     tx?: MutateTxOptions,

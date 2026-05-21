@@ -1,4 +1,4 @@
-import { AuthAccount } from "../entities";
+import { AuthAccount, LocalAuthAccount } from "../entities";
 import { FindTxOptions, MutateTxOptions } from "./common.repo.type";
 
 export type AuthAccountRepo = {
@@ -19,6 +19,11 @@ export type AuthAccountRepo = {
 
   verifyById: (
     data: Pick<AuthAccount, "auth_account_id">,
+    tx?: MutateTxOptions,
+  ) => Promise<void>;
+
+  updatePassword: (
+    data: Pick<LocalAuthAccount, "user_id" | "password_hash">,
     tx?: MutateTxOptions,
   ) => Promise<void>;
 };

@@ -84,4 +84,19 @@ export const authAccountRepo: AuthAccountRepo = {
       [auth_account_id],
     );
   },
+
+  async updatePassword(data, tx) {
+    const { password_hash, user_id } = data;
+
+    const executor = getExecutor(tx?.client);
+
+    await executor(
+      `
+      UPDATE auth_accounts  
+      SET password_hash = $1, updated_at = NOW()
+      WHERE user_id = $2 AND provider = 'local'
+    `,
+      [password_hash, user_id],
+    );
+  },
 };
