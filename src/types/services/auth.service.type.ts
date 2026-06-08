@@ -1,4 +1,4 @@
-import { AuthAccount } from "../entities";
+import { AuthAccount, RefreshToken } from "../entities";
 import { User } from "../entities/user";
 import { Profile } from "passport-google-oauth20";
 
@@ -39,23 +39,31 @@ export type AuthService = {
 
   refresh: (data: {
     cookieRt?: string;
-  }) => Promise<{ accessToken: string; refreshToken: string }>;
+  }) => Promise<{ accessToken: string; rawRefreshToken: string }>;
 
   logout: (data: {
     cookieRt?: string;
   }) => Promise<{ isAlreadyLoggedOut: boolean }>;
 
   requestEmailVerification: (
-    data: Pick<User, "user_id">,
-  ) => Promise<{ expires_in: number }>;
-
-  verifyEmail: (data: { code: string; user_id: number }) => Promise<void>;
-
-  changePassword: (
-    data: {
-      currentPassword: string;
-      newPassword: string;
-      newPasswordConfirm: string;
-    } & Pick<User, "user_id">,
+    data: Pick<AuthAccount, "auth_account_id">,
   ) => Promise<void>;
+
+  verifyEmail: (data: { token: string }) => Promise<void>;
+
+  changePassword: (data: {
+    auth_account_id: number;
+    family_id: string;
+    currentPassword: string;
+    newPassword: string;
+    newPasswordConfirm: string;
+  }) => Promise<void>;
+
+  forgotPassword: (data: { email: string }) => Promise<void>;
+
+  resetPassword: (data: {
+    token: string;
+    newPassword: string;
+    newPasswordConfirm: string;
+  }) => Promise<void>;
 };

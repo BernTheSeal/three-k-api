@@ -23,7 +23,7 @@ export const validate = (
         params?: Record<string, string>;
       };
 
-      res.locals.reqData = validatedData;
+      res.locals.validated_data = validatedData;
 
       next();
     } catch (err) {

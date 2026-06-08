@@ -1,54 +1,25 @@
-import { RequestHandler } from "express";
-import {
-  RegisterDto,
-  LoginDto,
-  VerifyEmailDto,
-  ChangePasswordDto,
-} from "../schemas/validators/auth.validator";
 import { clearRefreshCookie, setRefreshCookie } from "../utils/cookie";
 import { authService } from "../services/auth.service";
 import { sendSuccessResponse } from "../utils/response";
 import { HTTP_STATUS } from "../constants/httpStatus";
-
+import { AuthController } from "../types/controllers/auth.controller.type";
 import { Profile } from "passport-google-oauth20";
-
-type AuthController = {
-  me: RequestHandler<{}, any, {}, {}, { userId: number }>;
-  register: RequestHandler<{}, any, {}, {}, { reqData: RegisterDto }>;
-  login: RequestHandler<{}, any, {}, {}, { reqData: LoginDto }>;
-  refresh: RequestHandler;
-  logout: RequestHandler;
-  googleCallback: RequestHandler;
-  requestEmailVerification: RequestHandler<{}, any, {}, {}, { userId: number }>;
-  verifyEmail: RequestHandler<
-    {},
-    any,
-    {},
-    {},
-    { reqData: VerifyEmailDto; userId: number }
-  >;
-  changePassword: RequestHandler<
-    {},
-    any,
-    {},
-    {},
-    { reqData: ChangePasswordDto; userId: number }
-  >;
-};
 
 export const authController: AuthController = {
   async me(_req, res, next) {
-    const userId = res.locals.userId;
+    const { user_id, family_id, auth_account_id } = res.locals.user;
 
     sendSuccessResponse(res, HTTP_STATUS.success.OK, "User is logged in!", {
-      userId,
+      userId: user_id,
+      familyId: family_id,
+      authAccountId: auth_account_id,
     });
 
     return;
   },
 
   async register(_req, res) {
-    const { username, email, password } = res.locals.reqData.body;
+    const { username, email, password } = res.locals.validated_data.body;
 
     const { accessToken, refreshToken, user } = await authService.register({
       email,
@@ -80,7 +51,7 @@ export const authController: AuthController = {
   },
 
   async login(_req, res) {
-    const { email, password } = res.locals.reqData.body;
+    const { email, password } = res.locals.validated_data.body;
 
     const { user, accessToken, refreshToken } = await authService.login({
       email,
@@ -113,11 +84,11 @@ export const authController: AuthController = {
   async refresh(req, res) {
     const cookieRt = req.cookies.refreshToken;
 
-    const { accessToken, refreshToken } = await authService.refresh({
+    const { accessToken, rawRefreshToken } = await authService.refresh({
       cookieRt,
     });
 
-    setRefreshCookie(res, refreshToken, 14);
+    setRefreshCookie(res, rawRefreshToken, 14);
 
     sendSuccessResponse(
       res,
@@ -163,27 +134,25 @@ export const authController: AuthController = {
   },
 
   async requestEmailVerification(req, res) {
-    const userId = res.locals.userId;
+    const { auth_account_id } = res.locals.user;
 
-    const { expires_in } = await authService.requestEmailVerification({
-      user_id: userId,
+    await authService.requestEmailVerification({
+      auth_account_id,
     });
 
     sendSuccessResponse(
       res,
       HTTP_STATUS.success.OK,
       "Verification code has been sent to your email address.",
-      { expiresIn: expires_in },
     );
 
     return;
   },
 
   async verifyEmail(req, res) {
-    const userId = res.locals.userId;
-    const { code } = res.locals.reqData.body;
+    const { token } = res.locals.validated_data.body;
 
-    await authService.verifyEmail({ code, user_id: userId });
+    await authService.verifyEmail({ token });
 
     sendSuccessResponse(
       res,
@@ -193,21 +162,47 @@ export const authController: AuthController = {
   },
 
   async changePassword(req, res) {
-    const userId = res.locals.userId;
+    const { auth_account_id, family_id } = res.locals.user;
     const { currentPassword, newPassword, newPasswordConfirm } =
-      res.locals.reqData.body;
+      res.locals.validated_data.body;
 
     await authService.changePassword({
       currentPassword,
       newPassword,
       newPasswordConfirm,
-      user_id: userId,
+      auth_account_id,
+      family_id,
     });
 
     sendSuccessResponse(
       res,
       HTTP_STATUS.success.OK,
       "Password changed successfully!",
+    );
+  },
+
+  async forgotPassword(req, res) {
+    const { email } = res.locals.validated_data.body;
+
+    await authService.forgotPassword({ email });
+
+    sendSuccessResponse(
+      res,
+      HTTP_STATUS.success.OK,
+      "If this email is registered, you will receive a reset link.",
+    );
+  },
+
+  async resetPassword(req, res) {
+    const { token, newPassword, newPasswordConfirm } =
+      res.locals.validated_data.body;
+
+    await authService.resetPassword({ token, newPassword, newPasswordConfirm });
+
+    sendSuccessResponse(
+      res,
+      HTTP_STATUS.success.OK,
+      "Password reset successfully.",
     );
   },
 };

@@ -5,9 +5,15 @@ import { Profile } from "passport-google-oauth20";
 export type EmailService = {
   send: (data: { subject: string; html: string }) => Promise<void>;
 
-  sendEmailVerificationCode: (data: {
+  sendEmailVerificationUrl: (data: {
     email: string;
-    code: string;
+    token: string;
+    expiresIn: number;
+  }) => Promise<void>;
+
+  sendPasswordResetUrl: (data: {
+    token: string;
+    email: string;
     expiresIn: number;
   }) => Promise<void>;
 };

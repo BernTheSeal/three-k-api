@@ -7,13 +7,18 @@ export type AuthAccountRepo = {
     tx?: MutateTxOptions,
   ) => Promise<AuthAccount>;
 
+  findById: (
+    data: Pick<AuthAccount, "auth_account_id" | "provider">,
+    tx?: FindTxOptions,
+  ) => Promise<AuthAccount | undefined>;
+
   findByProviderAccountId: (
     data: Pick<AuthAccount, "provider_account_id" | "provider">,
     tx?: FindTxOptions,
   ) => Promise<AuthAccount | undefined>;
 
-  findByUserId: (
-    data: Pick<AuthAccount, "user_id" | "provider">,
+  findByEmail: (
+    data: Pick<AuthAccount, "email" | "provider">,
     tx?: FindTxOptions,
   ) => Promise<AuthAccount | undefined>;
 
@@ -23,7 +28,7 @@ export type AuthAccountRepo = {
   ) => Promise<void>;
 
   updatePassword: (
-    data: Pick<LocalAuthAccount, "user_id" | "password_hash">,
+    data: Pick<LocalAuthAccount, "auth_account_id" | "password_hash">,
     tx?: MutateTxOptions,
   ) => Promise<void>;
 };

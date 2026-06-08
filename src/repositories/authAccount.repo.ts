@@ -34,6 +34,24 @@ export const authAccountRepo: AuthAccountRepo = {
     return response.rows[0]!;
   },
 
+  async findById(data, tx) {
+    const { auth_account_id, provider } = data;
+
+    const executor = getExecutor<AuthAccount>(tx?.client);
+    const lock = getLock(tx?.lock);
+
+    const response = await executor(
+      `
+      SELECT * FROM auth_accounts
+      WHERE auth_account_id = $1 AND provider = $2
+      ${lock}
+    `,
+      [auth_account_id, provider],
+    );
+
+    return response.rows[0];
+  },
+
   async findByProviderAccountId(data, tx) {
     const { provider_account_id, provider } = data;
 
@@ -52,8 +70,8 @@ export const authAccountRepo: AuthAccountRepo = {
     return response.rows[0];
   },
 
-  async findByUserId(data, tx) {
-    const { user_id, provider } = data;
+  async findByEmail(data, tx) {
+    const { email, provider } = data;
 
     const executor = getExecutor<AuthAccount>(tx?.client);
     const lock = getLock(tx?.lock);
@@ -61,10 +79,10 @@ export const authAccountRepo: AuthAccountRepo = {
     const response = await executor(
       `
     SELECT * FROM auth_accounts 
-    WHERE user_id = $1 AND provider = $2
+    WHERE email = $1 AND provider = $2
     ${lock}
       `,
-      [user_id, provider],
+      [email, provider],
     );
 
     return response.rows[0];
@@ -86,7 +104,7 @@ export const authAccountRepo: AuthAccountRepo = {
   },
 
   async updatePassword(data, tx) {
-    const { password_hash, user_id } = data;
+    const { auth_account_id, password_hash } = data;
 
     const executor = getExecutor(tx?.client);
 
@@ -94,9 +112,9 @@ export const authAccountRepo: AuthAccountRepo = {
       `
       UPDATE auth_accounts  
       SET password_hash = $1, updated_at = NOW()
-      WHERE user_id = $2 AND provider = 'local'
+      WHERE auth_account_id = $2 AND provider = 'local'
     `,
-      [password_hash, user_id],
+      [password_hash, auth_account_id],
     );
   },
 };

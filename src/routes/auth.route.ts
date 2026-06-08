@@ -6,6 +6,8 @@ import {
   registerSchema,
   verifiyEmailSchema,
   changePasswordSchema,
+  forgotPasswordSchema,
+  resetPasswordSchema,
 } from "../schemas/validators/auth.validator";
 import { isAuth } from "../middlewares/isAuth";
 import passport from "../config/passport";
@@ -37,7 +39,6 @@ authRouter.post(
 
 authRouter.post(
   "/verify-email/confirm",
-  isAuth,
   validate(verifiyEmailSchema),
   authController.verifyEmail,
 );
@@ -47,6 +48,18 @@ authRouter.patch(
   isAuth,
   validate(changePasswordSchema),
   authController.changePassword,
+);
+
+authRouter.post(
+  "/password/forgot",
+  validate(forgotPasswordSchema),
+  authController.forgotPassword,
+);
+
+authRouter.post(
+  "/password/reset",
+  validate(resetPasswordSchema),
+  authController.resetPassword,
 );
 
 export { authRouter };

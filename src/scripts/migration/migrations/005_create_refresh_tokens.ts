@@ -21,6 +21,11 @@ const migration = {
             expires_at TIMESTAMP NOT NULL,
             created_at TIMESTAMP DEFAULT NOW()
         );
+
+        CREATE UNIQUE INDEX IF NOT EXISTS idx_one_active_per_family
+        ON refresh_tokens (family_id)
+        WHERE is_revoked = FALSE;
+
     `);
   },
 

@@ -11,26 +11,26 @@ const migration = {
             WHEN duplicate_object THEN NULL; 
         END $$;
 
-        CREATE TABLE IF NOT EXISTS verification_tokens (
-            verification_token_id SERIAL PRIMARY KEY,
+        CREATE TABLE IF NOT EXISTS auth_tokens (
+            auth_token_id SERIAL PRIMARY KEY,
             auth_account_id INTEGER REFERENCES auth_accounts(auth_account_id) ON DELETE CASCADE,
-            is_active BOOLEAN DEFAULT TRUE,
-            token_hash TEXT NOT NULL,
+            token_hash TEXT NOT NULL UNIQUE,
             token_type token_type_enum NOT NULL,
             expires_at TIMESTAMP NOT NULL,
             used_at TIMESTAMP DEFAULT NULL,
+            revoked_at TIMESTAMP DEFAULT NULL,
             created_at TIMESTAMP DEFAULT NOW()
         );
 
         CREATE UNIQUE INDEX idx_one_active_token 
-            ON verification_tokens(auth_account_id, token_type) 
-            WHERE is_active = true;
+            ON auth_tokens(auth_account_id, token_type) 
+            WHERE used_at IS NULL AND revoked_at IS NULL;
     `);
   },
 
   down: async (client: PoolClient) => {
     await client.query(`
-        DROP TABLE IF EXISTS verification_tokens;
+        DROP TABLE IF EXISTS auth_tokens;
         DROP TYPE IF Exists token_type_enum
     `);
   },

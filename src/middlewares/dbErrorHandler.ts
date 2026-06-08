@@ -21,6 +21,12 @@ const dbErrorMapper: Record<string, () => AppError> = {
   [constraints.authAccounts.uq_user_provider]: () =>
     new ConflictError("Provider already linked!", "PROVIDER_ALREADY_LINKED"),
 
+  [constraints.authAccounts.uq_email_provider]: () =>
+    new ConflictError(
+      "Email already linked to another account.",
+      "EMAIL_ALREADY_LINKED",
+    ),
+
   [constraints.userWords.fk_user]: () =>
     new NotFoundError("User not found", "USER_NOT_FOUND"),
 

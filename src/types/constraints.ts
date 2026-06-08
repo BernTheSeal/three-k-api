@@ -8,6 +8,7 @@ export const constraints = {
   authAccounts: {
     uq_provider_account: "uq_auth_provider_account",
     uq_user_provider: "uq_auth_user_provider",
+    uq_email_provider: "uq_auth_email_provider",
   } as const,
   userWords: {
     pk: "pk_user_words",

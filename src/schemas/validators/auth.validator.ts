@@ -25,7 +25,7 @@ export const loginSchema = z.object({
 
 export const verifiyEmailSchema = z.object({
   body: z.object({
-    code: stringSchema("code", { min: 1, max: 6 }),
+    token: stringSchema("token", { min: 1 }),
   }),
 });
 
@@ -45,7 +45,29 @@ export const changePasswordSchema = z.object({
   }),
 });
 
+export const forgotPasswordSchema = z.object({
+  body: z.object({
+    email: z.email("Invalid email."),
+  }),
+});
+
+export const resetPasswordSchema = z.object({
+  body: z.object({
+    token: stringSchema("token", { min: 1 }),
+    newPassword: stringSchema("new password", {
+      min: 8,
+      max: 255,
+      requireLowercase: true,
+      requireNumber: true,
+      requireUppercase: true,
+    }),
+    newPasswordConfirm: stringSchema("new password confirm", { min: 1 }),
+  }),
+});
+
 export type RegisterDto = z.infer<typeof registerSchema>;
 export type LoginDto = z.infer<typeof loginSchema>;
 export type VerifyEmailDto = z.infer<typeof verifiyEmailSchema>;
 export type ChangePasswordDto = z.infer<typeof changePasswordSchema>;
+export type ForgotPasswordDto = z.infer<typeof forgotPasswordSchema>;
+export type ResetPasswordDto = z.infer<typeof resetPasswordSchema>;

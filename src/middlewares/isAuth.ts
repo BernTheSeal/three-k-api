@@ -25,14 +25,20 @@ export const isAuth = (req: Request, res: Response, next: NextFunction) => {
   try {
     const decoded = jwt.verify(token, env.jwtSecret);
 
-    if (typeof decoded === "string" || !decoded || !("userId" in decoded)) {
+    if (typeof decoded === "string" || !decoded || !("user_id" in decoded)) {
       throw new UnauthorizedError(
         "Access token is invalid!",
         "INVALID_ACCESS_TOKEN",
       );
     }
 
-    res.locals.userId = decoded.userId;
+    res.locals.user = {
+      user_id: decoded.user_id,
+      family_id: decoded.family_id,
+      auth_account_id: decoded.auth_account_id,
+    };
+
+    console.log(res.locals.user);
 
     next();
   } catch (err) {

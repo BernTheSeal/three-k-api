@@ -13,7 +13,7 @@ const migration = {
         DROP COLUMN IF EXISTS is_email_verified;
 
     ALTER TABLE users
-        ADD COLUMN IF NOT EXISTS is_active BOOLEAN NOT NULL DEFAULT FALSE;
+        ADD COLUMN IF NOT EXISTS is_active BOOLEAN NOT NULL DEFAULT TRUE;
       
     DO $$ BEGIN     
       CREATE TYPE provider_enum AS ENUM ('local', 'google');
@@ -33,7 +33,8 @@ const migration = {
         updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
 
         CONSTRAINT uq_auth_provider_account UNIQUE (provider_account_id, provider),
-        CONSTRAINT uq_auth_user_provider UNIQUE (user_id, provider)
+        CONSTRAINT uq_auth_user_provider UNIQUE (user_id, provider),
+        CONSTRAINT uq_auth_email_provider UNIQUE(email, provider)
     );
 
     `);

@@ -16,4 +16,14 @@ const calcExpiresAt = (day: number) => {
   return new Date(Date.now() + day * 24 * 60 * 60 * 1000);
 };
 
-export { generateRawToken, hashToken, generateFamilyId, calcExpiresAt };
+const generateOtpCode = () => {
+  return crypto.randomInt(100000, 1000000).toString();
+};
+
+export {
+  generateRawToken,
+  hashToken,
+  generateFamilyId,
+  calcExpiresAt,
+  generateOtpCode,
+};

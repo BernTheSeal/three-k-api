@@ -1,6 +1,6 @@
 export type RefreshToken = {
   token_hash: string;
-  user_id: number;
+  auth_account_id: number;
   family_id: string;
   is_revoked: boolean;
   revoked_reason:
