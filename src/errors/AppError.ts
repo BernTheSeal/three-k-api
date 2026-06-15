@@ -11,11 +11,12 @@ export class AppError<D extends unknown[] = []> extends Error {
     statusCode: ErrorStatusCode,
     code: string,
     details: D,
+    isOperational = true,
   ) {
     super(message);
     this.name = this.constructor.name;
     this.statusCode = statusCode;
-    this.isOperational = true;
+    this.isOperational = isOperational;
     this.details = details;
     this.code = code;
   }

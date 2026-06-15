@@ -1,5 +1,3 @@
-import { RequestHandler } from "express";
-
 import {
   RegisterDto,
   LoginDto,

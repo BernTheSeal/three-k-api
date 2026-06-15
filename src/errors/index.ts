@@ -5,3 +5,4 @@ export * from "./NotFound";
 export * from "./BadRequestError";
 export * from "./ConflictError";
 export * from "./RefreshTokenError";
+export * from "./InternalServerError";

@@ -9,6 +9,7 @@ import { dbErrorHandler } from "./middlewares/dbErrorHandler";
 const app = express();
 app.use(cookieParser());
 app.use(express.json());
+
 app.use("/api", router);
 
 app.use(dbErrorHandler);

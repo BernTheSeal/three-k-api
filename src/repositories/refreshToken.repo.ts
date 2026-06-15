@@ -18,7 +18,7 @@ export const refreshTokenRepo: RefreshTokenRepo = {
     return response.rows[0]!;
   },
 
-  async findByToken(data, tx) {
+  async findByTokenHash(data, tx) {
     const { token_hash } = data;
 
     const executor = getExecutor<RefreshToken>(tx?.client);
@@ -36,7 +36,7 @@ export const refreshTokenRepo: RefreshTokenRepo = {
     return response.rows[0];
   },
 
-  async findByTokenWithAuthAccount(data, tx) {
+  async findByTokenHashWithAuthAccount(data, tx) {
     const { token_hash } = data;
 
     const executor = getExecutor<RefreshToken & AuthAccount>(tx?.client);
@@ -55,29 +55,33 @@ export const refreshTokenRepo: RefreshTokenRepo = {
     return response.rows[0];
   },
 
-  async revoke(data, tx) {
-    const { by, reason } = data;
+  async revokeByTokenHash(data, tx) {
+    const { token_hash, revoked_reason } = data;
 
     const executor = getExecutor(tx?.client);
 
-    if ("token_hash" in by) {
-      await executor(
-        `UPDATE refresh_tokens
+    await executor(
+      `UPDATE refresh_tokens
        SET is_revoked = true, revoked_reason = $1, revoked_at = NOW()
        WHERE token_hash = $2`,
-        [reason, by.token_hash],
-      );
-    } else if ("family_id" in by) {
-      await executor(
-        `UPDATE refresh_tokens
-       SET is_revoked = true, revoked_reason = $1, revoked_at = NOW()
-       WHERE family_id = $2 AND is_revoked = false`,
-        [reason, by.family_id],
-      );
-    }
+      [revoked_reason, token_hash],
+    );
   },
 
-  async revokeAll(data, tx) {
+  async revokeByFamilyId(data, tx) {
+    const { family_id, revoked_reason } = data;
+
+    const executor = getExecutor(tx?.client);
+
+    await executor(
+      `UPDATE refresh_tokens
+       SET is_revoked = true, revoked_reason = $1, revoked_at = NOW()
+       WHERE family_id = $2 AND is_revoked = false`,
+      [revoked_reason, family_id],
+    );
+  },
+
+  async revokeByAuthAccountId(data, tx) {
     const { auth_account_id, revoked_reason } = data;
 
     const executor = getExecutor(tx?.client);
@@ -95,8 +99,8 @@ export const refreshTokenRepo: RefreshTokenRepo = {
     );
   },
 
-  async revokeAllExceptCurrent(data, tx) {
-    const { except_family_id, reason, auth_account_id } = data;
+  async revokeByAuthAccountIdExceptFamilyId(data, tx) {
+    const { family_id, revoked_reason, auth_account_id } = data;
 
     const executor = getExecutor(tx?.client);
 
@@ -107,7 +111,7 @@ export const refreshTokenRepo: RefreshTokenRepo = {
      is_revoked = false AND
      family_id != $3
      `,
-      [auth_account_id, reason, except_family_id],
+      [auth_account_id, revoked_reason, family_id],
     );
   },
 };

@@ -1,11 +1,11 @@
 import z from "zod";
 
-import { stringSchema } from "../builders";
+import { stringSchema, emailSchema } from "../builders";
 
 export const registerSchema = z.object({
   body: z.object({
     username: stringSchema("username", { min: 3, max: 50 }),
-    email: z.email("Invalid email."),
+    email: emailSchema(),
     password: stringSchema("password", {
       min: 8,
       max: 255,
@@ -18,7 +18,7 @@ export const registerSchema = z.object({
 
 export const loginSchema = z.object({
   body: z.object({
-    email: z.email("Invalid email."),
+    email: emailSchema(),
     password: stringSchema("password", { max: 255 }),
   }),
 });
@@ -47,7 +47,7 @@ export const changePasswordSchema = z.object({
 
 export const forgotPasswordSchema = z.object({
   body: z.object({
-    email: z.email("Invalid email."),
+    email: emailSchema(),
   }),
 });
 

@@ -38,8 +38,6 @@ export const isAuth = (req: Request, res: Response, next: NextFunction) => {
       auth_account_id: decoded.auth_account_id,
     };
 
-    console.log(res.locals.user);
-
     next();
   } catch (err) {
     if (err instanceof UnauthorizedError) throw err;

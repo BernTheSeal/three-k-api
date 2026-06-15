@@ -10,36 +10,40 @@ export type RefreshTokenRepo = {
     tx?: MutateTxOptions,
   ) => Promise<RefreshToken>;
 
-  findByToken: (
+  findByTokenHash: (
     data: Pick<RefreshToken, "token_hash">,
     tx?: FindTxOptions,
   ) => Promise<RefreshToken | undefined>;
 
-  findByTokenWithAuthAccount: (
+  findByTokenHashWithAuthAccount: (
     data: Pick<RefreshToken, "token_hash">,
     tx?: FindTxOptions,
   ) => Promise<(RefreshToken & AuthAccount) | undefined>;
 
-  revoke: (
-    data: {
-      by: Pick<RefreshToken, "token_hash"> | Pick<RefreshToken, "family_id">;
-      reason: Exclude<RefreshToken["revoked_reason"], null>;
+  revokeByTokenHash: (
+    data: Pick<RefreshToken, "token_hash"> & {
+      revoked_reason: Exclude<RefreshToken["revoked_reason"], null>;
     },
     tx?: MutateTxOptions,
   ) => Promise<void>;
 
-  revokeAll: (
+  revokeByFamilyId: (
+    data: Pick<RefreshToken, "family_id"> & {
+      revoked_reason: Exclude<RefreshToken["revoked_reason"], null>;
+    },
+    tx?: MutateTxOptions,
+  ) => Promise<void>;
+
+  revokeByAuthAccountId: (
     data: Pick<RefreshToken, "auth_account_id"> & {
       revoked_reason: Exclude<RefreshToken["revoked_reason"], null>;
     },
     tx?: MutateTxOptions,
   ) => Promise<void>;
 
-  revokeAllExceptCurrent: (
-    data: {
-      auth_account_id: number;
-      reason: Exclude<RefreshToken["revoked_reason"], null>;
-      except_family_id: string;
+  revokeByAuthAccountIdExceptFamilyId: (
+    data: Pick<RefreshToken, "auth_account_id" | "family_id"> & {
+      revoked_reason: Exclude<RefreshToken["revoked_reason"], null>;
     },
     tx?: MutateTxOptions,
   ) => Promise<void>;

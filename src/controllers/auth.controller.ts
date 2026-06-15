@@ -21,11 +21,12 @@ export const authController: AuthController = {
   async register(_req, res) {
     const { username, email, password } = res.locals.validated_data.body;
 
-    const { accessToken, refreshToken, user } = await authService.register({
-      email,
-      username,
-      password,
-    });
+    const { accessToken, refreshToken, user, authAccount } =
+      await authService.register({
+        email,
+        username,
+        password,
+      });
 
     setRefreshCookie(res, refreshToken, 14);
 
@@ -37,12 +38,19 @@ export const authController: AuthController = {
         accessToken,
         user: {
           id: user.user_id,
-          email: user.email,
           username: user.username,
-          provider: user.provider,
-          providerAccountId: user.provider_account_id,
-          isVerified: user.is_verified,
           isActive: user.is_active,
+          createdAt: user.created_at,
+          updatedAt: user.updated_at,
+        },
+        authAccount: {
+          id: authAccount.auth_account_id,
+          provider: authAccount.provider,
+          providerAccountId: authAccount.provider_account_id,
+          email: authAccount.email,
+          isVerified: authAccount.is_verified,
+          createdAt: authAccount.created_at,
+          updatedAt: authAccount.updated_at,
         },
       },
     );
@@ -53,10 +61,11 @@ export const authController: AuthController = {
   async login(_req, res) {
     const { email, password } = res.locals.validated_data.body;
 
-    const { user, accessToken, refreshToken } = await authService.login({
-      email,
-      password,
-    });
+    const { user, authAccount, accessToken, refreshToken } =
+      await authService.login({
+        email,
+        password,
+      });
 
     setRefreshCookie(res, refreshToken, 14);
 
@@ -70,10 +79,17 @@ export const authController: AuthController = {
           id: user.user_id,
           username: user.username,
           isActive: user.is_active,
-          email: user.email,
-          provdier: user.provider,
-          isVerified: user.is_verified,
-          providerAccountId: user.provider_account_id,
+          createdAt: user.created_at,
+          updatedAt: user.updated_at,
+        },
+        authAccount: {
+          id: authAccount.auth_account_id,
+          provider: authAccount.provider,
+          providerAccountId: authAccount.provider_account_id,
+          email: authAccount.email,
+          isVerified: authAccount.is_verified,
+          createdAt: authAccount.created_at,
+          updatedAt: authAccount.updated_at,
         },
       },
     );
@@ -119,17 +135,36 @@ export const authController: AuthController = {
   async googleCallback(req, res) {
     const userGoogle = req.user as Profile;
 
-    const { user, accessToken, refreshToken } = await authService.loginGoogle({
-      userGoogle,
-    });
+    const { user, authAccount, accessToken, refreshToken } =
+      await authService.loginGoogle({
+        userGoogle,
+      });
 
     setRefreshCookie(res, refreshToken, 14);
 
     sendSuccessResponse(
       res,
-      HTTP_STATUS.success.CREATED,
-      "User successfully login with Google account!",
-      { accessToken, user },
+      HTTP_STATUS.success.OK,
+      "user successfully login!",
+      {
+        accessToken,
+        user: {
+          id: user.user_id,
+          username: user.username,
+          isActive: user.is_active,
+          createdAt: user.created_at,
+          updatedAt: user.updated_at,
+        },
+        authAccount: {
+          id: authAccount.auth_account_id,
+          provider: authAccount.provider,
+          providerAccountId: authAccount.provider_account_id,
+          email: authAccount.email,
+          isVerified: authAccount.is_verified,
+          createdAt: authAccount.created_at,
+          updatedAt: authAccount.updated_at,
+        },
+      },
     );
   },
 

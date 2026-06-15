@@ -15,6 +15,7 @@ import passport from "../config/passport";
 const authRouter = Router();
 
 authRouter.get("/me", isAuth, authController.me);
+
 authRouter.post("/register", validate(registerSchema), authController.register);
 authRouter.post("/login", validate(loginSchema), authController.login);
 authRouter.delete("/logout", authController.logout);

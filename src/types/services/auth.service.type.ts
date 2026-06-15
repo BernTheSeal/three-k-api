@@ -10,31 +10,22 @@ export type AuthService = {
   }) => Promise<{
     accessToken: string;
     refreshToken: string;
-    user: Pick<User, "username" | "is_active"> &
-      Omit<
-        AuthAccount,
-        "auth_account_id" | "password_hash" | "created_at" | "updated_at"
-      >;
+    user: User;
+    authAccount: Omit<AuthAccount, "password_hash" | "user_id">;
   }>;
 
   login: (data: { email: string; password: string }) => Promise<{
     accessToken: string;
     refreshToken: string;
-    user: Omit<User, "created_at" | "updated_at"> &
-      Pick<
-        AuthAccount,
-        "provider" | "email" | "is_verified" | "provider_account_id"
-      >;
+    user: User;
+    authAccount: Omit<AuthAccount, "password_hash" | "user_id">;
   }>;
 
   loginGoogle: (data: { userGoogle: Profile }) => Promise<{
     accessToken: string;
     refreshToken: string;
-    user: Omit<User, "created_at" | "updated_at"> &
-      Pick<
-        AuthAccount,
-        "provider" | "provider_account_id" | "email" | "is_verified"
-      >;
+    user: User;
+    authAccount: Omit<AuthAccount, "password_hash" | "user_id">;
   }>;
 
   refresh: (data: {
