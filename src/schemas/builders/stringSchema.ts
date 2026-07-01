@@ -8,6 +8,7 @@ type StringOptions = {
   requireUppercase?: boolean;
   requireLowercase?: boolean;
   requireNumber?: boolean;
+  toLowerCase?: boolean;
 };
 
 export function stringSchema(
@@ -21,6 +22,10 @@ export function stringSchema(
 ): z.ZodString;
 export function stringSchema(target: string, options?: StringOptions) {
   let schema = z.string(`${target} must be a string!`).trim();
+
+  if (options?.toLowerCase) {
+    schema = schema.toLowerCase();
+  }
 
   if (options?.min !== undefined)
     schema = schema.min(
