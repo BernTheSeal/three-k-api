@@ -1,18 +1,19 @@
 import "dotenv/config";
-import { env } from "./config/env";
+import { appConfig } from "./shared/config/app.config";
 import express from "express";
 import cookieParser from "cookie-parser";
-import { router } from "./routes";
-import { globalErrorHandler } from "./middlewares/globalErrorHandler";
-import { dbErrorHandler } from "./middlewares/dbErrorHandler";
+
+import { globalErrorHandler } from "./shared/middlewares/globalErrorHandler";
+import { dbErrorHandler } from "./shared/middlewares/dbErrorHandler";
+import apiRouter from "./api.router";
 
 const app = express();
 app.use(cookieParser());
 app.use(express.json());
 
-app.use("/api", router);
+app.use("/api/v1", apiRouter);
 
 app.use(dbErrorHandler);
 app.use(globalErrorHandler);
 
-app.listen(env.port, () => console.log(`Server running on port ${env.port}`));
+app.listen(appConfig.port, () => console.log(`Server running on port ${appConfig.port}`));
