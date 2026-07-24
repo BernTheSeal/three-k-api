@@ -1,8 +1,8 @@
-import { env } from "./env.config";
+import { envConfig } from "./env.config";
 
 export const authConfig = {
   jwt: {
-    secret: env.jwtSecret,
+    secret: envConfig.jwtSecret,
     accessTokenExpiresIn: "15m",
   },
 
@@ -27,8 +27,8 @@ export const authConfig = {
   },
 
   google: {
-    clientId: env.google.clientId,
-    clientSecret: env.google.clientSecret,
-    callbackUrl: env.google.callbackUrl,
+    clientId: envConfig.google.clientId,
+    clientSecret: envConfig.google.clientSecret,
+    callbackUrl: envConfig.google.callbackUrl,
   },
 } as const;

@@ -15,6 +15,7 @@ const requiredEnvs = [
   "RESEND_API_KEY",
   "RESEND_TO_EMAIL",
   "DICTIONARY_API_URL",
+  "REDIS_URL",
 ];
 
 requiredEnvs.forEach((env) => {
@@ -23,7 +24,7 @@ requiredEnvs.forEach((env) => {
   }
 });
 
-export const env = {
+export const envConfig = {
   port: process.env.PORT!,
   nodeEnv: process.env.NODE_ENV!,
   db: {
@@ -44,6 +45,9 @@ export const env = {
     to: process.env.RESEND_TO_EMAIL!,
   },
   dictionary: {
-    apiUrl: process.env.DICTIONARY_API_URL,
+    apiUrl: process.env.DICTIONARY_API_URL!,
+  },
+  cache: {
+    url: process.env.REDIS_URL!,
   },
 };

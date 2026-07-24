@@ -1,6 +1,7 @@
-import { fetchSenses } from "@/shared/external/dictionary/dictionary.adapter";
+import { dictionaryAdapter } from "@/shared/external/dictionary/dictionary.adapter";
 import { wordRepo } from "./word.repo";
 import { WordService } from "@/shared/types/services/word.service.type";
+import { getWordCache, setWordCache } from "./word.cache";
 
 export const wordService: WordService = {
   async list(data) {
@@ -36,9 +37,15 @@ export const wordService: WordService = {
   },
 
   async findByWord(data) {
-    const { word, user_id } = data;
+    const { word } = data;
 
-    const wordResponse = await wordRepo.findByWord({ user_id, word });
+    const wordFromCache = await getWordCache(word);
+
+    if (wordFromCache) {
+      return wordFromCache;
+    }
+
+    const wordResponse = await wordRepo.findByWord({ word });
 
     const first = wordResponse[0];
 
@@ -50,14 +57,10 @@ export const wordService: WordService = {
       word_id: first.word_id,
       word: first.word,
       phonetics: [...new Map(wordResponse.map((w) => [w.locale, { locale: w.locale, text: w.text, mp3: w.mp3 }])).values()],
-      userInfo: {
-        status: first.status,
-        isFavorite: first.is_favorite,
-        note: first.note,
-      },
-
       entries: [...new Map(wordResponse.map((w) => [w.pos, { partOfSpeech: w.pos, level: w.level }])).values()],
     };
+
+    await setWordCache(word, wordDetails);
 
     return wordDetails;
   },
@@ -71,7 +74,7 @@ export const wordService: WordService = {
       return null;
     }
 
-    const senses = await fetchSenses(word);
+    const senses = await dictionaryAdapter.getSenses(word);
     const missingPos: string[] = [];
 
     for (const [key] of senses) {

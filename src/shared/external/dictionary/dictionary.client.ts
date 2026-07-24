@@ -19,11 +19,9 @@ export const fetchDictionaryEntry = async (word: string): Promise<unknown> => {
           await new Promise((resolve) => setTimeout(resolve, attempt * dictionaryConfig.retryDelayMs));
           continue;
         }
-
-        throw new ExternalServiceError("Dictionary service failed", HTTP_STATUS.BAD_GATEWAY, "dictionary", error);
       }
 
-      throw error;
+      throw new ExternalServiceError("Dictionary service failed!", HTTP_STATUS.BAD_GATEWAY, "dictionary", error);
     }
   }
 

@@ -1,10 +1,16 @@
-import { ExternalServiceError } from "@/shared/errors";
+import { setSensesCache, getSensesCache } from "./dictionary.cache";
 import { fetchDictionaryEntry } from "./dictionary.client";
 
 import { fetchSensesSchema, Senses } from "./dictionary.validator";
 
-export const fetchSenses = async (word: string): Promise<Map<string, Senses[]>> => {
+const getSenses = async (word: string): Promise<Map<string, Senses[]>> => {
   try {
+    const sensesFromCache = await getSensesCache(word);
+
+    if (sensesFromCache) {
+      return new Map(Object.entries(sensesFromCache));
+    }
+
     const wordEntry = await fetchDictionaryEntry(word);
 
     const parsedData = fetchSensesSchema.parse(wordEntry);
@@ -14,10 +20,18 @@ export const fetchSenses = async (word: string): Promise<Map<string, Senses[]>> 
       new Map<string, Senses[]>(),
     );
 
+    const dataToObject = Object.fromEntries(mappedData);
+
+    await setSensesCache(word, dataToObject);
+
     return mappedData;
   } catch (err) {
     console.error(err);
 
     return new Map();
   }
+};
+
+export const dictionaryAdapter = {
+  getSenses,
 };

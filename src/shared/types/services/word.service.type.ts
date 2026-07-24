@@ -38,11 +38,6 @@ type FindByWordResponse = {
     text: string;
     mp3: `${string}.mp3`;
   }[];
-  userInfo: {
-    status: "known" | "learning" | null;
-    note: string | null;
-    isFavorite: boolean | null;
-  };
   entries: {
     partOfSpeech: string;
     level: string;
@@ -59,11 +54,6 @@ type FindByWordWithSensesResponse = {
     text: string;
     mp3: `${string}.mp3`;
   }[];
-  userInfo: {
-    status: "known" | "learning" | null;
-    note: string | null;
-    isFavorite: boolean | null;
-  };
   entries: {
     partOfSpeech: string;
     level: string;

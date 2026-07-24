@@ -1,8 +1,8 @@
-import { env } from "./env.config";
+import { envConfig } from "./env.config";
 
 export const emailConfig = {
-  api: env.email.api,
-  to: env.email.to,
+  api: envConfig.email.api,
+  to: envConfig.email.to,
   maxAttempt: 3,
   retryDelayMs: 300,
 };

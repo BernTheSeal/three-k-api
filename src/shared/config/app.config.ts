@@ -1,6 +1,6 @@
-import { env } from "./env.config";
+import { envConfig } from "./env.config";
 
 export const appConfig = {
-  port: parseInt(env.port || "3000", 10),
-  nodeEnv: env.nodeEnv,
+  port: parseInt(envConfig.port || "3000", 10),
+  nodeEnv: envConfig.nodeEnv,
 };
