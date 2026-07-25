@@ -9,7 +9,6 @@ type ListParams = {
     offset: number;
     limit: number;
   };
-  user_id: number;
 };
 
 export type ListResult = {

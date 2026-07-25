@@ -8,7 +8,6 @@ export const wordRepo: WordRepo = {
     const { search, pos, level } = data.filters;
 
     const executor = getExecutor<ListResult>(tx?.client);
-    const lock = getLock(tx?.lock);
 
     const conditions: string[] = [];
     const params: unknown[] = [offset, limit];
@@ -32,21 +31,34 @@ export const wordRepo: WordRepo = {
 
     const response = await executor(
       `
-        SELECT *, COUNT(*) OVER()::int AS total_words FROM (
-            SELECT 
-                w.word_id,
-                w.word, 
-                array_agg(DISTINCT p.pos) AS pos, 
-                array_agg(DISTINCT l.level) AS levels
-            FROM words w
-            JOIN word_pos_levels wpl ON w.word_id = wpl.word_id
-            JOIN pos p ON p.pos_id = wpl.pos_id
-            JOIN levels l ON l.level_id = wpl.level_id
-            GROUP BY w.word_id, w.word
-        )
+      WITH enriched_words AS (
+        SELECT 
+          w.word_id,
+          w.word,
+          array_agg(DISTINCT p.pos) AS pos, 
+          array_agg(DISTINCT l.level) AS levels
+        FROM words w
+        JOIN word_pos_levels wpl ON w.word_id = wpl.word_id
+        JOIN pos p ON p.pos_id = wpl.pos_id
+        JOIN levels l ON l.level_id = wpl.level_id
+        GROUP BY w.word_id, w.word
+      ),
+
+      filtered_words AS (
+        SELECT 
+          *, 
+          COUNT(*) OVER()::int total_words 
+        FROM enriched_words
         ${where}
+      ),
+
+      paginate_words AS (
+        SELECT * FROM filtered_words
+        ORDER BY word
         OFFSET $1 LIMIT $2
-        ${lock}
+      )
+
+      SELECT * FROM paginate_words 
     `,
       params,
     );

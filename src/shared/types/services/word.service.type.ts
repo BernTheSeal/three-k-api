@@ -6,7 +6,6 @@ type ListInput = {
     offset?: number;
     limit?: number;
   };
-  user_id: number;
 };
 
 type ListResponse = {

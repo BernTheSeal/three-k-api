@@ -2,36 +2,38 @@ import { dictionaryAdapter } from "@/shared/external/dictionary/dictionary.adapt
 import { wordRepo } from "./word.repo";
 import { WordService } from "@/shared/types/services/word.service.type";
 import { getWordCache, setWordCache } from "./word.cache";
+import { wordConfig } from "@/shared/config/word.config";
+import { getSafeOffset } from "@/shared/utils/pagination.util";
 
 export const wordService: WordService = {
   async list(data) {
-    const { filters, user_id, paginate } = data;
+    const { filters, paginate } = data;
 
-    const LIMIT = 50;
-    const OFFSET = paginate?.offset ? paginate.offset : 0;
-    const SAFE_OFFSET = Math.floor(OFFSET / LIMIT) * LIMIT;
+    const limit = wordConfig.pagination.limit;
+
+    const safeOffset = getSafeOffset({ limit, offset: paginate?.offset });
 
     const words = await wordRepo.list({
       filters,
-      user_id,
       paginate: {
-        limit: LIMIT,
-        offset: SAFE_OFFSET,
+        limit,
+        offset: safeOffset,
       },
     });
 
     const firstWord = words[0];
-    const total = firstWord ? firstWord.total_words : 0;
+
+    const totalWords = firstWord ? firstWord.total_words : 0;
 
     const cleanedWords = words.map(({ total_words, ...rest }) => rest);
 
-    const hasMore = total > SAFE_OFFSET + LIMIT;
+    const hasMore = totalWords > safeOffset + limit;
 
-    const nextOffset = SAFE_OFFSET + LIMIT;
+    const nextOffset = safeOffset + limit;
 
     return {
       paginate: { hasMore, nextOffset },
-      total,
+      total: totalWords,
       words: cleanedWords,
     };
   },
