@@ -3,32 +3,46 @@ import { fetchDictionaryEntry } from "./dictionary.client";
 
 import { fetchSensesSchema, Senses } from "./dictionary.validator";
 
+const inflightRequests = new Map<string, Promise<Map<string, Senses[]>>>();
+
 const getSenses = async (word: string): Promise<Map<string, Senses[]>> => {
+  const sensesFromCache = await getSensesCache(word);
+
+  if (sensesFromCache) {
+    return new Map(Object.entries(sensesFromCache));
+  }
+
+  if (inflightRequests.has(word)) {
+    return await inflightRequests.get(word)!;
+  }
+
   try {
-    const sensesFromCache = await getSensesCache(word);
+    const newPromise = async (): Promise<Map<string, Senses[]>> => {
+      const wordEntry = await fetchDictionaryEntry(word);
 
-    if (sensesFromCache) {
-      return new Map(Object.entries(sensesFromCache));
-    }
+      const parsedData = fetchSensesSchema.parse(wordEntry);
 
-    const wordEntry = await fetchDictionaryEntry(word);
+      const mappedData = parsedData.entries.reduce(
+        (acc: Map<string, Senses[]>, curr) => acc.set(curr.partOfSpeech, [...(acc.get(curr.partOfSpeech) || []), ...curr.senses]),
+        new Map<string, Senses[]>(),
+      );
 
-    const parsedData = fetchSensesSchema.parse(wordEntry);
+      const dataToObject = Object.fromEntries(mappedData);
 
-    const mappedData = parsedData.entries.reduce(
-      (acc: Map<string, Senses[]>, curr) => acc.set(curr.partOfSpeech, [...(acc.get(curr.partOfSpeech) || []), ...curr.senses]),
-      new Map<string, Senses[]>(),
-    );
+      await setSensesCache(word, dataToObject);
 
-    const dataToObject = Object.fromEntries(mappedData);
+      return mappedData;
+    };
 
-    await setSensesCache(word, dataToObject);
+    const promise = newPromise();
 
-    return mappedData;
-  } catch (err) {
-    console.error(err);
+    inflightRequests.set(word, promise);
 
+    return await promise;
+  } catch (error) {
     return new Map();
+  } finally {
+    inflightRequests.delete(word);
   }
 };
 

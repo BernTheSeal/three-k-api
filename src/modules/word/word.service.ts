@@ -5,6 +5,10 @@ import { getWordCache, setWordCache } from "./word.cache";
 import { wordConfig } from "@/shared/config/word.config";
 import { getSafeOffset } from "@/shared/utils/pagination.util";
 
+import { FindByWordResponse } from "@/shared/types/services/word.service.type";
+
+const inflightRequests = new Map<string, Promise<FindByWordResponse | null>>();
+
 export const wordService: WordService = {
   async list(data) {
     const { filters, paginate } = data;
@@ -47,24 +51,46 @@ export const wordService: WordService = {
       return wordFromCache;
     }
 
-    const wordResponse = await wordRepo.findByWord({ word });
-
-    const first = wordResponse[0];
-
-    if (!first) {
-      return null;
+    if (inflightRequests.has(word)) {
+      return await inflightRequests.get(word)!;
     }
 
-    const wordDetails = {
-      word_id: first.word_id,
-      word: first.word,
-      phonetics: [...new Map(wordResponse.map((w) => [w.locale, { locale: w.locale, text: w.text, mp3: w.mp3 }])).values()],
-      entries: [...new Map(wordResponse.map((w) => [w.pos, { partOfSpeech: w.pos, level: w.level }])).values()],
-    };
+    try {
+      const requestPromise = async (): Promise<FindByWordResponse | null> => {
+        const wordResponse = await wordRepo.findByWord({ word });
 
-    await setWordCache(word, wordDetails);
+        const first = wordResponse[0];
 
-    return wordDetails;
+        if (!first) {
+          return null;
+        }
+
+        const wordDetails = {
+          word_id: first.word_id,
+          word: first.word,
+          phonetics: [...new Map(wordResponse.map((w) => [w.locale, { locale: w.locale, text: w.text, mp3: w.mp3 }])).values()],
+          entries: [...new Map(wordResponse.map((w) => [w.pos, { partOfSpeech: w.pos, level: w.level }])).values()],
+        };
+
+        return wordDetails;
+      };
+
+      const promise = requestPromise();
+
+      inflightRequests.set(word, promise);
+
+      const res = await promise;
+
+      if (!res) {
+        return null;
+      }
+
+      await setWordCache(word, res);
+
+      return res;
+    } finally {
+      inflightRequests.delete(word);
+    }
   },
 
   async findByWordWithSenses(data) {

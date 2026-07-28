@@ -29,7 +29,7 @@ type FindByWordInput = {
   user_id: number;
 };
 
-type FindByWordResponse = {
+export type FindByWordResponse = {
   word_id: number;
   word: string;
   phonetics: {
