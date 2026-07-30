@@ -6,7 +6,7 @@ export const refreshTokenRepo: RefreshTokenRepo = {
   async create(data, tx) {
     const { token_hash, auth_account_id, family_id, expires_at } = data;
 
-    const executor = getExecutor<RefreshToken>(tx?.client);
+    const executor = getExecutor(tx?.client);
 
     const response = await executor(
       `INSERT INTO refresh_tokens (token_hash, auth_account_id, family_id, expires_at)
@@ -15,13 +15,13 @@ export const refreshTokenRepo: RefreshTokenRepo = {
       [token_hash, auth_account_id, family_id, expires_at],
     );
 
-    return response.rows[0]!;
+    return response.rows[0] as RefreshToken;
   },
 
   async findByTokenHash(data, tx) {
     const { token_hash } = data;
 
-    const executor = getExecutor<RefreshToken>(tx?.client);
+    const executor = getExecutor(tx?.client);
     const lock = getLock(tx?.lock);
 
     const response = await executor(
@@ -33,13 +33,13 @@ export const refreshTokenRepo: RefreshTokenRepo = {
       [token_hash],
     );
 
-    return response.rows[0];
+    return response.rows[0] as RefreshToken | undefined;
   },
 
   async findByTokenHashWithAuthAccount(data, tx) {
     const { token_hash } = data;
 
-    const executor = getExecutor<RefreshToken & AuthAccount>(tx?.client);
+    const executor = getExecutor(tx?.client);
     const lock = getLock(tx?.lock);
 
     const response = await executor(
@@ -52,7 +52,7 @@ export const refreshTokenRepo: RefreshTokenRepo = {
       [token_hash],
     );
 
-    return response.rows[0];
+    return response.rows[0] as (RefreshToken & AuthAccount) | undefined;
   },
 
   async revokeByTokenHash(data, tx) {

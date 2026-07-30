@@ -6,7 +6,7 @@ export const authTokenRepo: AuthTokenRepo = {
   async create(data, tx) {
     const { auth_account_id, token_hash, token_type, expires_at } = data;
 
-    const executor = getExecutor<AuthToken>(tx?.client);
+    const executor = getExecutor(tx?.client);
 
     const response = await executor(
       `
@@ -17,13 +17,13 @@ export const authTokenRepo: AuthTokenRepo = {
       [auth_account_id, token_hash, token_type, expires_at],
     );
 
-    return response.rows[0]!;
+    return response.rows[0] as AuthToken;
   },
 
   async findByToken(data, tx) {
     const { token_hash } = data;
 
-    const executor = getExecutor<AuthToken>(tx?.client);
+    const executor = getExecutor(tx?.client);
 
     const lock = getLock(tx?.lock);
 
@@ -35,7 +35,7 @@ export const authTokenRepo: AuthTokenRepo = {
       [token_hash],
     );
 
-    return response.rows[0];
+    return response.rows[0] as AuthToken | undefined;
   },
 
   async revoke(data, tx) {

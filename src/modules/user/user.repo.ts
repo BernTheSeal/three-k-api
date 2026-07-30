@@ -1,12 +1,12 @@
 import { getExecutor, getLock } from "@/shared/lib/db.lib";
-import { User } from "@/shared/types/entities";
 import { UserRepo } from "@/shared/types/repositories/user.repo.type";
+import { User } from "@/shared/types/entities";
 
 export const userRepo: UserRepo = {
   async create(data, tx) {
     const { username, is_active } = data;
 
-    const executor = getExecutor<User>(tx?.client);
+    const executor = getExecutor(tx?.client);
 
     const response = await executor(
       `INSERT INTO users (username , is_active)
@@ -16,13 +16,13 @@ export const userRepo: UserRepo = {
       [username, is_active],
     );
 
-    return response.rows[0]!;
+    return response.rows[0] as User;
   },
 
   async findById(data, tx) {
     const { user_id } = data;
 
-    const executor = getExecutor<User>(tx?.client);
+    const executor = getExecutor(tx?.client);
     const lock = getLock(tx?.lock);
 
     const response = await executor(
@@ -34,7 +34,7 @@ export const userRepo: UserRepo = {
       [user_id],
     );
 
-    return response.rows[0];
+    return response.rows[0] as User | undefined;
   },
 
   async activateById(data, tx) {

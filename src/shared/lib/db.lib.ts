@@ -3,12 +3,18 @@ import { QueryResult, QueryResultRow, PoolClient, Pool } from "pg";
 
 const pool = new Pool(poolConfig);
 
-export const query = async <T extends QueryResultRow>(text: string, params?: any[]): Promise<QueryResult<T>> => {
-  return await pool.query<T>(text, params);
+export const query = async (text: string, params?: any[]): Promise<QueryResult<QueryResultRow>> => {
+  return await pool.query(text, params);
 };
 
-export const getExecutor = <T extends QueryResultRow>(client?: PoolClient) => {
-  return client ? (text: string, params: any[]) => client.query<T>(text, params) : (text: string, params: any[]) => query<T>(text, params);
+const clientQuery = async (client: PoolClient, text: string, params?: any[]): Promise<QueryResult<QueryResultRow>> => {
+  return await client.query(text, params);
+};
+
+export const getExecutor = (client?: PoolClient) => {
+  return client
+    ? (text: string, params: any[]) => clientQuery(client, text, params)
+    : (text: string, params: any[]) => query(text, params);
 };
 
 export const getLock = (lock?: boolean) => (lock ? "FOR UPDATE" : "");

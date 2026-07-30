@@ -2,11 +2,17 @@ import { AuthAccount, RefreshToken } from "../../types/entities";
 import { MutateTxOptions, FindTxOptions } from "./common.repo.type";
 
 export type RefreshTokenRepo = {
-  create: (data: Pick<RefreshToken, "token_hash" | "auth_account_id" | "family_id" | "expires_at">, tx?: MutateTxOptions) => Promise<RefreshToken>;
+  create: (
+    data: Pick<RefreshToken, "token_hash" | "auth_account_id" | "family_id" | "expires_at">,
+    tx?: MutateTxOptions,
+  ) => Promise<RefreshToken>;
 
   findByTokenHash: (data: Pick<RefreshToken, "token_hash">, tx?: FindTxOptions) => Promise<RefreshToken | undefined>;
 
-  findByTokenHashWithAuthAccount: (data: Pick<RefreshToken, "token_hash">, tx?: FindTxOptions) => Promise<(RefreshToken & AuthAccount) | undefined>;
+  findByTokenHashWithAuthAccount: (
+    data: Pick<RefreshToken, "token_hash">,
+    tx?: FindTxOptions,
+  ) => Promise<(RefreshToken & AuthAccount) | undefined>;
 
   revokeByTokenHash: (
     data: Pick<RefreshToken, "token_hash"> & {

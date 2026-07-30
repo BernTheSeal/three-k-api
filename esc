@@ -1,0 +1,96 @@
+[33mcommit d9c953b8d94dcd210a6ed541bd6eed22257e9194[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m
+Author: berkant ünal <berkantunaldev@gmail.com>
+Date:   Tue Jul 28 18:24:24 2026 +0300
+
+    fix: apply singleflight pattern to word and dictionary lookups
+
+[33mcommit 9c228f9c71f5e3b67621852af562e741b7e742a0[m
+Author: berkant ünal <berkantunaldev@gmail.com>
+Date:   Sat Jul 25 17:04:27 2026 +0300
+
+    refactor: use CTEs for word list query, add pagination util
+
+[33mcommit 5614bf158081d9be8c6448a923c771a78c839877[m
+Author: berkant ünal <berkantunaldev@gmail.com>
+Date:   Fri Jul 24 18:15:38 2026 +0300
+
+    feature: add redis caching for words and dictionary API responses
+
+[33mcommit fd3113e1bcf745cff117449eab38511d7c5d5679[m
+Author: berkant ünal <berkantunaldev@gmail.com>
+Date:   Wed Jul 22 16:01:53 2026 +0300
+
+    refactor: reorganize project structure
+
+[33mcommit e6b611e855448dcca3c33b1e98e74a579b82c7eb[m
+Author: berkant ünal <berkantunaldev@gmail.com>
+Date:   Wed Jul 1 15:42:14 2026 +0300
+
+    feat: add word and library features
+
+[33mcommit 2daf0e8ffec86d0ce51d6ea9964b5a49d8e74af0[m
+Author: berkant ünal <berkantunaldev@gmail.com>
+Date:   Mon Jun 15 15:37:35 2026 +0300
+
+    feat: add rate limiting, internal server error, and email schema
+
+[33mcommit 17c5c91c94407023d1e8d947cb534c2c4b4ebf37[m
+Author: berkant ünal <berkantunaldev@gmail.com>
+Date:   Mon Jun 8 16:29:24 2026 +0300
+
+    feat: add password reset flow
+    
+    - replace verificationToken table with authToken table
+    - add forgot password / reset password endpoints
+    - add email verification request and verify endpoints
+    - add RefreshTokenError for token rotation suspect detection
+    - migrate refresh tokens from user_id to auth_account_id
+    - update related repos, services, types and validators
+
+[33mcommit 63c11a6fe7894ab253371333813a92a6094df00a[m
+Author: berkant ünal <berkantunaldev@gmail.com>
+Date:   Thu May 21 14:20:47 2026 +0300
+
+    feat: add change password endpoint
+
+[33mcommit ef0150e7757fadebb32d601e557bb9d05512b323[m
+Author: berkant ünal <berkantunaldev@gmail.com>
+Date:   Wed May 20 15:41:08 2026 +0300
+
+    feat: email verification, split repos (authAccount, refreshToken, verificationToken), email service
+
+[33mcommit 1a051b03ef7e06a5d005ea653c12c16a46ac0043[m
+Author: berkant ünal <berkantunaldev@gmail.com>
+Date:   Thu May 14 16:16:13 2026 +0300
+
+    refactor: separate auth accounts into a dedicated table
+
+[33mcommit bb93743ad7ee71072da524f0851f1891fdc89417[m
+Author: berkant ünal <berkantunaldev@gmail.com>
+Date:   Sat May 9 16:24:11 2026 +0300
+
+    refactor: migrate error handling, script logger
+
+[33mcommit 02806cb15c113316881376005c4582df248cec9b[m
+Author: berkant ünal <berkantunaldev@gmail.com>
+Date:   Sat May 9 11:35:44 2026 +0300
+
+    feat: google oauth, env validator, response util
+
+[33mcommit 8d4ea6073ca9a32128521a8870e5c9325e5ba565[m
+Author: berkant ünal <berkantunaldev@gmail.com>
+Date:   Fri May 8 14:53:48 2026 +0300
+
+    refactor: add service/repo layers, entity types, getExecutor util
+
+[33mcommit 85c65aebd2642a5967855dc77d261b79a73f5075[m
+Author: berkant ünal <berkantunaldev@gmail.com>
+Date:   Tue May 5 12:14:22 2026 +0300
+
+    feat: auth system, custom errors, schema validators, utils
+
+[33mcommit 3a5c3a20d43d735a5d1c0d40f68aaacc4ae58a7d[m
+Author: berkant ünal <berkantunaldev@gmail.com>
+Date:   Wed Apr 29 14:56:29 2026 +0300
+
+    feat: initial setup - db migrations, seed scripts, passport config

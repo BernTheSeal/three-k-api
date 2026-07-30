@@ -7,7 +7,7 @@ export const wordRepo: WordRepo = {
     const { offset, limit } = data.paginate;
     const { search, pos, level } = data.filters;
 
-    const executor = getExecutor<ListResult>(tx?.client);
+    const executor = getExecutor(tx?.client);
 
     const conditions: string[] = [];
     const params: unknown[] = [offset, limit];
@@ -63,13 +63,13 @@ export const wordRepo: WordRepo = {
       params,
     );
 
-    return response.rows;
+    return response.rows as ListResult[];
   },
 
   async findByWord(data, tx) {
     const { word } = data;
 
-    const executor = getExecutor<FindByWordResult>(tx?.client);
+    const executor = getExecutor(tx?.client);
     const lock = getLock(tx?.lock);
 
     const response = await executor(
@@ -91,6 +91,6 @@ export const wordRepo: WordRepo = {
       [word],
     );
 
-    return response.rows;
+    return response.rows as FindByWordResult[];
   },
 };

@@ -1,12 +1,12 @@
 import { AuthAccountRepo } from "@/shared/types/repositories/authAccount.repo.type";
-import { getExecutor, getLock } from "@/shared/lib/db.lib";
 import { AuthAccount } from "@/shared/types/entities";
+import { getExecutor, getLock } from "@/shared/lib/db.lib";
 
 export const authAccountRepo: AuthAccountRepo = {
   async create(data, tx) {
     const { user_id, provider, provider_account_id, email, password_hash, is_verified } = data;
 
-    const executor = getExecutor<AuthAccount>(tx?.client);
+    const executor = getExecutor(tx?.client);
 
     const response = await executor(
       `
@@ -17,13 +17,13 @@ export const authAccountRepo: AuthAccountRepo = {
       [user_id, provider, provider_account_id, email, password_hash, is_verified],
     );
 
-    return response.rows[0]!;
+    return response.rows[0] as AuthAccount;
   },
 
   async findById(data, tx) {
     const { auth_account_id, provider } = data;
 
-    const executor = getExecutor<AuthAccount>(tx?.client);
+    const executor = getExecutor(tx?.client);
     const lock = getLock(tx?.lock);
 
     const response = await executor(
@@ -35,13 +35,13 @@ export const authAccountRepo: AuthAccountRepo = {
       [auth_account_id, provider],
     );
 
-    return response.rows[0];
+    return response.rows[0] as AuthAccount | undefined;
   },
 
   async findByProviderAccountId(data, tx) {
     const { provider_account_id, provider } = data;
 
-    const executor = getExecutor<AuthAccount>(tx?.client);
+    const executor = getExecutor(tx?.client);
     const lock = getLock(tx?.lock);
 
     const response = await executor(
@@ -53,13 +53,13 @@ export const authAccountRepo: AuthAccountRepo = {
       [provider, provider_account_id],
     );
 
-    return response.rows[0];
+    return response.rows[0] as AuthAccount | undefined;
   },
 
   async findByEmail(data, tx) {
     const { email, provider } = data;
 
-    const executor = getExecutor<AuthAccount>(tx?.client);
+    const executor = getExecutor(tx?.client);
     const lock = getLock(tx?.lock);
 
     const response = await executor(
@@ -71,7 +71,7 @@ export const authAccountRepo: AuthAccountRepo = {
       [email, provider],
     );
 
-    return response.rows[0];
+    return response.rows[0] as AuthAccount | undefined;
   },
 
   async verifyById(data, tx) {
