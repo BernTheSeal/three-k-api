@@ -1,4 +1,4 @@
-import { getExecutor, getLock } from "@/shared/lib/db.lib";
+import { getExecutor, getLock, toCamelCase } from "@/shared/lib/db.lib";
 import { WordRepo } from "@/shared/types/repositories/word.repo.type";
 import { ListResult, FindByWordResult } from "@/shared/types/repositories/word.repo.type";
 
@@ -63,7 +63,7 @@ export const wordRepo: WordRepo = {
       params,
     );
 
-    return response.rows as ListResult[];
+    return toCamelCase<ListResult>(response.rows);
   },
 
   async findByWord(data, tx) {
@@ -91,6 +91,6 @@ export const wordRepo: WordRepo = {
       [word],
     );
 
-    return response.rows as FindByWordResult[];
+    return toCamelCase<FindByWordResult>(response.rows);
   },
 };

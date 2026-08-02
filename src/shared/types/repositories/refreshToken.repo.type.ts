@@ -1,43 +1,43 @@
-import { AuthAccount, RefreshToken } from "../../types/entities";
+import { AuthAccountEntity, RefreshTokenEntity } from "../../types/entities";
 import { MutateTxOptions, FindTxOptions } from "./common.repo.type";
 
 export type RefreshTokenRepo = {
   create: (
-    data: Pick<RefreshToken, "token_hash" | "auth_account_id" | "family_id" | "expires_at">,
+    data: Pick<RefreshTokenEntity, "tokenHash" | "authAccountId" | "familyId" | "expiresAt">,
     tx?: MutateTxOptions,
-  ) => Promise<RefreshToken>;
+  ) => Promise<RefreshTokenEntity>;
 
-  findByTokenHash: (data: Pick<RefreshToken, "token_hash">, tx?: FindTxOptions) => Promise<RefreshToken | undefined>;
+  findByTokenHash: (data: Pick<RefreshTokenEntity, "tokenHash">, tx?: FindTxOptions) => Promise<RefreshTokenEntity | undefined>;
 
   findByTokenHashWithAuthAccount: (
-    data: Pick<RefreshToken, "token_hash">,
+    data: Pick<RefreshTokenEntity, "tokenHash">,
     tx?: FindTxOptions,
-  ) => Promise<(RefreshToken & AuthAccount) | undefined>;
+  ) => Promise<(RefreshTokenEntity & AuthAccountEntity) | undefined>;
 
   revokeByTokenHash: (
-    data: Pick<RefreshToken, "token_hash"> & {
-      revoked_reason: Exclude<RefreshToken["revoked_reason"], null>;
+    data: Pick<RefreshTokenEntity, "tokenHash"> & {
+      revokedReason: Exclude<RefreshTokenEntity["revokedReason"], null>;
     },
     tx?: MutateTxOptions,
   ) => Promise<void>;
 
   revokeByFamilyId: (
-    data: Pick<RefreshToken, "family_id"> & {
-      revoked_reason: Exclude<RefreshToken["revoked_reason"], null>;
+    data: Pick<RefreshTokenEntity, "familyId"> & {
+      revokedReason: Exclude<RefreshTokenEntity["revokedReason"], null>;
     },
     tx?: MutateTxOptions,
   ) => Promise<void>;
 
   revokeByAuthAccountId: (
-    data: Pick<RefreshToken, "auth_account_id"> & {
-      revoked_reason: Exclude<RefreshToken["revoked_reason"], null>;
+    data: Pick<RefreshTokenEntity, "authAccountId"> & {
+      revokedReason: Exclude<RefreshTokenEntity["revokedReason"], null>;
     },
     tx?: MutateTxOptions,
   ) => Promise<void>;
 
   revokeByAuthAccountIdExceptFamilyId: (
-    data: Pick<RefreshToken, "auth_account_id" | "family_id"> & {
-      revoked_reason: Exclude<RefreshToken["revoked_reason"], null>;
+    data: Pick<RefreshTokenEntity, "authAccountId" | "familyId"> & {
+      revokedReason: Exclude<RefreshTokenEntity["revokedReason"], null>;
     },
     tx?: MutateTxOptions,
   ) => Promise<void>;

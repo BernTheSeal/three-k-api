@@ -15,22 +15,22 @@ type ListResponse = {
   };
   total: number;
   words: {
-    word_id: number;
+    wordId: number;
     word: string;
     pos: string[];
     levels: string[];
-    is_favorite: boolean | null;
+    isFavorite: boolean | null;
     status: "known" | "learning" | null;
   }[];
 };
 
 type FindByWordInput = {
   word: string;
-  user_id: number;
+  userId: number;
 };
 
 export type FindByWordResponse = {
-  word_id: number;
+  wordId: number;
   word: string;
   phonetics: {
     locale: "us" | "uk";
@@ -46,7 +46,7 @@ export type FindByWordResponse = {
 type FindByWordWithSensesInput = FindByWordInput;
 
 type FindByWordWithSensesResponse = {
-  word_id: number;
+  wordId: number;
   word: string;
   phonetics: {
     locale: "us" | "uk";

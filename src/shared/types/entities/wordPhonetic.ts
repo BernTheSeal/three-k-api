@@ -1,5 +1,5 @@
-export type WordPhonetic = {
-  word_id: number;
+export type WordPhoneticEntity = {
+  wordId: number;
   locale: "us" | "uk";
   text: string;
   mp3: `${string}.mp3`;

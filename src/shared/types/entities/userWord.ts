@@ -1,9 +1,9 @@
-export type UserWord = {
-  user_id: number;
-  word_id: number;
+export type UserWordEntity = {
+  userId: number;
+  wordId: number;
   status: "known" | "learning";
-  is_favorite: boolean;
+  isFavorite: boolean;
   note: string | null;
-  created_at: Date;
-  updated_at: Date;
+  createdAt: Date;
+  updatedAt: Date;
 };

@@ -14,8 +14,8 @@ const comparePassword = async (passwordInput: string, password: string) => {
   return await bcrypt.compare(passwordInput, password);
 };
 
-const generateAccessToken = (user_id: number, family_id: string, auth_account_id: number) => {
-  return jwt.sign({ user_id, family_id, auth_account_id }, authConfig.jwt.secret, {
+const generateAccessToken = (userId: number, familyId: string, authAccountId: number) => {
+  return jwt.sign({ userId, familyId, authAccountId }, authConfig.jwt.secret, {
     expiresIn: authConfig.jwt.accessTokenExpiresIn,
   });
 };

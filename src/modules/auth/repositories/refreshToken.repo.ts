@@ -1,10 +1,10 @@
 import { RefreshTokenRepo } from "@/shared/types/repositories/refreshToken.repo.type";
-import { getExecutor, getLock } from "@/shared/lib/db.lib";
-import { AuthAccount, RefreshToken } from "@/shared/types/entities";
+import { getExecutor, getLock, toCamelCase } from "@/shared/lib/db.lib";
+import { AuthAccountEntity, RefreshTokenEntity } from "@/shared/types/entities";
 
 export const refreshTokenRepo: RefreshTokenRepo = {
   async create(data, tx) {
-    const { token_hash, auth_account_id, family_id, expires_at } = data;
+    const { tokenHash, authAccountId, familyId, expiresAt } = data;
 
     const executor = getExecutor(tx?.client);
 
@@ -12,14 +12,16 @@ export const refreshTokenRepo: RefreshTokenRepo = {
       `INSERT INTO refresh_tokens (token_hash, auth_account_id, family_id, expires_at)
         VALUES($1, $2, $3, $4)
         `,
-      [token_hash, auth_account_id, family_id, expires_at],
+      [tokenHash, authAccountId, familyId, expiresAt],
     );
 
-    return response.rows[0] as RefreshToken;
+    const res = toCamelCase<RefreshTokenEntity>(response.rows);
+
+    return res[0]!;
   },
 
   async findByTokenHash(data, tx) {
-    const { token_hash } = data;
+    const { tokenHash } = data;
 
     const executor = getExecutor(tx?.client);
     const lock = getLock(tx?.lock);
@@ -30,14 +32,16 @@ export const refreshTokenRepo: RefreshTokenRepo = {
       WHERE token_hash = $1
       ${lock}
     `,
-      [token_hash],
+      [tokenHash],
     );
 
-    return response.rows[0] as RefreshToken | undefined;
+    const res = toCamelCase<RefreshTokenEntity>(response.rows);
+
+    return res[0];
   },
 
   async findByTokenHashWithAuthAccount(data, tx) {
-    const { token_hash } = data;
+    const { tokenHash } = data;
 
     const executor = getExecutor(tx?.client);
     const lock = getLock(tx?.lock);
@@ -49,14 +53,16 @@ export const refreshTokenRepo: RefreshTokenRepo = {
       WHERE token_hash = $1
       ${lock}
     `,
-      [token_hash],
+      [tokenHash],
     );
 
-    return response.rows[0] as (RefreshToken & AuthAccount) | undefined;
+    const res = toCamelCase<RefreshTokenEntity & AuthAccountEntity>(response.rows);
+
+    return res[0];
   },
 
   async revokeByTokenHash(data, tx) {
-    const { token_hash, revoked_reason } = data;
+    const { tokenHash, revokedReason } = data;
 
     const executor = getExecutor(tx?.client);
 
@@ -64,12 +70,12 @@ export const refreshTokenRepo: RefreshTokenRepo = {
       `UPDATE refresh_tokens
        SET is_revoked = true, revoked_reason = $1, revoked_at = NOW()
        WHERE token_hash = $2`,
-      [revoked_reason, token_hash],
+      [revokedReason, tokenHash],
     );
   },
 
   async revokeByFamilyId(data, tx) {
-    const { family_id, revoked_reason } = data;
+    const { familyId, revokedReason } = data;
 
     const executor = getExecutor(tx?.client);
 
@@ -77,12 +83,12 @@ export const refreshTokenRepo: RefreshTokenRepo = {
       `UPDATE refresh_tokens
        SET is_revoked = true, revoked_reason = $1, revoked_at = NOW()
        WHERE family_id = $2 AND is_revoked = false`,
-      [revoked_reason, family_id],
+      [revokedReason, familyId],
     );
   },
 
   async revokeByAuthAccountId(data, tx) {
-    const { auth_account_id, revoked_reason } = data;
+    const { authAccountId, revokedReason } = data;
 
     const executor = getExecutor(tx?.client);
 
@@ -95,12 +101,12 @@ export const refreshTokenRepo: RefreshTokenRepo = {
         revoked_at = NOW()
       WHERE auth_account_id = $2 AND is_revoked = false
       `,
-      [revoked_reason, auth_account_id],
+      [revokedReason, authAccountId],
     );
   },
 
   async revokeByAuthAccountIdExceptFamilyId(data, tx) {
-    const { family_id, revoked_reason, auth_account_id } = data;
+    const { familyId, revokedReason, authAccountId } = data;
 
     const executor = getExecutor(tx?.client);
 
@@ -111,7 +117,7 @@ export const refreshTokenRepo: RefreshTokenRepo = {
      is_revoked = false AND
      family_id != $3
      `,
-      [auth_account_id, revoked_reason, family_id],
+      [authAccountId, revokedReason, familyId],
     );
   },
 };

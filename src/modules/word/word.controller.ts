@@ -5,7 +5,7 @@ import { sendSuccessResponse } from "@/shared/helpers/response.helper";
 
 export const wordController: WordController = {
   async get(req, res) {
-    const { offset, ...filters } = res.locals.validated_data.query;
+    const { offset, ...filters } = res.locals.validatedData.query;
 
     const { words, total, paginate } = await wordService.list({
       filters,
@@ -18,12 +18,12 @@ export const wordController: WordController = {
   },
 
   async getByWord(req, res) {
-    const { word } = res.locals.validated_data.params;
-    const { user_id } = res.locals.user;
+    const { word } = res.locals.validatedData.params;
+    const { userId } = res.locals.user;
 
     const wordDetails = await wordService.findByWordWithSenses({
       word,
-      user_id,
+      userId,
     });
 
     sendSuccessResponse(res, HTTP_STATUS.OK, "word successfully fetched.", wordDetails);

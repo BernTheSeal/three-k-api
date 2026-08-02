@@ -1,25 +1,21 @@
-export type LocalAuthAccount = {
-  auth_account_id: number;
-  user_id: number;
-  provider: "local";
-  provider_account_id: string;
+type CommonAuthAccount = {
+  authAccountId: number;
+  userId: number;
+  providerAccountId: string;
   email: string;
-  password_hash: string;
-  is_verified: boolean;
-  created_at: Date;
-  updated_at: Date;
+  isVerified: boolean;
+  createdAt: Date;
+  updatedAt: Date;
 };
+
+export type LocalAuthAccount = {
+  provider: "local";
+  passwordHash: string;
+} & CommonAuthAccount;
 
 type GoogleAuthAccount = {
-  auth_account_id: number;
-  user_id: number;
   provider: "google";
-  provider_account_id: string;
-  email: string;
-  password_hash: null;
-  is_verified: boolean;
-  created_at: Date;
-  updated_at: Date;
-};
+  passwordHash: null;
+} & CommonAuthAccount;
 
-export type AuthAccount = LocalAuthAccount | GoogleAuthAccount;
+export type AuthAccountEntity = LocalAuthAccount | GoogleAuthAccount;

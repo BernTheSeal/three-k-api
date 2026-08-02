@@ -1,10 +1,10 @@
 import { AuthTokenRepo } from "@/shared/types/repositories/authToken.repo.type";
-import { getExecutor, getLock } from "@/shared/lib/db.lib";
-import { AuthToken } from "@/shared/types/entities";
+import { getExecutor, getLock, toCamelCase } from "@/shared/lib/db.lib";
+import { AuthTokenEntity } from "@/shared/types/entities";
 
 export const authTokenRepo: AuthTokenRepo = {
   async create(data, tx) {
-    const { auth_account_id, token_hash, token_type, expires_at } = data;
+    const { authAccountId, tokenHash, tokenType, expiresAt } = data;
 
     const executor = getExecutor(tx?.client);
 
@@ -14,14 +14,16 @@ export const authTokenRepo: AuthTokenRepo = {
         VALUES($1, $2, $3, $4)  
         RETURNING *
       `,
-      [auth_account_id, token_hash, token_type, expires_at],
+      [authAccountId, tokenHash, tokenType, expiresAt],
     );
 
-    return response.rows[0] as AuthToken;
+    const res = toCamelCase<AuthTokenEntity>(response.rows);
+
+    return res[0]!;
   },
 
   async findByToken(data, tx) {
-    const { token_hash } = data;
+    const { tokenHash } = data;
 
     const executor = getExecutor(tx?.client);
 
@@ -32,14 +34,16 @@ export const authTokenRepo: AuthTokenRepo = {
       SELECT * FROM auth_tokens
       WHERE token_hash = $1
       ${lock} `,
-      [token_hash],
+      [tokenHash],
     );
 
-    return response.rows[0] as AuthToken | undefined;
+    const res = toCamelCase<AuthTokenEntity>(response.rows);
+
+    return res[0];
   },
 
   async revoke(data, tx) {
-    const { auth_account_id, token_type } = data;
+    const { authAccountId, tokenType } = data;
 
     const executor = getExecutor(tx?.client);
 
@@ -53,12 +57,12 @@ export const authTokenRepo: AuthTokenRepo = {
           used_at IS NULL AND 
           revoked_at IS NULL
       `,
-      [auth_account_id, token_type],
+      [authAccountId, tokenType],
     );
   },
 
   async markAsUsed(data, tx) {
-    const { auth_token_id } = data;
+    const { authTokenId } = data;
 
     const executor = getExecutor(tx?.client);
 
@@ -72,7 +76,7 @@ export const authTokenRepo: AuthTokenRepo = {
         revoked_at IS NULL
 
     `,
-      [auth_token_id],
+      [authTokenId],
     );
   },
 };

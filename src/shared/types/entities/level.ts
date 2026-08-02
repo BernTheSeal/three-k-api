@@ -1,4 +1,4 @@
-export type Level = {
-  level_id: number;
+export type LevelEntity = {
+  levelId: number;
   level: string;
 };

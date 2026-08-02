@@ -1,4 +1,4 @@
-export type Word = {
-  word_id: number;
+export type WordEntity = {
+  wordId: number;
   word: string;
 };

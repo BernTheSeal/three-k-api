@@ -19,14 +19,14 @@ export const authenticate = (req: Request, res: Response, next: NextFunction) =>
   try {
     const decoded = verifyAccessToken(token);
 
-    if (typeof decoded === "string" || !decoded || !("user_id" in decoded)) {
+    if (typeof decoded === "string" || !decoded || !("userId" in decoded)) {
       throw new UnauthorizedError("Access token is invalid!", "INVALID_ACCESS_TOKEN");
     }
 
     res.locals.user = {
-      user_id: decoded.user_id,
-      family_id: decoded.family_id,
-      auth_account_id: decoded.auth_account_id,
+      userId: decoded.userId,
+      familyId: decoded.familyId,
+      authAccountId: decoded.authAccountId,
     };
 
     next();

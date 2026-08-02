@@ -1,10 +1,10 @@
-import { getExecutor, getLock } from "@/shared/lib/db.lib";
+import { getExecutor, getLock, toCamelCase } from "@/shared/lib/db.lib";
 import { UserRepo } from "@/shared/types/repositories/user.repo.type";
-import { User } from "@/shared/types/entities";
+import { UserEntity } from "@/shared/types/entities";
 
 export const userRepo: UserRepo = {
   async create(data, tx) {
-    const { username, is_active } = data;
+    const { username, isActive } = data;
 
     const executor = getExecutor(tx?.client);
 
@@ -13,14 +13,16 @@ export const userRepo: UserRepo = {
         VALUES($1, $2)
         RETURNING *
         `,
-      [username, is_active],
+      [username, isActive],
     );
 
-    return response.rows[0] as User;
+    const res = toCamelCase<UserEntity>(response.rows);
+
+    return res[0]!;
   },
 
   async findById(data, tx) {
-    const { user_id } = data;
+    const { userId } = data;
 
     const executor = getExecutor(tx?.client);
     const lock = getLock(tx?.lock);
@@ -31,14 +33,16 @@ export const userRepo: UserRepo = {
       WHERE user_id = $1
       ${lock}
     `,
-      [user_id],
+      [userId],
     );
 
-    return response.rows[0] as User | undefined;
+    const res = toCamelCase<UserEntity>(response.rows);
+
+    return res[0];
   },
 
   async activateById(data, tx) {
-    const { user_id } = data;
+    const { userId } = data;
 
     const executor = getExecutor(tx?.client);
 
@@ -48,7 +52,7 @@ export const userRepo: UserRepo = {
       SET is_active = true, updated_at = NOW()
       WHERE user_id = $1
       `,
-      [user_id],
+      [userId],
     );
   },
 };

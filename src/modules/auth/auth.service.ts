@@ -26,33 +26,33 @@ export const authService: AuthService = {
   async register(data) {
     const { email, username, password } = data;
 
-    const passwordHash = await hashPassword(password);
+    const hashedPassword = await hashPassword(password);
     const rt = generateRefreshToken();
     const hashedRt = hashAuthToken(rt);
     const familyId = generateFamilyId();
     const expiresAt = getRefreshTokenExpiresAt();
 
     const { user, authAccount } = await withTransaction(async (client) => {
-      const user = await userRepo.create({ username, is_active: true }, { client });
+      const user = await userRepo.create({ username, isActive: true }, { client });
 
       const authAccount = await authAccountRepo.create(
         {
-          user_id: user.user_id,
+          userId: user.userId,
           provider: "local",
-          provider_account_id: email,
+          providerAccountId: email,
           email,
-          is_verified: false,
-          password_hash: passwordHash,
+          isVerified: false,
+          passwordHash: hashedPassword,
         },
         { client },
       );
 
       await refreshTokenRepo.create(
         {
-          auth_account_id: authAccount.auth_account_id,
-          token_hash: hashedRt,
-          family_id: familyId,
-          expires_at: expiresAt,
+          authAccountId: authAccount.authAccountId,
+          tokenHash: hashedRt,
+          familyId,
+          expiresAt,
         },
         { client },
       );
@@ -60,9 +60,9 @@ export const authService: AuthService = {
       return { user, authAccount };
     });
 
-    const accessToken = generateAccessToken(user.user_id, familyId, authAccount.auth_account_id);
+    const accessToken = generateAccessToken(user.userId, familyId, authAccount.authAccountId);
 
-    const { password_hash, user_id, ...safeAuthAccount } = authAccount;
+    const { passwordHash, userId, ...safeAuthAccount } = authAccount;
 
     return {
       accessToken,
@@ -77,14 +77,14 @@ export const authService: AuthService = {
 
     const authAccount = await authAccountRepo.findByProviderAccountId({
       provider: "local",
-      provider_account_id: email,
+      providerAccountId: email,
     });
 
-    if (!authAccount || !authAccount.password_hash) {
+    if (!authAccount || !authAccount.passwordHash) {
       throw new UnauthorizedError("Email or password is not correct!", "EMAIL_OR_PASSWORD_NOT_CORRECT");
     }
 
-    const isMatch = await comparePassword(password, authAccount.password_hash);
+    const isMatch = await comparePassword(password, authAccount.passwordHash);
 
     if (!isMatch) {
       throw new UnauthorizedError("Email or password is not correct!", "EMAIL_OR_PASSWORD_NOT_CORRECT");
@@ -95,22 +95,22 @@ export const authService: AuthService = {
     const familyId = generateFamilyId();
     const expiresAt = getRefreshTokenExpiresAt();
 
-    const user = await userRepo.findById({ user_id: authAccount.user_id });
+    const user = await userRepo.findById({ userId: authAccount.userId });
 
     if (!user) {
       throw new InternalServerError("Auth account exists but linked user not found", "USER_DATA_INCONSISTENT");
     }
 
     await refreshTokenRepo.create({
-      token_hash: hashedRt,
-      auth_account_id: authAccount.auth_account_id,
-      family_id: familyId,
-      expires_at: expiresAt,
+      tokenHash: hashedRt,
+      authAccountId: authAccount.authAccountId,
+      familyId,
+      expiresAt,
     });
 
-    const accessToken = generateAccessToken(user.user_id, familyId, authAccount.auth_account_id);
+    const accessToken = generateAccessToken(user.userId, familyId, authAccount.authAccountId);
 
-    const { user_id, password_hash, ...safeAuthAccount } = authAccount;
+    const { userId, passwordHash, ...safeAuthAccount } = authAccount;
 
     return {
       user,
@@ -139,13 +139,13 @@ export const authService: AuthService = {
     const expiresAt = getRefreshTokenExpiresAt();
 
     const authAccount = await authAccountRepo.findByProviderAccountId({
-      provider_account_id: sub,
+      providerAccountId: sub,
       provider: "google",
     });
 
     if (authAccount) {
       const user = await userRepo.findById({
-        user_id: authAccount.user_id,
+        userId: authAccount.userId,
       });
 
       if (!user) {
@@ -153,15 +153,15 @@ export const authService: AuthService = {
       }
 
       await refreshTokenRepo.create({
-        auth_account_id: authAccount.auth_account_id,
-        token_hash: hashedRt,
-        family_id: familyId,
-        expires_at: expiresAt,
+        authAccountId: authAccount.authAccountId,
+        tokenHash: hashedRt,
+        familyId: familyId,
+        expiresAt,
       });
 
-      const accessToken = generateAccessToken(user.user_id, familyId, authAccount.auth_account_id);
+      const accessToken = generateAccessToken(user.userId, familyId, authAccount.authAccountId);
 
-      const { user_id, password_hash, ...safeAuthAccount } = authAccount;
+      const { userId, passwordHash, ...safeAuthAccount } = authAccount;
 
       return {
         user,
@@ -173,16 +173,16 @@ export const authService: AuthService = {
       const randomUsername = generateUsername(email);
 
       const data = await withTransaction(async (client) => {
-        const user = await userRepo.create({ username: randomUsername, is_active: true }, { client });
+        const user = await userRepo.create({ username: randomUsername, isActive: true }, { client });
 
         const authAccount = await authAccountRepo.create(
           {
-            user_id: user.user_id,
+            userId: user.userId,
             provider: "google",
-            provider_account_id: sub,
+            providerAccountId: sub,
             email,
-            is_verified: true,
-            password_hash: null,
+            isVerified: true,
+            passwordHash: null,
           },
           {
             client,
@@ -191,10 +191,10 @@ export const authService: AuthService = {
 
         await refreshTokenRepo.create(
           {
-            auth_account_id: authAccount.auth_account_id,
-            token_hash: hashedRt,
-            family_id: familyId,
-            expires_at: expiresAt,
+            authAccountId: authAccount.authAccountId,
+            tokenHash: hashedRt,
+            familyId,
+            expiresAt,
           },
           { client },
         );
@@ -202,9 +202,9 @@ export const authService: AuthService = {
         return { user, authAccount };
       });
 
-      const accessToken = generateAccessToken(data.user.user_id, familyId, data.authAccount.auth_account_id);
+      const accessToken = generateAccessToken(data.user.userId, familyId, data.authAccount.authAccountId);
 
-      const { user_id, password_hash, ...safeAuthAccount } = data.authAccount;
+      const { userId, passwordHash, ...safeAuthAccount } = data.authAccount;
 
       return {
         user: data.user,
@@ -227,15 +227,15 @@ export const authService: AuthService = {
     const newHashedRefreshToken = hashAuthToken(newRawRefreshToken);
     const expiresAt = getRefreshTokenExpiresAt();
 
-    let user_id: number | null = null;
-    let family_id: string | null = null;
-    let auth_account_id: number | null = null;
+    let userId: number | null = null;
+    let familyId: string | null = null;
+    let authAccountId: number | null = null;
 
     try {
       const data = await withTransaction(async (client) => {
         const rt = await refreshTokenRepo.findByTokenHashWithAuthAccount(
           {
-            token_hash: hashedCookieRt,
+            tokenHash: hashedCookieRt,
           },
           { client, lock: true },
         );
@@ -244,59 +244,59 @@ export const authService: AuthService = {
           throw new UnauthorizedError("Refresh token is not found in database!", "REFRESH_TOKEN_NOT_FOUND_IN_DB");
         }
 
-        if (rt.is_revoked) {
-          if (rt.revoked_reason === "refresh") {
-            throw new RefreshTokenError(rt.family_id, "suspect");
+        if (rt.isRevoked) {
+          if (rt.revokedReason === "refresh") {
+            throw new RefreshTokenError(rt.familyId, "suspect");
           }
 
           throw new UnauthorizedError("Refresh token has already been used!", "REFRESH_TOKEN_ALREADY_USED");
         }
 
-        if (new Date(rt.expires_at) < new Date()) {
-          throw new RefreshTokenError(rt.family_id, "expired");
+        if (new Date(rt.expiresAt) < new Date()) {
+          throw new RefreshTokenError(rt.familyId, "expired");
         }
 
         await refreshTokenRepo.revokeByTokenHash(
           {
-            token_hash: rt.token_hash,
-            revoked_reason: "refresh",
+            tokenHash: rt.tokenHash,
+            revokedReason: "refresh",
           },
           { client },
         );
 
         await refreshTokenRepo.create(
           {
-            token_hash: newHashedRefreshToken,
-            auth_account_id: rt.auth_account_id,
-            family_id: rt.family_id,
-            expires_at: expiresAt,
+            tokenHash: newHashedRefreshToken,
+            authAccountId: rt.authAccountId,
+            familyId: rt.familyId,
+            expiresAt,
           },
           { client },
         );
 
         return {
-          user_id: rt.user_id,
-          family_id: rt.family_id,
-          auth_account_id: rt.auth_account_id,
+          userId: rt.userId,
+          familyId: rt.familyId,
+          authAccountId: rt.authAccountId,
         };
       });
 
-      user_id = data.user_id;
-      family_id = data.family_id;
-      auth_account_id = data.auth_account_id;
+      userId = data.userId;
+      familyId = data.familyId;
+      authAccountId = data.authAccountId;
     } catch (error) {
       if (error instanceof RefreshTokenError) {
         if (error.reason === "suspect") {
           await refreshTokenRepo.revokeByFamilyId({
-            family_id: error.family_id,
-            revoked_reason: error.reason,
+            familyId: error.family_id,
+            revokedReason: error.reason,
           });
 
           throw new UnauthorizedError("Refresh token has already been used!", "REFRESH_TOKEN_ALREADY_USED");
         } else if (error.reason === "expired") {
           await refreshTokenRepo.revokeByFamilyId({
-            family_id: error.family_id,
-            revoked_reason: error.reason,
+            familyId: error.family_id,
+            revokedReason: error.reason,
           });
 
           throw new UnauthorizedError("Refresh token has expired!", "REFRESH_TOKEN_EXPIRED");
@@ -305,7 +305,7 @@ export const authService: AuthService = {
       throw error;
     }
 
-    const accessToken = generateAccessToken(user_id, family_id, auth_account_id);
+    const accessToken = generateAccessToken(userId, familyId, authAccountId);
 
     return { accessToken, rawRefreshToken: newRawRefreshToken };
   },
@@ -321,34 +321,34 @@ export const authService: AuthService = {
     const hashedCookieRt = hashAuthToken(cookieRt);
 
     const refreshToken = await refreshTokenRepo.findByTokenHash({
-      token_hash: hashedCookieRt,
+      tokenHash: hashedCookieRt,
     });
 
     if (!refreshToken) {
       return { isAlreadyLoggedOut };
     }
 
-    const { is_revoked, revoked_reason, family_id } = refreshToken;
+    const { isRevoked, revokedReason, familyId } = refreshToken;
 
-    if (is_revoked) {
-      if (revoked_reason === "refresh") {
+    if (isRevoked) {
+      if (revokedReason === "refresh") {
         await refreshTokenRepo.revokeByFamilyId({
-          family_id,
-          revoked_reason: "suspect",
+          familyId,
+          revokedReason: "suspect",
         });
       }
       return { isAlreadyLoggedOut };
     }
     await refreshTokenRepo.revokeByFamilyId({
-      family_id,
-      revoked_reason: "logout",
+      familyId,
+      revokedReason: "logout",
     });
 
     return { isAlreadyLoggedOut: false };
   },
 
   async requestEmailVerification(data) {
-    const { auth_account_id } = data;
+    const { authAccountId } = data;
 
     const token = generateVerifyEmailToken();
     const hashedToken = hashAuthToken(token);
@@ -357,7 +357,7 @@ export const authService: AuthService = {
     const authAccount = await withTransaction(async (client) => {
       const authAccount = await authAccountRepo.findById(
         {
-          auth_account_id,
+          authAccountId,
           provider: "local",
         },
         { client, lock: true },
@@ -367,24 +367,24 @@ export const authService: AuthService = {
         throw new NotFoundError("Local account not found!", "LOCAL_ACCOUNT_NOT_FOUND");
       }
 
-      if (authAccount.is_verified) {
+      if (authAccount.isVerified) {
         throw new BadRequestError("Account is already verified!", "ACCOUNT_ALREADY_VERRIFED");
       }
 
       await authTokenRepo.revoke(
         {
-          auth_account_id: authAccount.auth_account_id,
-          token_type: "verification_email",
+          authAccountId: authAccount.authAccountId,
+          tokenType: "verification_email",
         },
         { client },
       );
 
       await authTokenRepo.create(
         {
-          auth_account_id: authAccount.auth_account_id,
-          token_hash: hashedToken,
-          token_type: "verification_email",
-          expires_at: expiresAt,
+          authAccountId: authAccount.authAccountId,
+          tokenHash: hashedToken,
+          tokenType: "verification_email",
+          expiresAt,
         },
         { client },
       );
@@ -406,31 +406,31 @@ export const authService: AuthService = {
     await withTransaction(async (client) => {
       const authToken = await authTokenRepo.findByToken(
         {
-          token_hash: hashedToken,
+          tokenHash: hashedToken,
         },
         { client, lock: true },
       );
 
       if (
         !authToken ||
-        authToken.revoked_at ||
-        authToken.used_at ||
-        authToken.token_type !== "verification_email" ||
-        authToken.expires_at <= new Date()
+        authToken.revokedAt ||
+        authToken.usedAt ||
+        authToken.tokenType !== "verification_email" ||
+        authToken.expiresAt <= new Date()
       ) {
         throw new BadRequestError("Invalid token!", "INVALID_TOKEN");
       }
 
       await authTokenRepo.markAsUsed(
         {
-          auth_token_id: authToken.auth_token_id,
+          authTokenId: authToken.authTokenId,
         },
         { client },
       );
 
       await authAccountRepo.verifyById(
         {
-          auth_account_id: authToken.auth_account_id,
+          authAccountId: authToken.authAccountId,
         },
         { client },
       );
@@ -438,7 +438,7 @@ export const authService: AuthService = {
   },
 
   async changePassword(data) {
-    const { currentPassword, newPassword, newPasswordConfirm, auth_account_id, family_id } = data;
+    const { currentPassword, newPassword, newPasswordConfirm, authAccountId, familyId } = data;
 
     if (newPassword !== newPasswordConfirm) {
       throw new BadRequestError("New passwords do not match!", "PASSWORD_MISMATCH");
@@ -449,7 +449,7 @@ export const authService: AuthService = {
     await withTransaction(async (client) => {
       const authAccount = await authAccountRepo.findById(
         {
-          auth_account_id: auth_account_id,
+          authAccountId,
           provider: "local",
         },
         { client, lock: true },
@@ -459,7 +459,7 @@ export const authService: AuthService = {
         throw new BadRequestError("No local account found.", "NO_LOCAL_ACCOUNT");
       }
 
-      const isCurrentPasswordCorrect = await comparePassword(currentPassword, authAccount.password_hash);
+      const isCurrentPasswordCorrect = await comparePassword(currentPassword, authAccount.passwordHash);
 
       if (!isCurrentPasswordCorrect) {
         throw new BadRequestError("Current password is incorrect.", "INVALID_CURRENT_PASSWORD");
@@ -467,17 +467,17 @@ export const authService: AuthService = {
 
       await authAccountRepo.updatePassword(
         {
-          auth_account_id: authAccount.auth_account_id,
-          password_hash: newPasswordHashed,
+          authAccountId: authAccount.authAccountId,
+          passwordHash: newPasswordHashed,
         },
         { client },
       );
 
       await refreshTokenRepo.revokeByAuthAccountIdExceptFamilyId(
         {
-          auth_account_id,
-          revoked_reason: "password_change",
-          family_id,
+          authAccountId,
+          revokedReason: "password_change",
+          familyId,
         },
         { client },
       );
@@ -508,18 +508,18 @@ export const authService: AuthService = {
 
       await authTokenRepo.revoke(
         {
-          auth_account_id: authAccount.auth_account_id,
-          token_type: "password_reset",
+          authAccountId: authAccount.authAccountId,
+          tokenType: "password_reset",
         },
         { client },
       );
 
       await authTokenRepo.create(
         {
-          auth_account_id: authAccount.auth_account_id,
-          token_type: "password_reset",
-          token_hash: tokenHash,
-          expires_at: expiresAt,
+          authAccountId: authAccount.authAccountId,
+          tokenType: "password_reset",
+          tokenHash,
+          expiresAt,
         },
         { client },
       );
@@ -548,40 +548,40 @@ export const authService: AuthService = {
     await withTransaction(async (client) => {
       const authToken = await authTokenRepo.findByToken(
         {
-          token_hash: hashedToken,
+          tokenHash: hashedToken,
         },
         { client, lock: true },
       );
 
       if (
         !authToken ||
-        authToken.revoked_at ||
-        authToken.used_at ||
-        authToken.token_type !== "password_reset" ||
-        authToken.expires_at <= new Date()
+        authToken.revokedAt ||
+        authToken.usedAt ||
+        authToken.tokenType !== "password_reset" ||
+        authToken.expiresAt <= new Date()
       ) {
         throw new BadRequestError("Invalid token!", "INVALID_TOKEN");
       }
 
       await authTokenRepo.markAsUsed(
         {
-          auth_token_id: authToken.auth_token_id,
+          authTokenId: authToken.authTokenId,
         },
         { client },
       );
 
       await authAccountRepo.updatePassword(
         {
-          auth_account_id: authToken.auth_account_id,
-          password_hash: hashedPassword,
+          authAccountId: authToken.authAccountId,
+          passwordHash: hashedPassword,
         },
         { client },
       );
 
       await refreshTokenRepo.revokeByAuthAccountId(
         {
-          auth_account_id: authToken.auth_account_id,
-          revoked_reason: "password_change",
+          authAccountId: authToken.authAccountId,
+          revokedReason: "password_change",
         },
         { client },
       );

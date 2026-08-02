@@ -1,4 +1,4 @@
-export type Pos = {
-  pos_id: number;
+export type PosEntity = {
+  posId: number;
   pos: string;
 };

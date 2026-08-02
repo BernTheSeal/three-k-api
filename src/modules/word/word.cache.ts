@@ -3,7 +3,7 @@ import { cacheProvider } from "@/shared/lib/cache/cache.provider";
 import { keyBuilder } from "@/shared/utils/cache.util";
 
 type WordCache = {
-  word_id: number;
+  wordId: number;
   word: string;
   phonetics: {
     locale: "us" | "uk";

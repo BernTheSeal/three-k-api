@@ -1,10 +1,10 @@
-import { User } from "../../types/entities";
+import { UserEntity } from "../../types/entities";
 import { MutateTxOptions, FindTxOptions } from "./common.repo.type";
 
 export type UserRepo = {
-  create: (data: Pick<User, "username" | "is_active">, tx?: MutateTxOptions) => Promise<User>;
+  create: (data: Pick<UserEntity, "username" | "isActive">, tx?: MutateTxOptions) => Promise<UserEntity>;
 
-  findById: (data: Pick<User, "user_id">, tx?: FindTxOptions) => Promise<User | undefined>;
+  findById: (data: Pick<UserEntity, "userId">, tx?: FindTxOptions) => Promise<UserEntity | undefined>;
 
-  activateById: (data: Pick<User, "user_id">, tx?: MutateTxOptions) => Promise<void>;
+  activateById: (data: Pick<UserEntity, "userId">, tx?: MutateTxOptions) => Promise<void>;
 };

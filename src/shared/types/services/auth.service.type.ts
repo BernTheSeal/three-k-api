@@ -1,40 +1,40 @@
-import { AuthAccount, RefreshToken } from "../../types/entities";
-import { User } from "../../types/entities";
+import { AuthAccountEntity } from "../../types/entities";
+import { UserEntity } from "../../types/entities";
 import { Profile } from "passport-google-oauth20";
 
 export type AuthService = {
   register: (data: { username: string; email: string; password: string }) => Promise<{
     accessToken: string;
     refreshToken: string;
-    user: User;
-    authAccount: Omit<AuthAccount, "password_hash" | "user_id">;
+    user: UserEntity;
+    authAccount: Omit<AuthAccountEntity, "passwordHash" | "userId">;
   }>;
 
   login: (data: { email: string; password: string }) => Promise<{
     accessToken: string;
     refreshToken: string;
-    user: User;
-    authAccount: Omit<AuthAccount, "password_hash" | "user_id">;
+    user: UserEntity;
+    authAccount: Omit<AuthAccountEntity, "passwordHash" | "userId">;
   }>;
 
   loginGoogle: (data: { userGoogle: Profile }) => Promise<{
     accessToken: string;
     refreshToken: string;
-    user: User;
-    authAccount: Omit<AuthAccount, "password_hash" | "user_id">;
+    user: UserEntity;
+    authAccount: Omit<AuthAccountEntity, "passwordHash" | "userId">;
   }>;
 
   refresh: (data: { cookieRt?: string }) => Promise<{ accessToken: string; rawRefreshToken: string }>;
 
   logout: (data: { cookieRt?: string }) => Promise<{ isAlreadyLoggedOut: boolean }>;
 
-  requestEmailVerification: (data: Pick<AuthAccount, "auth_account_id">) => Promise<void>;
+  requestEmailVerification: (data: Pick<AuthAccountEntity, "authAccountId">) => Promise<void>;
 
   verifyEmail: (data: { token: string }) => Promise<void>;
 
   changePassword: (data: {
-    auth_account_id: number;
-    family_id: string;
+    authAccountId: number;
+    familyId: string;
     currentPassword: string;
     newPassword: string;
     newPasswordConfirm: string;

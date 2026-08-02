@@ -7,19 +7,19 @@ import { clearRefreshTokenCookie, setRefreshTokenCookie } from "./auth.helper";
 
 export const authController: AuthController = {
   async me(_req, res, next) {
-    const { user_id, family_id, auth_account_id } = res.locals.user;
+    const { userId, familyId, authAccountId } = res.locals.user;
 
     sendSuccessResponse(res, HTTP_STATUS.OK, "User is logged in!", {
-      userId: user_id,
-      familyId: family_id,
-      authAccountId: auth_account_id,
+      userId,
+      familyId,
+      authAccountId,
     });
 
     return;
   },
 
   async register(_req, res) {
-    const { username, email, password } = res.locals.validated_data.body;
+    const { username, email, password } = res.locals.validatedData.body;
 
     const { accessToken, refreshToken, user, authAccount } = await authService.register({
       email,
@@ -31,29 +31,15 @@ export const authController: AuthController = {
 
     sendSuccessResponse(res, HTTP_STATUS.CREATED, "user successfully created!", {
       accessToken,
-      user: {
-        id: user.user_id,
-        username: user.username,
-        isActive: user.is_active,
-        createdAt: user.created_at,
-        updatedAt: user.updated_at,
-      },
-      authAccount: {
-        id: authAccount.auth_account_id,
-        provider: authAccount.provider,
-        providerAccountId: authAccount.provider_account_id,
-        email: authAccount.email,
-        isVerified: authAccount.is_verified,
-        createdAt: authAccount.created_at,
-        updatedAt: authAccount.updated_at,
-      },
+      user,
+      authAccount,
     });
 
     return;
   },
 
   async login(_req, res) {
-    const { email, password } = res.locals.validated_data.body;
+    const { email, password } = res.locals.validatedData.body;
 
     const { user, authAccount, accessToken, refreshToken } = await authService.login({
       email,
@@ -64,22 +50,8 @@ export const authController: AuthController = {
 
     sendSuccessResponse(res, HTTP_STATUS.OK, "user successfully login!", {
       accessToken,
-      user: {
-        id: user.user_id,
-        username: user.username,
-        isActive: user.is_active,
-        createdAt: user.created_at,
-        updatedAt: user.updated_at,
-      },
-      authAccount: {
-        id: authAccount.auth_account_id,
-        provider: authAccount.provider,
-        providerAccountId: authAccount.provider_account_id,
-        email: authAccount.email,
-        isVerified: authAccount.is_verified,
-        createdAt: authAccount.created_at,
-        updatedAt: authAccount.updated_at,
-      },
+      user,
+      authAccount,
     });
 
     return;
@@ -120,30 +92,16 @@ export const authController: AuthController = {
 
     sendSuccessResponse(res, HTTP_STATUS.OK, "user successfully login!", {
       accessToken,
-      user: {
-        id: user.user_id,
-        username: user.username,
-        isActive: user.is_active,
-        createdAt: user.created_at,
-        updatedAt: user.updated_at,
-      },
-      authAccount: {
-        id: authAccount.auth_account_id,
-        provider: authAccount.provider,
-        providerAccountId: authAccount.provider_account_id,
-        email: authAccount.email,
-        isVerified: authAccount.is_verified,
-        createdAt: authAccount.created_at,
-        updatedAt: authAccount.updated_at,
-      },
+      user,
+      authAccount,
     });
   },
 
   async requestEmailVerification(req, res) {
-    const { auth_account_id } = res.locals.user;
+    const { authAccountId } = res.locals.user;
 
     await authService.requestEmailVerification({
-      auth_account_id,
+      authAccountId,
     });
 
     sendSuccessResponse(res, HTTP_STATUS.OK, "Verification code has been sent to your email address.");
@@ -152,7 +110,7 @@ export const authController: AuthController = {
   },
 
   async verifyEmail(req, res) {
-    const { token } = res.locals.validated_data.body;
+    const { token } = res.locals.validatedData.body;
 
     await authService.verifyEmail({ token });
 
@@ -160,22 +118,22 @@ export const authController: AuthController = {
   },
 
   async changePassword(req, res) {
-    const { auth_account_id, family_id } = res.locals.user;
-    const { currentPassword, newPassword, newPasswordConfirm } = res.locals.validated_data.body;
+    const { authAccountId, familyId } = res.locals.user;
+    const { currentPassword, newPassword, newPasswordConfirm } = res.locals.validatedData.body;
 
     await authService.changePassword({
       currentPassword,
       newPassword,
       newPasswordConfirm,
-      auth_account_id,
-      family_id,
+      authAccountId,
+      familyId,
     });
 
     sendSuccessResponse(res, HTTP_STATUS.OK, "Password changed successfully!");
   },
 
   async forgotPassword(req, res) {
-    const { email } = res.locals.validated_data.body;
+    const { email } = res.locals.validatedData.body;
 
     await authService.forgotPassword({ email });
 
@@ -183,7 +141,7 @@ export const authController: AuthController = {
   },
 
   async resetPassword(req, res) {
-    const { token, newPassword, newPasswordConfirm } = res.locals.validated_data.body;
+    const { token, newPassword, newPasswordConfirm } = res.locals.validatedData.body;
 
     await authService.resetPassword({ token, newPassword, newPasswordConfirm });
 

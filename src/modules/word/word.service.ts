@@ -27,9 +27,9 @@ export const wordService: WordService = {
 
     const firstWord = words[0];
 
-    const totalWords = firstWord ? firstWord.total_words : 0;
+    const totalWords = firstWord ? firstWord.totalWords : 0;
 
-    const cleanedWords = words.map(({ total_words, ...rest }) => rest);
+    const cleanedWords = words.map(({ totalWords, ...rest }) => rest);
 
     const hasMore = totalWords > safeOffset + limit;
 
@@ -66,7 +66,7 @@ export const wordService: WordService = {
         }
 
         const wordDetails = {
-          word_id: first.word_id,
+          wordId: first.wordId,
           word: first.word,
           phonetics: [...new Map(wordResponse.map((w) => [w.locale, { locale: w.locale, text: w.text, mp3: w.mp3 }])).values()],
           entries: [...new Map(wordResponse.map((w) => [w.pos, { partOfSpeech: w.pos, level: w.level }])).values()],
@@ -94,9 +94,9 @@ export const wordService: WordService = {
   },
 
   async findByWordWithSenses(data) {
-    const { user_id, word } = data;
+    const { userId, word } = data;
 
-    const wordResponse = await this.findByWord({ word, user_id });
+    const wordResponse = await this.findByWord({ word, userId });
 
     if (!wordResponse) {
       return null;

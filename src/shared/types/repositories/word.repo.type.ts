@@ -1,5 +1,5 @@
 import { GetWordInput } from "@/modules/word/word.validator";
-import { Word, WordPhonetic, Pos, Level } from "../../types/entities";
+import { WordEntity, WordPhoneticEntity, PosEntity, LevelEntity } from "../../types/entities";
 
 import { FindTxOptions } from "./common.repo.type";
 
@@ -12,20 +12,20 @@ type ListParams = {
 };
 
 export type ListResult = {
-  word_id: number;
+  wordId: number;
   word: string;
   pos: string[];
   levels: string[];
   status: "known" | "learning" | null;
-  is_favorite: boolean | null;
-  total_words: number;
+  isFavorite: boolean | null;
+  totalWords: number;
 };
 
 type FindByWordParams = {
   word: string;
 };
 
-export type FindByWordResult = Word & Pick<Pos, "pos"> & Pick<Level, "level"> & WordPhonetic;
+export type FindByWordResult = WordEntity & Pick<PosEntity, "pos"> & Pick<LevelEntity, "level"> & WordPhoneticEntity;
 
 export type WordRepo = {
   list: (data: ListParams, tx?: FindTxOptions) => Promise<ListResult[]>;

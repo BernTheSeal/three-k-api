@@ -1,10 +1,10 @@
-export type AuthToken = {
-  auth_token_id: number;
-  auth_account_id: number;
-  token_hash: string;
-  token_type: "verification_email" | "password_reset";
-  expires_at: Date;
-  used_at: Date | null;
-  revoked_at: Date | null;
-  created_at: Date;
+export type AuthTokenEntity = {
+  authTokenId: number;
+  authAccountId: number;
+  tokenHash: string;
+  tokenType: "verification_email" | "password_reset";
+  expiresAt: Date;
+  usedAt: Date | null;
+  revokedAt: Date | null;
+  createdAt: Date;
 };

@@ -1,13 +1,16 @@
-import { AuthToken } from "../../types/entities";
+import { AuthTokenEntity } from "../../types/entities";
 
 import { FindTxOptions, MutateTxOptions } from "./common.repo.type";
 
 export type AuthTokenRepo = {
-  create: (data: Pick<AuthToken, "auth_account_id" | "token_hash" | "token_type" | "expires_at">, tx?: MutateTxOptions) => Promise<AuthToken>;
+  create: (
+    data: Pick<AuthTokenEntity, "authAccountId" | "tokenHash" | "tokenType" | "expiresAt">,
+    tx?: MutateTxOptions,
+  ) => Promise<AuthTokenEntity>;
 
-  findByToken: (data: Pick<AuthToken, "token_hash">, tx?: FindTxOptions) => Promise<AuthToken | undefined>;
+  findByToken: (data: Pick<AuthTokenEntity, "tokenHash">, tx?: FindTxOptions) => Promise<AuthTokenEntity | undefined>;
 
-  revoke: (data: Pick<AuthToken, "auth_account_id" | "token_type">, tx?: MutateTxOptions) => Promise<void>;
+  revoke: (data: Pick<AuthTokenEntity, "authAccountId" | "tokenType">, tx?: MutateTxOptions) => Promise<void>;
 
-  markAsUsed: (data: Pick<AuthToken, "auth_token_id">, tx?: MutateTxOptions) => Promise<void>;
+  markAsUsed: (data: Pick<AuthTokenEntity, "authTokenId">, tx?: MutateTxOptions) => Promise<void>;
 };

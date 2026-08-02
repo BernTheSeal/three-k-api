@@ -1,16 +1,10 @@
-export type RefreshToken = {
-  token_hash: string;
-  auth_account_id: number;
-  family_id: string;
-  is_revoked: boolean;
-  revoked_reason:
-    | "refresh"
-    | "logout"
-    | "suspect"
-    | "expired"
-    | "password_change"
-    | null;
-  revoked_at: Date;
-  expires_at: Date;
-  created_at: Date;
+export type RefreshTokenEntity = {
+  tokenHash: string;
+  authAccountId: number;
+  familyId: string;
+  isRevoked: boolean;
+  revokedReason: "refresh" | "logout" | "suspect" | "expired" | "password_change" | null;
+  revokedAt: Date;
+  expiresAt: Date;
+  createdAt: Date;
 };

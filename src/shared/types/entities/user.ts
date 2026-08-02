@@ -1,7 +1,7 @@
-export type User = {
-  user_id: number;
-  is_active: boolean;
+export type UserEntity = {
+  userId: number;
+  isActive: boolean;
   username: string;
-  created_at: Date;
-  updated_at: Date;
+  createdAt: Date;
+  updatedAt: Date;
 };

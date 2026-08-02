@@ -1,10 +1,10 @@
 import { AuthAccountRepo } from "@/shared/types/repositories/authAccount.repo.type";
-import { AuthAccount } from "@/shared/types/entities";
-import { getExecutor, getLock } from "@/shared/lib/db.lib";
+import { AuthAccountEntity } from "@/shared/types/entities";
+import { getExecutor, getLock, toCamelCase } from "@/shared/lib/db.lib";
 
 export const authAccountRepo: AuthAccountRepo = {
   async create(data, tx) {
-    const { user_id, provider, provider_account_id, email, password_hash, is_verified } = data;
+    const { userId, provider, providerAccountId, email, passwordHash, isVerified } = data;
 
     const executor = getExecutor(tx?.client);
 
@@ -14,14 +14,16 @@ export const authAccountRepo: AuthAccountRepo = {
       VALUES($1, $2, $3, $4, $5 , $6)
       RETURNING *
       `,
-      [user_id, provider, provider_account_id, email, password_hash, is_verified],
+      [userId, provider, providerAccountId, email, passwordHash, isVerified],
     );
 
-    return response.rows[0] as AuthAccount;
+    const res = toCamelCase<AuthAccountEntity>(response.rows);
+
+    return res[0]!;
   },
 
   async findById(data, tx) {
-    const { auth_account_id, provider } = data;
+    const { authAccountId, provider } = data;
 
     const executor = getExecutor(tx?.client);
     const lock = getLock(tx?.lock);
@@ -32,14 +34,15 @@ export const authAccountRepo: AuthAccountRepo = {
       WHERE auth_account_id = $1 AND provider = $2
       ${lock}
     `,
-      [auth_account_id, provider],
+      [authAccountId, provider],
     );
 
-    return response.rows[0] as AuthAccount | undefined;
+    const res = toCamelCase<AuthAccountEntity>(response.rows);
+    return res[0];
   },
 
   async findByProviderAccountId(data, tx) {
-    const { provider_account_id, provider } = data;
+    const { providerAccountId, provider } = data;
 
     const executor = getExecutor(tx?.client);
     const lock = getLock(tx?.lock);
@@ -50,10 +53,12 @@ export const authAccountRepo: AuthAccountRepo = {
       WHERE provider = $1 AND provider_account_id = $2
       ${lock}
     `,
-      [provider, provider_account_id],
+      [provider, providerAccountId],
     );
 
-    return response.rows[0] as AuthAccount | undefined;
+    const res = toCamelCase<AuthAccountEntity>(response.rows);
+
+    return res[0];
   },
 
   async findByEmail(data, tx) {
@@ -71,11 +76,13 @@ export const authAccountRepo: AuthAccountRepo = {
       [email, provider],
     );
 
-    return response.rows[0] as AuthAccount | undefined;
+    const res = toCamelCase<AuthAccountEntity>(response.rows);
+
+    return res[0];
   },
 
   async verifyById(data, tx) {
-    const { auth_account_id } = data;
+    const { authAccountId } = data;
 
     const executor = getExecutor(tx?.client);
 
@@ -85,12 +92,12 @@ export const authAccountRepo: AuthAccountRepo = {
         SET is_verified = true
         WHERE auth_account_id = $1  
     `,
-      [auth_account_id],
+      [authAccountId],
     );
   },
 
   async updatePassword(data, tx) {
-    const { auth_account_id, password_hash } = data;
+    const { authAccountId, passwordHash } = data;
 
     const executor = getExecutor(tx?.client);
 
@@ -100,7 +107,7 @@ export const authAccountRepo: AuthAccountRepo = {
       SET password_hash = $1, updated_at = NOW()
       WHERE auth_account_id = $2 AND provider = 'local'
     `,
-      [password_hash, auth_account_id],
+      [passwordHash, authAccountId],
     );
   },
 };

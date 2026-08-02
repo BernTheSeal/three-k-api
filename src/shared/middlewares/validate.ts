@@ -23,7 +23,7 @@ export const validate = (
         params?: Record<string, string>;
       };
 
-      res.locals.validated_data = validatedData;
+      res.locals.validatedData = validatedData;
 
       next();
     } catch (err) {
@@ -34,11 +34,7 @@ export const validate = (
           location: issue.path[0] as "body" | "query" | "params",
         }));
 
-        throw new ValidateError(
-          "Some fields are invalid!",
-          "VALIDATE_ERROR",
-          formattedErrors,
-        );
+        throw new ValidateError("Some fields are invalid!", "VALIDATE_ERROR", formattedErrors);
       }
       throw err;
     }
