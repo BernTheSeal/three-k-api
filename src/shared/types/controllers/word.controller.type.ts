@@ -1,8 +1,5 @@
 import { AuthHandler } from "./common.controller.type";
-
 import { GetWordByIdDto, GetWordDto } from "@/modules/word/word.validator";
 
-export type WordController = {
-  get: AuthHandler<GetWordDto>;
-  getByWord: AuthHandler<GetWordByIdDto>;
-};
+export type Get = AuthHandler<GetWordDto>;
+export type GetByWord = AuthHandler<GetWordByIdDto>;

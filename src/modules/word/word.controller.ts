@@ -1,31 +1,34 @@
 import { wordService } from "./word.service";
 import { HTTP_STATUS } from "@/shared/constants/httpStatus.const";
-import { WordController } from "@/shared/types/controllers/word.controller.type";
+import { Get, GetByWord } from "@/shared/types/controllers/word.controller.type";
 import { sendSuccessResponse } from "@/shared/helpers/response.helper";
 
-export const wordController: WordController = {
-  async get(req, res) {
-    const { offset, ...filters } = res.locals.validatedData.query;
+const get: Get = async (req, res) => {
+  const { offset, ...filters } = res.locals.validatedData.query;
 
-    const { words, total, paginate } = await wordService.list({
-      filters,
-      paginate: {
-        offset,
-      },
-    });
+  const { words, total, paginate } = await wordService.list({
+    filters,
+    paginate: {
+      offset,
+    },
+  });
 
-    sendSuccessResponse(res, HTTP_STATUS.OK, "words successfully fetched.", { total, paginate, words });
-  },
+  sendSuccessResponse(res, HTTP_STATUS.OK, "words successfully fetched.", { total, paginate, words });
+};
 
-  async getByWord(req, res) {
-    const { word } = res.locals.validatedData.params;
-    const { userId } = res.locals.user;
+const getByWord: GetByWord = async (req, res) => {
+  const { word } = res.locals.validatedData.params;
+  const { userId } = res.locals.user;
 
-    const wordDetails = await wordService.findByWordWithSenses({
-      word,
-      userId,
-    });
+  const wordDetails = await wordService.findByWordWithSenses({
+    word,
+    userId,
+  });
 
-    sendSuccessResponse(res, HTTP_STATUS.OK, "word successfully fetched.", wordDetails);
-  },
+  sendSuccessResponse(res, HTTP_STATUS.OK, "word successfully fetched.", wordDetails);
+};
+
+export const wordController = {
+  get,
+  getByWord,
 };

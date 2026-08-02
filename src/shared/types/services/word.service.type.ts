@@ -1,34 +1,5 @@
 import { GetWordInput } from "@/modules/word/word.validator";
 
-type ListInput = {
-  filters: GetWordInput;
-  paginate?: {
-    offset?: number;
-    limit?: number;
-  };
-};
-
-type ListResponse = {
-  paginate: {
-    hasMore: boolean;
-    nextOffset: number;
-  };
-  total: number;
-  words: {
-    wordId: number;
-    word: string;
-    pos: string[];
-    levels: string[];
-    isFavorite: boolean | null;
-    status: "known" | "learning" | null;
-  }[];
-};
-
-type FindByWordInput = {
-  word: string;
-  userId: number;
-};
-
 export type FindByWordResponse = {
   wordId: number;
   word: string;
@@ -43,9 +14,31 @@ export type FindByWordResponse = {
   }[];
 };
 
-type FindByWordWithSensesInput = FindByWordInput;
+export type List = (input: {
+  filters: GetWordInput;
+  paginate?: {
+    offset?: number;
+    limit?: number;
+  };
+}) => Promise<{
+  paginate: {
+    hasMore: boolean;
+    nextOffset: number;
+  };
+  total: number;
+  words: {
+    wordId: number;
+    word: string;
+    pos: string[];
+    levels: string[];
+    isFavorite: boolean | null;
+    status: "known" | "learning" | null;
+  }[];
+}>;
 
-type FindByWordWithSensesResponse = {
+export type FindByWord = (input: { word: string; userId: number }) => Promise<FindByWordResponse | null>;
+
+export type FindByWordWithSenses = (input: { word: string; userId: number }) => Promise<{
   wordId: number;
   word: string;
   phonetics: {
@@ -61,10 +54,4 @@ type FindByWordWithSensesResponse = {
       examples: string[];
     }[];
   }[];
-};
-
-export type WordService = {
-  list: (data: ListInput) => Promise<ListResponse>;
-  findByWord: (data: FindByWordInput) => Promise<FindByWordResponse | null>;
-  findByWordWithSenses: (data: FindByWordWithSensesInput) => Promise<FindByWordWithSensesResponse | null>;
-};
+} | null>;

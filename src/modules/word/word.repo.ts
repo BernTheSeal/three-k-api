@@ -1,36 +1,34 @@
 import { getExecutor, getLock, toCamelCase } from "@/shared/lib/db.lib";
-import { WordRepo } from "@/shared/types/repositories/word.repo.type";
-import { ListResult, FindByWordResult } from "@/shared/types/repositories/word.repo.type";
+import { List, FindByWordResult, FindByWord, ListResult } from "@/shared/types/repositories/word.repo.type";
 
-export const wordRepo: WordRepo = {
-  async list(data, tx) {
-    const { offset, limit } = data.paginate;
-    const { search, pos, level } = data.filters;
+const list: List = async (params, tx) => {
+  const { offset, limit } = params.paginate;
+  const { search, pos, level } = params.filters;
 
-    const executor = getExecutor(tx?.client);
+  const executor = getExecutor(tx?.client);
 
-    const conditions: string[] = [];
-    const params: unknown[] = [offset, limit];
+  const conditions: string[] = [];
+  const queryParams: unknown[] = [offset, limit];
 
-    if (search) {
-      params.push(search);
-      conditions.push(`word ILIKE '%' || $${params.length} || '%'`);
-    }
+  if (search) {
+    queryParams.push(search);
+    conditions.push(`word ILIKE '%' || $${queryParams.length} || '%'`);
+  }
 
-    if (pos && pos.length > 0) {
-      params.push(pos);
-      conditions.push(`pos && $${params.length}::varchar[]`);
-    }
+  if (pos && pos.length > 0) {
+    queryParams.push(pos);
+    conditions.push(`pos && $${queryParams.length}::varchar[]`);
+  }
 
-    if (level && level.length > 0) {
-      params.push(level);
-      conditions.push(`levels && $${params.length}::varchar[]`);
-    }
+  if (level && level.length > 0) {
+    queryParams.push(level);
+    conditions.push(`levels && $${queryParams.length}::varchar[]`);
+  }
 
-    const where = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
+  const where = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
 
-    const response = await executor(
-      `
+  const response = await executor(
+    `
       WITH enriched_words AS (
         SELECT 
           w.word_id,
@@ -60,20 +58,20 @@ export const wordRepo: WordRepo = {
 
       SELECT * FROM paginate_words 
     `,
-      params,
-    );
+    queryParams,
+  );
 
-    return toCamelCase<ListResult>(response.rows);
-  },
+  return toCamelCase<ListResult>(response.rows);
+};
 
-  async findByWord(data, tx) {
-    const { word } = data;
+const findByWord: FindByWord = async (params, tx) => {
+  const { word } = params;
 
-    const executor = getExecutor(tx?.client);
-    const lock = getLock(tx?.lock);
+  const executor = getExecutor(tx?.client);
+  const lock = getLock(tx?.lock);
 
-    const response = await executor(
-      `
+  const response = await executor(
+    `
         SELECT 
           w.word_id,
           w.word,
@@ -88,9 +86,13 @@ export const wordRepo: WordRepo = {
         WHERE w.word = $1 
         ${lock}`,
 
-      [word],
-    );
+    [word],
+  );
 
-    return toCamelCase<FindByWordResult>(response.rows);
-  },
+  return toCamelCase<FindByWordResult>(response.rows);
+};
+
+export const wordRepo = {
+  list,
+  findByWord,
 };

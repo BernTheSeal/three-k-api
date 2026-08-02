@@ -3,14 +3,6 @@ import { WordEntity, WordPhoneticEntity, PosEntity, LevelEntity } from "../../ty
 
 import { FindTxOptions } from "./common.repo.type";
 
-type ListParams = {
-  filters: GetWordInput;
-  paginate: {
-    offset: number;
-    limit: number;
-  };
-};
-
 export type ListResult = {
   wordId: number;
   word: string;
@@ -21,14 +13,17 @@ export type ListResult = {
   totalWords: number;
 };
 
-type FindByWordParams = {
-  word: string;
-};
+export type List = (
+  params: {
+    filters: GetWordInput;
+    paginate: {
+      offset: number;
+      limit: number;
+    };
+  },
+  tx?: FindTxOptions,
+) => Promise<ListResult[]>;
 
 export type FindByWordResult = WordEntity & Pick<PosEntity, "pos"> & Pick<LevelEntity, "level"> & WordPhoneticEntity;
 
-export type WordRepo = {
-  list: (data: ListParams, tx?: FindTxOptions) => Promise<ListResult[]>;
-
-  findByWord: (data: FindByWordParams, tx?: FindTxOptions) => Promise<FindByWordResult[]>;
-};
+export type FindByWord = (params: { word: string }, tx?: FindTxOptions) => Promise<FindByWordResult[]>;
