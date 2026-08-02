@@ -2,149 +2,174 @@ import { Profile } from "passport-google-oauth20";
 import { authService } from "./auth.service";
 import { sendSuccessResponse } from "@/shared/helpers/response.helper";
 import { HTTP_STATUS } from "@/shared/constants/httpStatus.const";
-import { AuthController } from "@/shared/types/controllers/auth.controller.type";
 import { clearRefreshTokenCookie, setRefreshTokenCookie } from "./auth.helper";
 
-export const authController: AuthController = {
-  async me(_req, res, next) {
-    const { userId, familyId, authAccountId } = res.locals.user;
+import {
+  Me,
+  Register,
+  Login,
+  Refresh,
+  Logout,
+  GoogleCallback,
+  RequestEmailVerification,
+  VerifyEmail,
+  ChangePassword,
+  ForgotPassword,
+  ResetPassword,
+} from "@/shared/types/controllers/auth.controller.type";
 
-    sendSuccessResponse(res, HTTP_STATUS.OK, "User is logged in!", {
-      userId,
-      familyId,
-      authAccountId,
-    });
+const me: Me = async (_req, res, next) => {
+  const { userId, familyId, authAccountId } = res.locals.user;
 
-    return;
-  },
+  sendSuccessResponse(res, HTTP_STATUS.OK, "User is logged in!", {
+    userId,
+    familyId,
+    authAccountId,
+  });
 
-  async register(_req, res) {
-    const { username, email, password } = res.locals.validatedData.body;
+  return;
+};
 
-    const { accessToken, refreshToken, user, authAccount } = await authService.register({
-      email,
-      username,
-      password,
-    });
+const register: Register = async (_req, res) => {
+  const { username, email, password } = res.locals.validatedData.body;
 
-    setRefreshTokenCookie(res, refreshToken);
+  const { accessToken, refreshToken, user, authAccount } = await authService.register({
+    email,
+    username,
+    password,
+  });
 
-    sendSuccessResponse(res, HTTP_STATUS.CREATED, "user successfully created!", {
-      accessToken,
-      user,
-      authAccount,
-    });
+  setRefreshTokenCookie(res, refreshToken);
 
-    return;
-  },
+  sendSuccessResponse(res, HTTP_STATUS.CREATED, "user successfully created!", {
+    accessToken,
+    user,
+    authAccount,
+  });
 
-  async login(_req, res) {
-    const { email, password } = res.locals.validatedData.body;
+  return;
+};
 
-    const { user, authAccount, accessToken, refreshToken } = await authService.login({
-      email,
-      password,
-    });
+const login: Login = async (_req, res) => {
+  const { email, password } = res.locals.validatedData.body;
 
-    setRefreshTokenCookie(res, refreshToken);
+  const { user, authAccount, accessToken, refreshToken } = await authService.login({
+    email,
+    password,
+  });
 
-    sendSuccessResponse(res, HTTP_STATUS.OK, "user successfully login!", {
-      accessToken,
-      user,
-      authAccount,
-    });
+  setRefreshTokenCookie(res, refreshToken);
 
-    return;
-  },
+  sendSuccessResponse(res, HTTP_STATUS.OK, "user successfully login!", {
+    accessToken,
+    user,
+    authAccount,
+  });
 
-  async refresh(req, res) {
-    const cookieRt = req.cookies.refreshToken;
+  return;
+};
 
-    const { accessToken, rawRefreshToken } = await authService.refresh({
-      cookieRt,
-    });
+const refresh: Refresh = async (req, res) => {
+  const cookieRt = req.cookies.refreshToken;
 
-    setRefreshTokenCookie(res, rawRefreshToken);
+  const { accessToken, rawRefreshToken } = await authService.refresh({
+    cookieRt,
+  });
 
-    sendSuccessResponse(res, HTTP_STATUS.OK, "New access token is successfully created!", { accessToken });
+  setRefreshTokenCookie(res, rawRefreshToken);
 
-    return;
-  },
+  sendSuccessResponse(res, HTTP_STATUS.OK, "New access token is successfully created!", { accessToken });
 
-  async logout(req, res) {
-    const cookieRt = req.cookies.refreshToken;
+  return;
+};
 
-    const { isAlreadyLoggedOut } = await authService.logout({ cookieRt });
+const logout: Logout = async (req, res) => {
+  const cookieRt = req.cookies.refreshToken;
 
-    clearRefreshTokenCookie(res);
+  const { isAlreadyLoggedOut } = await authService.logout({ cookieRt });
 
-    sendSuccessResponse(res, HTTP_STATUS.OK, isAlreadyLoggedOut ? "User already logged out!" : "User successfully logged out!");
-  },
+  clearRefreshTokenCookie(res);
 
-  async googleCallback(req, res) {
-    const userGoogle = req.user as Profile;
+  sendSuccessResponse(res, HTTP_STATUS.OK, isAlreadyLoggedOut ? "User already logged out!" : "User successfully logged out!");
+};
 
-    const { user, authAccount, accessToken, refreshToken } = await authService.loginGoogle({
-      userGoogle,
-    });
+const googleCallback: GoogleCallback = async (req, res) => {
+  const userGoogle = req.user as Profile;
 
-    setRefreshTokenCookie(res, refreshToken);
+  const { user, authAccount, accessToken, refreshToken } = await authService.loginGoogle({
+    userGoogle,
+  });
 
-    sendSuccessResponse(res, HTTP_STATUS.OK, "user successfully login!", {
-      accessToken,
-      user,
-      authAccount,
-    });
-  },
+  setRefreshTokenCookie(res, refreshToken);
 
-  async requestEmailVerification(req, res) {
-    const { authAccountId } = res.locals.user;
+  sendSuccessResponse(res, HTTP_STATUS.OK, "user successfully login!", {
+    accessToken,
+    user,
+    authAccount,
+  });
+};
 
-    await authService.requestEmailVerification({
-      authAccountId,
-    });
+const requestEmailVerification: RequestEmailVerification = async (req, res) => {
+  const { authAccountId } = res.locals.user;
 
-    sendSuccessResponse(res, HTTP_STATUS.OK, "Verification code has been sent to your email address.");
+  await authService.requestEmailVerification({
+    authAccountId,
+  });
 
-    return;
-  },
+  sendSuccessResponse(res, HTTP_STATUS.OK, "Verification code has been sent to your email address.");
 
-  async verifyEmail(req, res) {
-    const { token } = res.locals.validatedData.body;
+  return;
+};
 
-    await authService.verifyEmail({ token });
+const verifyEmail: VerifyEmail = async (req, res) => {
+  const { token } = res.locals.validatedData.body;
 
-    sendSuccessResponse(res, HTTP_STATUS.OK, " Your account is successfully verified!");
-  },
+  await authService.verifyEmail({ token });
 
-  async changePassword(req, res) {
-    const { authAccountId, familyId } = res.locals.user;
-    const { currentPassword, newPassword, newPasswordConfirm } = res.locals.validatedData.body;
+  sendSuccessResponse(res, HTTP_STATUS.OK, " Your account is successfully verified!");
+};
 
-    await authService.changePassword({
-      currentPassword,
-      newPassword,
-      newPasswordConfirm,
-      authAccountId,
-      familyId,
-    });
+const changePassword: ChangePassword = async (req, res) => {
+  const { authAccountId, familyId } = res.locals.user;
+  const { currentPassword, newPassword, newPasswordConfirm } = res.locals.validatedData.body;
 
-    sendSuccessResponse(res, HTTP_STATUS.OK, "Password changed successfully!");
-  },
+  await authService.changePassword({
+    currentPassword,
+    newPassword,
+    newPasswordConfirm,
+    authAccountId,
+    familyId,
+  });
 
-  async forgotPassword(req, res) {
-    const { email } = res.locals.validatedData.body;
+  sendSuccessResponse(res, HTTP_STATUS.OK, "Password changed successfully!");
+};
 
-    await authService.forgotPassword({ email });
+const forgotPassword: ForgotPassword = async (req, res) => {
+  const { email } = res.locals.validatedData.body;
 
-    sendSuccessResponse(res, HTTP_STATUS.OK, "If this email is registered, you will receive a reset link.");
-  },
+  await authService.forgotPassword({ email });
 
-  async resetPassword(req, res) {
-    const { token, newPassword, newPasswordConfirm } = res.locals.validatedData.body;
+  sendSuccessResponse(res, HTTP_STATUS.OK, "If this email is registered, you will receive a reset link.");
+};
 
-    await authService.resetPassword({ token, newPassword, newPasswordConfirm });
+const resetPassword: ResetPassword = async (req, res) => {
+  const { token, newPassword, newPasswordConfirm } = res.locals.validatedData.body;
 
-    sendSuccessResponse(res, HTTP_STATUS.OK, "Password reset successfully.");
-  },
+  await authService.resetPassword({ token, newPassword, newPasswordConfirm });
+
+  sendSuccessResponse(res, HTTP_STATUS.OK, "Password reset successfully.");
+};
+
+export const authController = {
+  me,
+  register,
+  login,
+  refresh,
+  logout,
+  googleCallback,
+  requestEmailVerification,
+  verifyEmail,
+  changePassword,
+  forgotPassword,
+  resetPassword,
 };

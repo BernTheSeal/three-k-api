@@ -1,54 +1,53 @@
-import { AuthTokenRepo } from "@/shared/types/repositories/authToken.repo.type";
 import { getExecutor, getLock, toCamelCase } from "@/shared/lib/db.lib";
+import { Create, FindByToken, Revoke, MarkAsUsed } from "@/shared/types/repositories/authToken.repo.type";
 import { AuthTokenEntity } from "@/shared/types/entities";
 
-export const authTokenRepo: AuthTokenRepo = {
-  async create(data, tx) {
-    const { authAccountId, tokenHash, tokenType, expiresAt } = data;
+const create: Create = async (params, tx) => {
+  const { authAccountId, tokenHash, tokenType, expiresAt } = params;
 
-    const executor = getExecutor(tx?.client);
+  const executor = getExecutor(tx?.client);
 
-    const response = await executor(
-      `
+  const response = await executor(
+    `
         INSERT INTO auth_tokens (auth_account_id, token_hash , token_type, expires_at)
         VALUES($1, $2, $3, $4)  
         RETURNING *
       `,
-      [authAccountId, tokenHash, tokenType, expiresAt],
-    );
+    [authAccountId, tokenHash, tokenType, expiresAt],
+  );
 
-    const res = toCamelCase<AuthTokenEntity>(response.rows);
+  const res = toCamelCase<AuthTokenEntity>(response.rows);
 
-    return res[0]!;
-  },
+  return res[0]!;
+};
 
-  async findByToken(data, tx) {
-    const { tokenHash } = data;
+const findByToken: FindByToken = async (params, tx) => {
+  const { tokenHash } = params;
 
-    const executor = getExecutor(tx?.client);
+  const executor = getExecutor(tx?.client);
 
-    const lock = getLock(tx?.lock);
+  const lock = getLock(tx?.lock);
 
-    const response = await executor(
-      ` 
+  const response = await executor(
+    ` 
       SELECT * FROM auth_tokens
       WHERE token_hash = $1
       ${lock} `,
-      [tokenHash],
-    );
+    [tokenHash],
+  );
 
-    const res = toCamelCase<AuthTokenEntity>(response.rows);
+  const res = toCamelCase<AuthTokenEntity>(response.rows);
 
-    return res[0];
-  },
+  return res[0];
+};
 
-  async revoke(data, tx) {
-    const { authAccountId, tokenType } = data;
+const revoke: Revoke = async (params, tx) => {
+  const { authAccountId, tokenType } = params;
 
-    const executor = getExecutor(tx?.client);
+  const executor = getExecutor(tx?.client);
 
-    await executor(
-      `
+  await executor(
+    `
         UPDATE auth_tokens
           SET revoked_at = NOW()
           WHERE 
@@ -57,17 +56,17 @@ export const authTokenRepo: AuthTokenRepo = {
           used_at IS NULL AND 
           revoked_at IS NULL
       `,
-      [authAccountId, tokenType],
-    );
-  },
+    [authAccountId, tokenType],
+  );
+};
 
-  async markAsUsed(data, tx) {
-    const { authTokenId } = data;
+const markAsUsed: MarkAsUsed = async (params, tx) => {
+  const { authTokenId } = params;
 
-    const executor = getExecutor(tx?.client);
+  const executor = getExecutor(tx?.client);
 
-    await executor(
-      `
+  await executor(
+    `
         UPDATE auth_tokens 
         SET used_at = NOW()
         WHERE 
@@ -76,7 +75,13 @@ export const authTokenRepo: AuthTokenRepo = {
         revoked_at IS NULL
 
     `,
-      [authTokenId],
-    );
-  },
+    [authTokenId],
+  );
+};
+
+export const authTokenRepo = {
+  create,
+  findByToken,
+  revoke,
+  markAsUsed,
 };

@@ -1,99 +1,106 @@
-import { RefreshTokenRepo } from "@/shared/types/repositories/refreshToken.repo.type";
 import { getExecutor, getLock, toCamelCase } from "@/shared/lib/db.lib";
+import {
+  Create,
+  FindByTokenHash,
+  FindByTokenHashWithAuthAccount,
+  RevokeByTokenHash,
+  RevokeByFamilyId,
+  RevokeByAuthAccountId,
+  RevokeByAuthAccountIdExceptFamilyId,
+} from "@/shared/types/repositories/refreshToken.repo.type";
 import { AuthAccountEntity, RefreshTokenEntity } from "@/shared/types/entities";
 
-export const refreshTokenRepo: RefreshTokenRepo = {
-  async create(data, tx) {
-    const { tokenHash, authAccountId, familyId, expiresAt } = data;
+const create: Create = async (params, tx) => {
+  const { tokenHash, authAccountId, familyId, expiresAt } = params;
 
-    const executor = getExecutor(tx?.client);
+  const executor = getExecutor(tx?.client);
 
-    const response = await executor(
-      `INSERT INTO refresh_tokens (token_hash, auth_account_id, family_id, expires_at)
+  const response = await executor(
+    `INSERT INTO refresh_tokens (token_hash, auth_account_id, family_id, expires_at)
         VALUES($1, $2, $3, $4)
         `,
-      [tokenHash, authAccountId, familyId, expiresAt],
-    );
+    [tokenHash, authAccountId, familyId, expiresAt],
+  );
 
-    const res = toCamelCase<RefreshTokenEntity>(response.rows);
+  const res = toCamelCase<RefreshTokenEntity>(response.rows);
 
-    return res[0]!;
-  },
+  return res[0]!;
+};
 
-  async findByTokenHash(data, tx) {
-    const { tokenHash } = data;
+const findByTokenHash: FindByTokenHash = async (params, tx) => {
+  const { tokenHash } = params;
 
-    const executor = getExecutor(tx?.client);
-    const lock = getLock(tx?.lock);
+  const executor = getExecutor(tx?.client);
+  const lock = getLock(tx?.lock);
 
-    const response = await executor(
-      `
+  const response = await executor(
+    `
       SELECT * FROM refresh_tokens
       WHERE token_hash = $1
       ${lock}
     `,
-      [tokenHash],
-    );
+    [tokenHash],
+  );
 
-    const res = toCamelCase<RefreshTokenEntity>(response.rows);
+  const res = toCamelCase<RefreshTokenEntity>(response.rows);
 
-    return res[0];
-  },
+  return res[0];
+};
 
-  async findByTokenHashWithAuthAccount(data, tx) {
-    const { tokenHash } = data;
+const findByTokenHashWithAuthAccount: FindByTokenHashWithAuthAccount = async (params, tx) => {
+  const { tokenHash } = params;
 
-    const executor = getExecutor(tx?.client);
-    const lock = getLock(tx?.lock);
+  const executor = getExecutor(tx?.client);
+  const lock = getLock(tx?.lock);
 
-    const response = await executor(
-      `
+  const response = await executor(
+    `
       SELECT * FROM refresh_tokens rt
       JOIN auth_accounts aa ON rt.auth_account_id = aa.auth_account_id
       WHERE token_hash = $1
       ${lock}
     `,
-      [tokenHash],
-    );
+    [tokenHash],
+  );
 
-    const res = toCamelCase<RefreshTokenEntity & AuthAccountEntity>(response.rows);
+  const res = toCamelCase<RefreshTokenEntity & AuthAccountEntity>(response.rows);
 
-    return res[0];
-  },
+  return res[0];
+};
 
-  async revokeByTokenHash(data, tx) {
-    const { tokenHash, revokedReason } = data;
+const revokeByTokenHash: RevokeByTokenHash = async (params, tx) => {
+  const { tokenHash, revokedReason } = params;
 
-    const executor = getExecutor(tx?.client);
+  const executor = getExecutor(tx?.client);
 
-    await executor(
-      `UPDATE refresh_tokens
+  await executor(
+    `UPDATE refresh_tokens
        SET is_revoked = true, revoked_reason = $1, revoked_at = NOW()
        WHERE token_hash = $2`,
-      [revokedReason, tokenHash],
-    );
-  },
+    [revokedReason, tokenHash],
+  );
+};
 
-  async revokeByFamilyId(data, tx) {
-    const { familyId, revokedReason } = data;
+const revokeByFamilyId: RevokeByFamilyId = async (params, tx) => {
+  const { familyId, revokedReason } = params;
 
-    const executor = getExecutor(tx?.client);
+  const executor = getExecutor(tx?.client);
 
-    await executor(
-      `UPDATE refresh_tokens
+  await executor(
+    `UPDATE refresh_tokens
        SET is_revoked = true, revoked_reason = $1, revoked_at = NOW()
        WHERE family_id = $2 AND is_revoked = false`,
-      [revokedReason, familyId],
-    );
-  },
+    [revokedReason, familyId],
+  );
+};
 
-  async revokeByAuthAccountId(data, tx) {
-    const { authAccountId, revokedReason } = data;
+const revokeByAuthAccountId: RevokeByAuthAccountId = async (params, tx) => {
+  const { authAccountId, revokedReason } = params;
 
-    const executor = getExecutor(tx?.client);
+  const executor = getExecutor(tx?.client);
 
-    await executor(
-      `
+  await executor(
+    `
       UPDATE refresh_tokens
       SET 
         is_revoked = true, 
@@ -101,23 +108,32 @@ export const refreshTokenRepo: RefreshTokenRepo = {
         revoked_at = NOW()
       WHERE auth_account_id = $2 AND is_revoked = false
       `,
-      [revokedReason, authAccountId],
-    );
-  },
+    [revokedReason, authAccountId],
+  );
+};
 
-  async revokeByAuthAccountIdExceptFamilyId(data, tx) {
-    const { familyId, revokedReason, authAccountId } = data;
+const revokeByAuthAccountIdExceptFamilyId: RevokeByAuthAccountIdExceptFamilyId = async (params, tx) => {
+  const { familyId, revokedReason, authAccountId } = params;
 
-    const executor = getExecutor(tx?.client);
+  const executor = getExecutor(tx?.client);
 
-    await executor(
-      `UPDATE refresh_tokens
+  await executor(
+    `UPDATE refresh_tokens
      SET is_revoked = true, revoked_reason = $2, revoked_at = NOW()
      WHERE auth_account_id = $1 AND 
      is_revoked = false AND
      family_id != $3
      `,
-      [authAccountId, revokedReason, familyId],
-    );
-  },
+    [authAccountId, revokedReason, familyId],
+  );
+};
+
+export const refreshTokenRepo = {
+  create,
+  findByTokenHash,
+  findByTokenHashWithAuthAccount,
+  revokeByTokenHash,
+  revokeByFamilyId,
+  revokeByAuthAccountId,
+  revokeByAuthAccountIdExceptFamilyId,
 };
