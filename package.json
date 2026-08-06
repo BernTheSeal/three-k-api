@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "ts-node-dev -r tsconfig-paths/register --respawn --transpile-only src/index.ts",
+    "build": "tsc",
     "type-check": "tsc --noEmit --watch",
     "db:migrate": "npx tsx --env-file=.env scripts/migration/migrate.ts",
     "db:seed": "npx tsx --env-file=.env scripts/seed/seed.ts",

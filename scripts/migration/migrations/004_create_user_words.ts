@@ -14,9 +14,9 @@ const migration = {
         CREATE TABLE IF NOT EXISTS user_words (
             user_id INTEGER,
             word_id INTEGER,
-            status status_enum DEFAULT 'learning',
+            status status_enum NOT NULL DEFAULT 'learning',
             note TEXT,
-            is_favorite BOOLEAN DEFAULT FALSE,
+            is_favorite BOOLEAN NOT NULL DEFAULT FALSE,
             created_at TIMESTAMP  DEFAULT NOW(),
             updated_at TIMESTAMP DEFAULT NOW(),
             
