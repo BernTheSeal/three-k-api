@@ -94,7 +94,6 @@ const findByWord: FindByWord = async (input) => {
 const findByWordWithSenses: FindByWordWithSenses = async (input) => {
   const { userId, word } = input;
 
-  //! surada bir this vardi>> ama simdi direkt ustteki function kullandim sikinti olur mu?
   const wordResponse = await findByWord({ word, userId });
 
   if (!wordResponse) {
