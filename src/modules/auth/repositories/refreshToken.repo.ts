@@ -1,4 +1,4 @@
-import { getExecutor, getLock, toCamelCase } from "@/shared/lib/db.lib";
+import { getExecutor, getLock, toCamelCase } from "@/shared/lib/db/db.provider";
 import {
   Create,
   FindByTokenHash,

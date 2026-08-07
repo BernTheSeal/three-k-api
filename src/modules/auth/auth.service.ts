@@ -1,4 +1,4 @@
-import { withTransaction } from "@/shared/lib/db.lib";
+import { withTransaction } from "@/shared/lib/db/db.provider";
 
 import { authAccountRepo, refreshTokenRepo, authTokenRepo } from "./repositories";
 

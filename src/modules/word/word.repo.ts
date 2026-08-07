@@ -1,4 +1,4 @@
-import { getExecutor, getLock, toCamelCase } from "@/shared/lib/db.lib";
+import { getExecutor, getLock, toCamelCase } from "@/shared/lib/db/db.provider";
 import { List, FindByWordResult, FindByWord, ListResult } from "@/shared/types/repositories/word.repo.type";
 
 const list: List = async (params, tx) => {

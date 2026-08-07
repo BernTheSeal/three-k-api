@@ -1,4 +1,4 @@
-import { getExecutor, toCamelCase } from "@/shared/lib/db.lib";
+import { getExecutor, toCamelCase } from "@/shared/lib/db/db.provider";
 
 import { Create, Remove, Update } from "@/shared/types/repositories/userWord.repo.type";
 

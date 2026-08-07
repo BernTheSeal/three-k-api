@@ -1,14 +1,24 @@
-import { poolConfig } from "../config/db.config";
+import { pool } from "./db.client";
 import { QueryResult, QueryResultRow, PoolClient, Pool } from "pg";
 
-const pool = new Pool(poolConfig);
-
 export const query = async (text: string, params?: any[]): Promise<QueryResult<QueryResultRow>> => {
-  return await pool.query(text, params);
+  try {
+    return await pool.query(text, params);
+  } catch (error) {
+    console.error("QUERY ERROR");
+    console.error(error);
+    throw error;
+  }
 };
 
 const clientQuery = async (client: PoolClient, text: string, params?: any[]): Promise<QueryResult<QueryResultRow>> => {
-  return await client.query(text, params);
+  try {
+    return await client.query(text, params);
+  } catch (error) {
+    console.error("CLIENT QUERY ERROR");
+    console.error(error);
+    throw error;
+  }
 };
 
 export const getExecutor = (client?: PoolClient) => {
