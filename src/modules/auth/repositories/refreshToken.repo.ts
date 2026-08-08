@@ -1,4 +1,5 @@
-import { getExecutor, getLock, toCamelCase } from "@/shared/lib/db/db.provider";
+import { getExecutor, getLock } from "@/shared/lib/db/db.provider";
+
 import {
   Create,
   FindByTokenHash,
@@ -13,7 +14,7 @@ import { AuthAccountEntity, RefreshTokenEntity } from "@/shared/types/entities";
 const create: Create = async (params, tx) => {
   const { tokenHash, authAccountId, familyId, expiresAt } = params;
 
-  const executor = getExecutor(tx?.client);
+  const executor = getExecutor<RefreshTokenEntity>(tx?.client);
 
   const response = await executor(
     `INSERT INTO refresh_tokens (token_hash, auth_account_id, family_id, expires_at)
@@ -22,15 +23,13 @@ const create: Create = async (params, tx) => {
     [tokenHash, authAccountId, familyId, expiresAt],
   );
 
-  const res = toCamelCase<RefreshTokenEntity>(response.rows);
-
-  return res[0]!;
+  return response.rows[0]!;
 };
 
 const findByTokenHash: FindByTokenHash = async (params, tx) => {
   const { tokenHash } = params;
 
-  const executor = getExecutor(tx?.client);
+  const executor = getExecutor<RefreshTokenEntity>(tx?.client);
   const lock = getLock(tx?.lock);
 
   const response = await executor(
@@ -42,15 +41,14 @@ const findByTokenHash: FindByTokenHash = async (params, tx) => {
     [tokenHash],
   );
 
-  const res = toCamelCase<RefreshTokenEntity>(response.rows);
-
-  return res[0];
+  return response.rows[0];
 };
 
 const findByTokenHashWithAuthAccount: FindByTokenHashWithAuthAccount = async (params, tx) => {
   const { tokenHash } = params;
 
-  const executor = getExecutor(tx?.client);
+  const executor = getExecutor<RefreshTokenEntity & AuthAccountEntity>(tx?.client);
+
   const lock = getLock(tx?.lock);
 
   const response = await executor(
@@ -63,9 +61,7 @@ const findByTokenHashWithAuthAccount: FindByTokenHashWithAuthAccount = async (pa
     [tokenHash],
   );
 
-  const res = toCamelCase<RefreshTokenEntity & AuthAccountEntity>(response.rows);
-
-  return res[0];
+  return response.rows[0];
 };
 
 const revokeByTokenHash: RevokeByTokenHash = async (params, tx) => {

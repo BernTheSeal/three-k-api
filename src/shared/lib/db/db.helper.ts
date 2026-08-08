@@ -31,3 +31,30 @@ export const errorMapper = (error: DatabaseError): ConflictError | InternalServe
       return new InternalServerError(`Unmapped database constraint => ${error.constraint}`, "UNMAPPED_DB_CONSTRAINT");
   }
 };
+
+export const toCamelCase = <T extends Record<string, unknown>>(rows: Record<string, unknown>[]): T[] => {
+  const first = rows[0];
+
+  if (!first) {
+    return rows as T[];
+  }
+
+  const rowKeys = Object.keys(first);
+  const keysMap = new Map<string, string>();
+
+  for (const key of rowKeys) {
+    const camelCase = key.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
+    keysMap.set(key, camelCase);
+  }
+
+  return rows.map((v) => {
+    const newObj: Record<string, unknown> = {};
+
+    for (const key of rowKeys) {
+      const camelCaseKey = keysMap.get(key) ?? key;
+      newObj[camelCaseKey] = v[key];
+    }
+
+    return newObj;
+  }) as T[];
+};

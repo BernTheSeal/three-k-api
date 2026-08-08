@@ -1,4 +1,4 @@
-import { getExecutor, toCamelCase } from "@/shared/lib/db/db.provider";
+import { getExecutor } from "@/shared/lib/db/db.provider";
 
 import { Create, Remove, Update } from "@/shared/types/repositories/userWord.repo.type";
 
@@ -7,7 +7,7 @@ import { UserWordEntity } from "@/shared/types/entities";
 const create: Create = async (params, tx) => {
   const { userId, wordId, status, note, isFavorite } = params;
 
-  const executor = getExecutor(tx?.client);
+  const executor = getExecutor<UserWordEntity>(tx?.client);
 
   const response = await executor(
     `
@@ -18,15 +18,13 @@ const create: Create = async (params, tx) => {
     [userId, wordId, status, isFavorite, note],
   );
 
-  const res = toCamelCase<UserWordEntity>(response.rows);
-
-  return res[0]!;
+  return response.rows[0]!;
 };
 
 const remove: Remove = async (params, tx) => {
   const { wordId, userId } = params;
 
-  const executor = getExecutor(tx?.client);
+  const executor = getExecutor<Pick<UserWordEntity, "wordId">>(tx?.client);
 
   const response = await executor(
     `
@@ -37,17 +35,14 @@ const remove: Remove = async (params, tx) => {
     [userId, wordId],
   );
 
-  const res = toCamelCase<Pick<UserWordEntity, "wordId">>(response.rows);
-
-  return res[0];
+  return response.rows[0];
 };
 
 const update: Update = async (params, tx) => {
   const { userId, wordId, ...conditions } = params;
 
-  const executor = getExecutor(tx?.client);
-
   const queryConditions: string[] = [];
+
   const queryParams: any[] = [userId, wordId];
 
   const conditionFields = Object.keys(conditions) as (keyof typeof conditions)[];
@@ -62,6 +57,8 @@ const update: Update = async (params, tx) => {
 
   const conditionsForSql = queryConditions.join(", ");
 
+  const executor = getExecutor<UserWordEntity>(tx?.client);
+
   const response = await executor(
     `
     UPDATE user_words
@@ -74,9 +71,7 @@ const update: Update = async (params, tx) => {
     queryParams,
   );
 
-  const res = toCamelCase<UserWordEntity>(response.rows);
-
-  return res[0];
+  return response.rows[0];
 };
 
 export const userWordRepo = {

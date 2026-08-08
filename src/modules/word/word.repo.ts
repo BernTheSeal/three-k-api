@@ -1,11 +1,9 @@
-import { getExecutor, getLock, toCamelCase } from "@/shared/lib/db/db.provider";
+import { getExecutor, getLock } from "@/shared/lib/db/db.provider";
 import { List, FindByWordResult, FindByWord, ListResult } from "@/shared/types/repositories/word.repo.type";
 
 const list: List = async (params, tx) => {
   const { offset, limit } = params.paginate;
   const { search, pos, level } = params.filters;
-
-  const executor = getExecutor(tx?.client);
 
   const conditions: string[] = [];
   const queryParams: unknown[] = [offset, limit];
@@ -26,6 +24,8 @@ const list: List = async (params, tx) => {
   }
 
   const where = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
+
+  const executor = getExecutor<ListResult>(tx?.client);
 
   const response = await executor(
     `
@@ -61,13 +61,14 @@ const list: List = async (params, tx) => {
     queryParams,
   );
 
-  return toCamelCase<ListResult>(response.rows);
+  return response.rows;
 };
 
 const findByWord: FindByWord = async (params, tx) => {
   const { word } = params;
 
-  const executor = getExecutor(tx?.client);
+  const executor = getExecutor<FindByWordResult>(tx?.client);
+
   const lock = getLock(tx?.lock);
 
   const response = await executor(
@@ -89,7 +90,7 @@ const findByWord: FindByWord = async (params, tx) => {
     [word],
   );
 
-  return toCamelCase<FindByWordResult>(response.rows);
+  return response.rows;
 };
 
 export const wordRepo = {

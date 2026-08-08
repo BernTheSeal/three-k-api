@@ -1,4 +1,4 @@
-import { getExecutor, getLock, toCamelCase } from "@/shared/lib/db/db.provider";
+import { getExecutor, getLock } from "@/shared/lib/db/db.provider";
 import { AuthAccountEntity } from "@/shared/types/entities";
 
 import {
@@ -13,7 +13,7 @@ import {
 const create: Create = async (params, tx) => {
   const { userId, provider, providerAccountId, email, passwordHash, isVerified } = params;
 
-  const executor = getExecutor(tx?.client);
+  const executor = getExecutor<AuthAccountEntity>(tx?.client);
 
   const response = await executor(
     `
@@ -24,15 +24,14 @@ const create: Create = async (params, tx) => {
     [userId, provider, providerAccountId, email, passwordHash, isVerified],
   );
 
-  const res = toCamelCase<AuthAccountEntity>(response.rows);
-
-  return res[0]!;
+  return response.rows[0]!;
 };
 
 const findById: FindById = async (params, tx) => {
   const { authAccountId, provider } = params;
 
-  const executor = getExecutor(tx?.client);
+  const executor = getExecutor<AuthAccountEntity>(tx?.client);
+
   const lock = getLock(tx?.lock);
 
   const response = await executor(
@@ -44,14 +43,14 @@ const findById: FindById = async (params, tx) => {
     [authAccountId, provider],
   );
 
-  const res = toCamelCase<AuthAccountEntity>(response.rows);
-  return res[0];
+  return response.rows[0];
 };
 
 const findByProviderAccountId: FindByProviderAccountId = async (params, tx) => {
   const { providerAccountId, provider } = params;
 
-  const executor = getExecutor(tx?.client);
+  const executor = getExecutor<AuthAccountEntity>(tx?.client);
+
   const lock = getLock(tx?.lock);
 
   const response = await executor(
@@ -63,15 +62,14 @@ const findByProviderAccountId: FindByProviderAccountId = async (params, tx) => {
     [provider, providerAccountId],
   );
 
-  const res = toCamelCase<AuthAccountEntity>(response.rows);
-
-  return res[0];
+  return response.rows[0];
 };
 
 const findByEmail: FindByEmail = async (params, tx) => {
   const { email, provider } = params;
 
-  const executor = getExecutor(tx?.client);
+  const executor = getExecutor<AuthAccountEntity>(tx?.client);
+
   const lock = getLock(tx?.lock);
 
   const response = await executor(
@@ -83,9 +81,7 @@ const findByEmail: FindByEmail = async (params, tx) => {
     [email, provider],
   );
 
-  const res = toCamelCase<AuthAccountEntity>(response.rows);
-
-  return res[0];
+  return response.rows[0];
 };
 
 const verifyById: VerifyById = async (params, tx) => {

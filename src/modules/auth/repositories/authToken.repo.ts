@@ -1,11 +1,11 @@
-import { getExecutor, getLock, toCamelCase } from "@/shared/lib/db/db.provider";
+import { getExecutor, getLock } from "@/shared/lib/db/db.provider";
 import { Create, FindByToken, Revoke, MarkAsUsed } from "@/shared/types/repositories/authToken.repo.type";
 import { AuthTokenEntity } from "@/shared/types/entities";
 
 const create: Create = async (params, tx) => {
   const { authAccountId, tokenHash, tokenType, expiresAt } = params;
 
-  const executor = getExecutor(tx?.client);
+  const executor = getExecutor<AuthTokenEntity>(tx?.client);
 
   const response = await executor(
     `
@@ -16,15 +16,13 @@ const create: Create = async (params, tx) => {
     [authAccountId, tokenHash, tokenType, expiresAt],
   );
 
-  const res = toCamelCase<AuthTokenEntity>(response.rows);
-
-  return res[0]!;
+  return response.rows[0]!;
 };
 
 const findByToken: FindByToken = async (params, tx) => {
   const { tokenHash } = params;
 
-  const executor = getExecutor(tx?.client);
+  const executor = getExecutor<AuthTokenEntity>(tx?.client);
 
   const lock = getLock(tx?.lock);
 
@@ -36,9 +34,7 @@ const findByToken: FindByToken = async (params, tx) => {
     [tokenHash],
   );
 
-  const res = toCamelCase<AuthTokenEntity>(response.rows);
-
-  return res[0];
+  return response.rows[0];
 };
 
 const revoke: Revoke = async (params, tx) => {
