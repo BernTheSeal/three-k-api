@@ -1,12 +1,14 @@
 import { pool } from "./db.client";
-import { QueryResult, QueryResultRow, PoolClient, Pool } from "pg";
+import { QueryResult, QueryResultRow, PoolClient, Pool, DatabaseError } from "pg";
+import { errorMapper } from "./db.helper";
 
 export const query = async (text: string, params?: any[]): Promise<QueryResult<QueryResultRow>> => {
   try {
     return await pool.query(text, params);
   } catch (error) {
-    console.error("QUERY ERROR");
-    console.error(error);
+    if (error instanceof DatabaseError) {
+      throw errorMapper(error);
+    }
     throw error;
   }
 };
@@ -15,8 +17,9 @@ const clientQuery = async (client: PoolClient, text: string, params?: any[]): Pr
   try {
     return await client.query(text, params);
   } catch (error) {
-    console.error("CLIENT QUERY ERROR");
-    console.error(error);
+    if (error instanceof DatabaseError) {
+      throw errorMapper(error);
+    }
     throw error;
   }
 };
