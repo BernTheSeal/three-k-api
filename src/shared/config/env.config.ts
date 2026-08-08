@@ -20,7 +20,7 @@ const requiredEnvs = [
 
 requiredEnvs.forEach((env) => {
   if (!process.env[env]) {
-    throw new InternalServerError(`Missing environment variable: ${env}`, "MISSING_ENV_VARIABLE");
+    throw new InternalServerError({ message: `Missing environment variable: ${env}`, code: "MISSING_ENV_VARIABLE" });
   }
 });
 

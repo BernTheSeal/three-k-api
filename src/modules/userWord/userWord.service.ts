@@ -10,7 +10,7 @@ const remove: Remove = async (input) => {
   const removedUserWord = await userWordRepo.remove(input);
 
   if (!removedUserWord) {
-    throw new NotFoundError("This word is not in your saved list.", "USER_WORD_NOT_FOUND");
+    throw new NotFoundError({ message: "This word is not in your saved list.", code: "USER_WORD_NOT_FOUND" });
   }
 
   return removedUserWord;
@@ -20,7 +20,7 @@ const update: Update = async (input) => {
   const updatedUserWord = await userWordRepo.update(input);
 
   if (!updatedUserWord) {
-    throw new NotFoundError("The word is not in your saved list.", "USER_WORD_NOT_FOUND");
+    throw new NotFoundError({ message: "The word is not in your saved list.", code: "USER_WORD_NOT_FOUND" });
   }
 
   return updatedUserWord;

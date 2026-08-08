@@ -94,13 +94,13 @@ const login: Login = async (input) => {
   });
 
   if (!authAccount || !authAccount.passwordHash) {
-    throw new UnauthorizedError("Email or password is not correct!", "EMAIL_OR_PASSWORD_NOT_CORRECT");
+    throw new UnauthorizedError({ message: "Email or password is not correct!", code: "EMAIL_OR_PASSWORD_NOT_CORRECT" });
   }
 
   const isMatch = await comparePassword(password, authAccount.passwordHash);
 
   if (!isMatch) {
-    throw new UnauthorizedError("Email or password is not correct!", "EMAIL_OR_PASSWORD_NOT_CORRECT");
+    throw new UnauthorizedError({ message: "Email or password is not correct!", code: "EMAIL_OR_PASSWORD_NOT_CORRECT" });
   }
 
   const rt = generateRefreshToken();
@@ -111,7 +111,7 @@ const login: Login = async (input) => {
   const user = await userRepo.findById({ userId: authAccount.userId });
 
   if (!user) {
-    throw new InternalServerError("Auth account exists but linked user not found", "USER_DATA_INCONSISTENT");
+    throw new InternalServerError({ message: "Auth account exists but linked user not found", code: "USER_DATA_INCONSISTENT" });
   }
 
   await refreshTokenRepo.create({
@@ -137,13 +137,13 @@ const loginGoogle: LoginGoogle = async (input) => {
   const { userGoogle } = input;
 
   if (!userGoogle) {
-    throw new UnauthorizedError("Google authentication failed!", "GOOGLE_AUTH_FAILED");
+    throw new UnauthorizedError({ message: "Google authentication failed!", code: "GOOGLE_AUTH_FAILED" });
   }
 
   const { email, sub } = userGoogle._json;
 
   if (!email) {
-    throw new UnauthorizedError("Google account does not have an email address!", "GOOGLE_NO_EMAIL");
+    throw new UnauthorizedError({ message: "Google account does not have an email address!", code: "GOOGLE_NO_EMAIL" });
   }
 
   const rt = generateRefreshToken();
@@ -162,7 +162,7 @@ const loginGoogle: LoginGoogle = async (input) => {
     });
 
     if (!user) {
-      throw new InternalServerError("Auth account exists but linked user not found", "USER_DATA_INCONSISTENT");
+      throw new InternalServerError({ message: "Auth account exists but linked user not found", code: "USER_DATA_INCONSISTENT" });
     }
 
     await refreshTokenRepo.create({
@@ -232,7 +232,7 @@ const refresh: Refresh = async (input) => {
   const { cookieRt } = input;
 
   if (!cookieRt) {
-    throw new UnauthorizedError("Refresh token is not found in cookie!", "REFRESH_TOKEN_NOT_FOUND_IN_COOKIE");
+    throw new UnauthorizedError({ message: "Refresh token is not found in cookie!", code: "REFRESH_TOKEN_NOT_FOUND_IN_COOKIE" });
   }
   const hashedCookieRt = hashAuthToken(cookieRt);
 
@@ -254,19 +254,22 @@ const refresh: Refresh = async (input) => {
       );
 
       if (!rt) {
-        throw new UnauthorizedError("Refresh token is not found in database!", "REFRESH_TOKEN_NOT_FOUND_IN_DB");
+        throw new UnauthorizedError({
+          message: "Refresh token is not found in database!",
+          code: "REFRESH_TOKEN_NOT_FOUND_IN_DB",
+        });
       }
 
       if (rt.isRevoked) {
         if (rt.revokedReason === "refresh") {
-          throw new RefreshTokenError(rt.familyId, "suspect");
+          throw new RefreshTokenError({ familyId: rt.familyId, reason: "suspect" });
         }
 
-        throw new UnauthorizedError("Refresh token has already been used!", "REFRESH_TOKEN_ALREADY_USED");
+        throw new UnauthorizedError({ message: "Refresh token has already been used!", code: "REFRESH_TOKEN_ALREADY_USED" });
       }
 
       if (new Date(rt.expiresAt) < new Date()) {
-        throw new RefreshTokenError(rt.familyId, "expired");
+        throw new RefreshTokenError({ familyId: rt.familyId, reason: "expired" });
       }
 
       await refreshTokenRepo.revokeByTokenHash(
@@ -301,18 +304,18 @@ const refresh: Refresh = async (input) => {
     if (error instanceof RefreshTokenError) {
       if (error.reason === "suspect") {
         await refreshTokenRepo.revokeByFamilyId({
-          familyId: error.family_id,
+          familyId: error.familyId,
           revokedReason: error.reason,
         });
 
-        throw new UnauthorizedError("Refresh token has already been used!", "REFRESH_TOKEN_ALREADY_USED");
+        throw new UnauthorizedError({ message: "Refresh token has already been used!", code: "REFRESH_TOKEN_ALREADY_USED" });
       } else if (error.reason === "expired") {
         await refreshTokenRepo.revokeByFamilyId({
-          familyId: error.family_id,
+          familyId: error.familyId,
           revokedReason: error.reason,
         });
 
-        throw new UnauthorizedError("Refresh token has expired!", "REFRESH_TOKEN_EXPIRED");
+        throw new UnauthorizedError({ message: "Refresh token has expired!", code: "REFRESH_TOKEN_EXPIRED" });
       }
     }
     throw error;
@@ -377,11 +380,11 @@ const requestEmailVerification: RequestEmailVerification = async (input) => {
     );
 
     if (!authAccount) {
-      throw new NotFoundError("Local account not found!", "LOCAL_ACCOUNT_NOT_FOUND");
+      throw new NotFoundError({ message: "Local account not found!", code: "LOCAL_ACCOUNT_NOT_FOUND" });
     }
 
     if (authAccount.isVerified) {
-      throw new BadRequestError("Account is already verified!", "ACCOUNT_ALREADY_VERRIFED");
+      throw new BadRequestError({ message: "Account is already verified!", code: "ACCOUNT_ALREADY_VERRIFED" });
     }
 
     await authTokenRepo.revoke(
@@ -431,7 +434,7 @@ const verifyEmail: VerifyEmail = async (input) => {
       authToken.tokenType !== "verification_email" ||
       authToken.expiresAt <= new Date()
     ) {
-      throw new BadRequestError("Invalid token!", "INVALID_TOKEN");
+      throw new BadRequestError({ message: "Invalid token!", code: "INVALID_TOKEN" });
     }
 
     await authTokenRepo.markAsUsed(
@@ -454,7 +457,7 @@ const changePassword: ChangePassword = async (input) => {
   const { currentPassword, newPassword, newPasswordConfirm, authAccountId, familyId } = input;
 
   if (newPassword !== newPasswordConfirm) {
-    throw new BadRequestError("New passwords do not match!", "PASSWORD_MISMATCH");
+    throw new BadRequestError({ message: "New passwords do not match!", code: "PASSWORD_MISMATCH" });
   }
 
   const newPasswordHashed = await hashPassword(newPassword);
@@ -469,13 +472,13 @@ const changePassword: ChangePassword = async (input) => {
     );
 
     if (!authAccount || authAccount.provider !== "local") {
-      throw new BadRequestError("No local account found.", "NO_LOCAL_ACCOUNT");
+      throw new BadRequestError({ message: "No local account found.", code: "NO_LOCAL_ACCOUNT" });
     }
 
     const isCurrentPasswordCorrect = await comparePassword(currentPassword, authAccount.passwordHash);
 
     if (!isCurrentPasswordCorrect) {
-      throw new BadRequestError("Current password is incorrect.", "INVALID_CURRENT_PASSWORD");
+      throw new BadRequestError({ message: "Current password is incorrect.", code: "INVALID_CURRENT_PASSWORD" });
     }
 
     await authAccountRepo.updatePassword(
@@ -552,7 +555,7 @@ const resetPassword: ResetPassword = async (input) => {
   const { token, newPassword, newPasswordConfirm } = input;
 
   if (newPassword !== newPasswordConfirm) {
-    throw new BadRequestError("New passwords do not match!", "PASSWORD_MISMATCH");
+    throw new BadRequestError({ message: "New passwords do not match!", code: "PASSWORD_MISMATCH" });
   }
 
   const hashedToken = hashAuthToken(token);
@@ -573,7 +576,7 @@ const resetPassword: ResetPassword = async (input) => {
       authToken.tokenType !== "password_reset" ||
       authToken.expiresAt <= new Date()
     ) {
-      throw new BadRequestError("Invalid token!", "INVALID_TOKEN");
+      throw new BadRequestError({ message: "Invalid token!", code: "INVALID_TOKEN" });
     }
 
     await authTokenRepo.markAsUsed(

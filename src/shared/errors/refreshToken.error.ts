@@ -1,10 +1,15 @@
-export class RefreshTokenError extends Error {
+type RefreshTokenErrorConst = {
+  familyId: string;
   reason: "suspect" | "expired";
-  family_id: string;
+};
 
-  constructor(family_id: string, reason: "suspect" | "expired") {
+export class RefreshTokenError extends Error {
+  public readonly reason: "suspect" | "expired";
+  public readonly familyId: string;
+
+  constructor({ familyId, reason }: RefreshTokenErrorConst) {
     super(`Refresh token error due to ${reason}`);
     this.reason = reason;
-    this.family_id = family_id;
+    this.familyId = familyId;
   }
 }

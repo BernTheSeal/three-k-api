@@ -8,7 +8,12 @@ const get = async (key: string): Promise<unknown> => {
 
     return value === null ? null : JSON.parse(value);
   } catch (error) {
-    throw new ExternalServiceError("Cache get failed!", HTTP_STATUS.BAD_GATEWAY, "cache", error);
+    throw new ExternalServiceError({
+      message: "Cache get failed!",
+      statusCode: HTTP_STATUS.BAD_GATEWAY,
+      service: "CACHE",
+      cause: error,
+    });
   }
 };
 
@@ -21,7 +26,12 @@ const set = async (key: string, value: unknown, ttlSeconds?: number): Promise<vo
       await redisClient.set(key, serialized);
     }
   } catch (error) {
-    throw new ExternalServiceError("Cache set failed!", HTTP_STATUS.BAD_GATEWAY, "cache", error);
+    throw new ExternalServiceError({
+      message: "Cache set failed!",
+      statusCode: HTTP_STATUS.BAD_GATEWAY,
+      service: "CACHE",
+      cause: error,
+    });
   }
 };
 
@@ -29,7 +39,12 @@ const del = async (key: string): Promise<void> => {
   try {
     await redisClient.del(key);
   } catch (error) {
-    throw new ExternalServiceError("Cache delete failed!", HTTP_STATUS.BAD_GATEWAY, "cache", error);
+    throw new ExternalServiceError({
+      message: "Cache delete failed!",
+      statusCode: HTTP_STATUS.BAD_GATEWAY,
+      service: "CACHE",
+      cause: error,
+    });
   }
 };
 

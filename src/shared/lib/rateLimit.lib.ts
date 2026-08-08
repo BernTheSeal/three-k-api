@@ -4,7 +4,8 @@ import { RateLimitError } from "../errors";
 import { RedisStore } from "rate-limit-redis";
 import { redisClient } from "./cache/cache.client";
 
-type Window = { m: number; h?: number; d?: number } | { m?: number; h: number; d?: number } | { m?: number; h?: number; d: number };
+type Window =
+  { m: number; h?: number; d?: number } | { m?: number; h: number; d?: number } | { m?: number; h?: number; d: number };
 
 type Params = {
   key: "auth" | "ip" | "email";
@@ -39,7 +40,7 @@ export const createRateLimiter = ({ key, window, limit, message, route }: Params
       }
     },
     handler: () => {
-      throw new RateLimitError(message || "too many request!", `TOO_MANY_REQUEST_${key.toUpperCase()}`);
+      throw new RateLimitError({ message: message || "too many request!", code: `TOO_MANY_REQUEST_${key.toUpperCase()}` });
     },
   });
 };

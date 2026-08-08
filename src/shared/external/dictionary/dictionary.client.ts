@@ -13,7 +13,8 @@ export const fetchDictionaryEntry = async (word: string): Promise<unknown> => {
       if (axios.isAxiosError(error)) {
         const status = error.response?.status;
 
-        const shouldRetry = status === undefined || status >= HTTP_STATUS.INTERNAL_SERVER_ERROR || status === HTTP_STATUS.TOO_MANY_REQUESTS;
+        const shouldRetry =
+          status === undefined || status >= HTTP_STATUS.INTERNAL_SERVER_ERROR || status === HTTP_STATUS.TOO_MANY_REQUESTS;
 
         if (shouldRetry && attempt < dictionaryConfig.maxAttempt) {
           await new Promise((resolve) => setTimeout(resolve, attempt * dictionaryConfig.retryDelayMs));
@@ -21,12 +22,17 @@ export const fetchDictionaryEntry = async (word: string): Promise<unknown> => {
         }
       }
 
-      throw new ExternalServiceError("Dictionary service failed!", HTTP_STATUS.BAD_GATEWAY, "dictionary", error);
+      throw new ExternalServiceError({
+        message: "Dictionary service failed!",
+        statusCode: HTTP_STATUS.BAD_GATEWAY,
+        service: "DICTIONARY",
+        cause: error,
+      });
     }
   }
 
-  throw new InternalServerError(
-    `fetchDictionaryEntry loop exited without returning (maxAttempt=${dictionaryConfig.maxAttempt})`,
-    "UNREACHABLE_LOOP_EXIT",
-  );
+  throw new InternalServerError({
+    message: `fetchDictionaryEntry loop exited without returning (maxAttempt=${dictionaryConfig.maxAttempt})`,
+    code: "UNREACHABLE_LOOP_EXIT",
+  });
 };

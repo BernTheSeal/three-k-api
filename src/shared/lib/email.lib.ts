@@ -25,14 +25,20 @@ export const sendMail = async (data: { subject: string; html: string }) => {
 
       const statusCode = err?.statusCode || err?.status;
 
-      const shouldRetry = !statusCode || statusCode >= HTTP_STATUS.INTERNAL_SERVER_ERROR || statusCode == HTTP_STATUS.TOO_MANY_REQUESTS;
+      const shouldRetry =
+        !statusCode || statusCode >= HTTP_STATUS.INTERNAL_SERVER_ERROR || statusCode == HTTP_STATUS.TOO_MANY_REQUESTS;
 
       if (shouldRetry && i < emailConfig.maxAttempt) {
         await new Promise((resolve) => setTimeout(resolve, i * emailConfig.retryDelayMs));
         continue;
       }
 
-      throw new ExternalServiceError("Failed to send email. Please try again later.", HTTP_STATUS.BAD_GATEWAY, "email", err);
+      throw new ExternalServiceError({
+        message: "Failed to send email. Please try again later.",
+        statusCode: HTTP_STATUS.BAD_GATEWAY,
+        service: "EMAIL",
+        cause: err,
+      });
     }
   }
 };

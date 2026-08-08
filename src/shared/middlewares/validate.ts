@@ -34,7 +34,7 @@ export const validate = (
           location: issue.path[0] as "body" | "query" | "params",
         }));
 
-        throw new ValidateError("Some fields are invalid!", "VALIDATE_ERROR", formattedErrors);
+        throw new ValidateError({ message: "Some fields are invalid!", code: "VALIDATE_ERROR", details: formattedErrors });
       }
       throw err;
     }
