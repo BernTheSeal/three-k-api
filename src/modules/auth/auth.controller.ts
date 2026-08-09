@@ -16,7 +16,7 @@ import {
   ChangePassword,
   ForgotPassword,
   ResetPassword,
-} from "@/shared/types/controllers/auth.controller.type";
+} from "./auth.dto";
 
 const me: Me = async (_req, res, next) => {
   const { userId, familyId, authAccountId } = res.locals.user;

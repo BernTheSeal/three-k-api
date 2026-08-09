@@ -1,7 +1,7 @@
 import { sendSuccessResponse } from "@/shared/helpers/response.helper";
 import { HTTP_STATUS } from "@/shared/constants/httpStatus.const";
 import { userWordService } from "./userWord.service";
-import { Create, Remove, Update } from "@/shared/types/controllers/userWord.controller.type";
+import { Create, Remove, Update } from "./userWord.dto";
 
 const create: Create = async (req, res) => {
   const { wordId, status, note, isFavorite } = res.locals.validatedData.body;

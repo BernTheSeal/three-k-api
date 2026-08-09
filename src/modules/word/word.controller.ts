@@ -1,6 +1,6 @@
 import { wordService } from "./word.service";
 import { HTTP_STATUS } from "@/shared/constants/httpStatus.const";
-import { Get, GetByWord } from "@/shared/types/controllers/word.controller.type";
+import { Get, GetByWord } from "./word.dto";
 import { sendSuccessResponse } from "@/shared/helpers/response.helper";
 
 const get: Get = async (req, res) => {
