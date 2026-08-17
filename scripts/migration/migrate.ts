@@ -3,7 +3,7 @@ import path from "path";
 import { pathToFileURL } from "url";
 import { PoolClient } from "pg";
 
-import { withTransaction } from "../../src/shared/lib/db.lib";
+import { withTransaction } from "../../src/shared/lib/db/db.provider";
 import { logger } from "../scriptLogger";
 
 interface Migration {
@@ -43,7 +43,9 @@ async function migrate() {
       const versionString = file.split("_")[0];
 
       if (!versionString || !/^\d{3}$/.test(versionString)) {
-        throw new Error(`Migration filenames must start with a 3-digit version number and follow the format "001_name.ts": ${file}`);
+        throw new Error(
+          `Migration filenames must start with a 3-digit version number and follow the format "001_name.ts": ${file}`,
+        );
       }
 
       const version = parseInt(versionString);

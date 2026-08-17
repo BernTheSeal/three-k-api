@@ -2,7 +2,7 @@ import { seedWords, seedPos, seedLevels, seedWordPhonetics, seedWordPosLevels } 
 
 import readline from "readline";
 
-import { withTransaction } from "../../src/shared/lib/db.lib";
+import { withTransaction } from "../../src/shared/lib/db/db.provider";
 import { PoolClient } from "pg";
 
 import { logger } from "../scriptLogger";
