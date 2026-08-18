@@ -8,7 +8,7 @@ import {
   RevokeByFamilyId,
   RevokeByAuthAccountId,
   RevokeByAuthAccountIdExceptFamilyId,
-} from "@/shared/types/repositories/refreshToken.repo.type";
+} from "./refreshToken.repo.type";
 import { AuthAccountEntity, RefreshTokenEntity } from "@/shared/types/entities";
 
 const create: Create = async (params, tx) => {

@@ -1,7 +1,7 @@
 import { GetWordInput } from "@/modules/word/word.validator";
-import { WordEntity, WordPhoneticEntity, PosEntity, LevelEntity } from "../../types/entities";
+import { WordEntity, WordPhoneticEntity, PosEntity, LevelEntity } from "@/shared/types/entities";
 
-import { FindTxOptions } from "./common.repo.type";
+import { FindTxOptions } from "@/shared/types/transaction.type";
 
 export type ListResult = {
   wordId: number;

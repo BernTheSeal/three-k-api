@@ -1,5 +1,5 @@
 import { getExecutor, getLock } from "@/shared/lib/db/db.provider";
-import { List, FindByWordResult, FindByWord, ListResult } from "@/shared/types/repositories/word.repo.type";
+import { List, FindByWordResult, FindByWord, ListResult } from "./word.repo.type";
 
 const list: List = async (params, tx) => {
   const { offset, limit } = params.paginate;

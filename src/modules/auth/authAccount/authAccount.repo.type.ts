@@ -1,5 +1,5 @@
-import { AuthAccountEntity, LocalAuthAccount } from "../../types/entities";
-import { FindTxOptions, MutateTxOptions } from "./common.repo.type";
+import { AuthAccountEntity, LocalAuthAccount } from "@/shared/types/entities";
+import { FindTxOptions, MutateTxOptions } from "@/shared/types/transaction.type";
 
 export type Create = (
   params: Omit<AuthAccountEntity, "authAccountId" | "createdAt" | "updatedAt">,

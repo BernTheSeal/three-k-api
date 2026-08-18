@@ -1,5 +1,4 @@
-import { AuthAccountEntity } from "../../types/entities";
-import { UserEntity } from "../../types/entities";
+import { AuthAccountEntity, UserEntity } from "@/shared/types/entities";
 import { Profile } from "passport-google-oauth20";
 
 export type Register = (input: { username: string; email: string; password: string }) => Promise<{

@@ -1,6 +1,6 @@
 import { getExecutor } from "@/shared/lib/db/db.provider";
 
-import { Create, Remove, Update } from "@/shared/types/repositories/userWord.repo.type";
+import { Create, Remove, Update } from "./userWord.repo.type";
 
 import { UserWordEntity } from "@/shared/types/entities";
 

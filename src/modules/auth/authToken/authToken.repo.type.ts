@@ -1,5 +1,5 @@
-import { AuthTokenEntity } from "../../types/entities";
-import { FindTxOptions, MutateTxOptions } from "./common.repo.type";
+import { AuthTokenEntity } from "@/shared/types/entities";
+import { FindTxOptions, MutateTxOptions } from "@/shared/types/transaction.type";
 
 export type Create = (
   params: Pick<AuthTokenEntity, "authAccountId" | "tokenHash" | "tokenType" | "expiresAt">,

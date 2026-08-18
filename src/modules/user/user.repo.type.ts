@@ -1,5 +1,5 @@
-import { UserEntity } from "../../types/entities";
-import { MutateTxOptions, FindTxOptions } from "./common.repo.type";
+import { UserEntity } from "@/shared/types/entities";
+import { MutateTxOptions, FindTxOptions } from "@/shared/types/transaction.type";
 
 export type Create = (params: Pick<UserEntity, "username" | "isActive">, tx?: MutateTxOptions) => Promise<UserEntity>;
 

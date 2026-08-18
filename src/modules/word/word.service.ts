@@ -4,7 +4,7 @@ import { getWordCache, setWordCache } from "./word.cache";
 import { wordConfig } from "@/shared/config/word.config";
 import { getSafeOffset } from "@/shared/utils/pagination.util";
 
-import { List, FindByWord, FindByWordWithSenses, FindByWordResponse } from "@/shared/types/services/word.service.type";
+import { List, FindByWord, FindByWordWithSenses, FindByWordResponse } from "./word.service.type";
 
 const inflightRequests = new Map<string, Promise<FindByWordResponse | null>>();
 

@@ -1,6 +1,8 @@
 import { withTransaction } from "@/shared/lib/db/db.provider";
 
-import { authAccountRepo, refreshTokenRepo, authTokenRepo } from "./repositories";
+import { authAccountRepo } from "./authAccount/authAccount.repo";
+import { refreshTokenRepo } from "./refreshToken/refreshToken.repo";
+import { authTokenRepo } from "./authToken/authToken.repo";
 
 import { userRepo } from "../user/user.repo";
 
@@ -32,7 +34,7 @@ import {
   ChangePassword,
   ForgotPassword,
   ResetPassword,
-} from "@/shared/types/services/auth.service.type";
+} from "@/modules/auth/auth.service.type";
 
 import { sendEmailVerificationUrl, sendPasswordResetUrl } from "./auth.email";
 

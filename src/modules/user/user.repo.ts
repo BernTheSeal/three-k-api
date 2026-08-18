@@ -1,5 +1,5 @@
 import { getExecutor, getLock } from "@/shared/lib/db/db.provider";
-import { Create, FindById, ActivateById } from "@/shared/types/repositories/user.repo.type";
+import { Create, FindById, ActivateById } from "./user.repo.type";
 import { UserEntity } from "@/shared/types/entities";
 
 const create: Create = async (params, tx) => {

@@ -1,4 +1,4 @@
-import { ErrorStatusCode } from "../types/statusCode";
+import { ErrorStatusCode } from "../types/statusCode.type";
 import { AppError } from "./app.error";
 
 type ExternalServiceErrorConst = {

@@ -1,4 +1,4 @@
-import { UserWordEntity } from "../entities";
+import { UserWordEntity } from "@/shared/types/entities";
 
 type CreateInput = Omit<UserWordEntity, "createdAt" | "updatedAt">;
 type CreateOutput = Promise<UserWordEntity>;
