@@ -1,43 +1,43 @@
-import { AuthAccountEntity, UserEntity } from "@/shared/types/entities";
 import { Profile } from "passport-google-oauth20";
+import { AuthAccountEntity, RefreshTokenEntity } from "@/shared/types/entities";
+import {
+  AuthTokensShape,
+  RegistrationCredentialShape,
+  UserAuthInfoShape,
+  PasswordChangeShape,
+} from "@/shared/types/shapes/auth.shape";
 
-export type Register = (input: { username: string; email: string; password: string }) => Promise<{
-  accessToken: string;
-  refreshToken: string;
-  user: UserEntity;
-  authAccount: Omit<AuthAccountEntity, "passwordHash" | "userId">;
-}>;
+type RegisterInput = RegistrationCredentialShape;
+type RegisterOutput = Promise<AuthTokensShape & UserAuthInfoShape>;
+export type Register = (input: RegisterInput) => RegisterOutput;
 
-export type Login = (input: { email: string; password: string }) => Promise<{
-  accessToken: string;
-  refreshToken: string;
-  user: UserEntity;
-  authAccount: Omit<AuthAccountEntity, "passwordHash" | "userId">;
-}>;
+type LoginInput = Omit<RegistrationCredentialShape, "username">;
+type LoginOutput = Promise<AuthTokensShape & UserAuthInfoShape>;
+export type Login = (input: LoginInput) => LoginOutput;
 
-export type LoginGoogle = (input: { userGoogle: Profile }) => Promise<{
-  accessToken: string;
-  refreshToken: string;
-  user: UserEntity;
-  authAccount: Omit<AuthAccountEntity, "passwordHash" | "userId">;
-}>;
+type LoginGoogleInput = { userGoogle: Profile };
+type LoginGoogleOutput = Promise<AuthTokensShape & UserAuthInfoShape>;
+export type LoginGoogle = (input: LoginGoogleInput) => LoginGoogleOutput;
 
-export type Refresh = (input: { cookieRt?: string }) => Promise<{ accessToken: string; rawRefreshToken: string }>;
+type RefreshInput = { cookie?: string };
+type RefreshOutput = Promise<AuthTokensShape>;
+export type Refresh = (input: RefreshInput) => RefreshOutput;
 
-export type Logout = (input: { cookieRt?: string }) => Promise<{ isAlreadyLoggedOut: boolean }>;
+type LogoutInput = { cookie?: string };
+type LogoutOutput = Promise<{ isAlreadyLoggedOut: boolean }>;
+export type Logout = (input: LogoutInput) => LogoutOutput;
 
-export type RequestEmailVerification = (input: Pick<AuthAccountEntity, "authAccountId">) => Promise<void>;
+type RequestEmailVerificationInput = Pick<AuthAccountEntity, "authAccountId">;
+export type RequestEmailVerification = (input: RequestEmailVerificationInput) => Promise<void>;
 
-export type VerifyEmail = (input: { token: string }) => Promise<void>;
+type VerifyEmailInput = { token: string };
+export type VerifyEmail = (input: VerifyEmailInput) => Promise<void>;
 
-export type ChangePassword = (input: {
-  authAccountId: number;
-  familyId: string;
-  currentPassword: string;
-  newPassword: string;
-  newPasswordConfirm: string;
-}) => Promise<void>;
+type ChangePasswordInput = Pick<AuthAccountEntity, "authAccountId"> & Pick<RefreshTokenEntity, "familyId"> & PasswordChangeShape;
+export type ChangePassword = (input: ChangePasswordInput) => Promise<void>;
 
-export type ForgotPassword = (input: { email: string }) => Promise<void>;
+type ForgotPasswordInput = Pick<RegistrationCredentialShape, "email">;
+export type ForgotPassword = (input: ForgotPasswordInput) => Promise<void>;
 
-export type ResetPassword = (input: { token: string; newPassword: string; newPasswordConfirm: string }) => Promise<void>;
+type ResetPasswordInput = { token: string } & Omit<PasswordChangeShape, "currentPassword">;
+export type ResetPassword = (input: ResetPasswordInput) => Promise<void>;

@@ -1,45 +1,40 @@
 import { AuthAccountEntity, RefreshTokenEntity } from "@/shared/types/entities";
 import { MutateTxOptions, FindTxOptions } from "@/shared/types/transaction.type";
 
-export type Create = (
-  params: Pick<RefreshTokenEntity, "tokenHash" | "authAccountId" | "familyId" | "expiresAt">,
-  tx?: MutateTxOptions,
-) => Promise<RefreshTokenEntity>;
+type CreateParams = Pick<RefreshTokenEntity, "tokenHash" | "authAccountId" | "familyId" | "expiresAt">;
+type CreateResult = Promise<RefreshTokenEntity>;
+export type Create = (params: CreateParams, tx?: MutateTxOptions) => CreateResult;
 
-export type FindByTokenHash = (
-  params: Pick<RefreshTokenEntity, "tokenHash">,
-  tx?: FindTxOptions,
-) => Promise<RefreshTokenEntity | undefined>;
+type FindByTokenHashParams = Pick<RefreshTokenEntity, "tokenHash">;
+type FindByTokenHashResult = Promise<RefreshTokenEntity | undefined>;
+export type FindByTokenHash = (params: FindByTokenHashParams, tx?: FindTxOptions) => FindByTokenHashResult;
 
+type FindByTokenHashWithAuthAccountParams = Pick<RefreshTokenEntity, "tokenHash">;
+type FindByTokenHashWithAuthAccountResult = Promise<(RefreshTokenEntity & AuthAccountEntity) | undefined>;
 export type FindByTokenHashWithAuthAccount = (
-  params: Pick<RefreshTokenEntity, "tokenHash">,
+  params: FindByTokenHashWithAuthAccountParams,
   tx?: FindTxOptions,
-) => Promise<(RefreshTokenEntity & AuthAccountEntity) | undefined>;
+) => FindByTokenHashWithAuthAccountResult;
 
-export type RevokeByTokenHash = (
-  params: Pick<RefreshTokenEntity, "tokenHash"> & {
-    revokedReason: Exclude<RefreshTokenEntity["revokedReason"], null>;
-  },
-  tx?: MutateTxOptions,
-) => Promise<void>;
+type RevokeByTokenHashParams = Pick<RefreshTokenEntity, "tokenHash"> & {
+  revokedReason: Exclude<RefreshTokenEntity["revokedReason"], null>;
+};
+export type RevokeByTokenHash = (params: RevokeByTokenHashParams, tx?: MutateTxOptions) => Promise<void>;
 
-export type RevokeByFamilyId = (
-  params: Pick<RefreshTokenEntity, "familyId"> & {
-    revokedReason: Exclude<RefreshTokenEntity["revokedReason"], null>;
-  },
-  tx?: MutateTxOptions,
-) => Promise<void>;
+type RevokeByFamilyIdParams = Pick<RefreshTokenEntity, "familyId"> & {
+  revokedReason: Exclude<RefreshTokenEntity["revokedReason"], null>;
+};
+export type RevokeByFamilyId = (params: RevokeByFamilyIdParams, tx?: MutateTxOptions) => Promise<void>;
 
-export type RevokeByAuthAccountId = (
-  params: Pick<RefreshTokenEntity, "authAccountId"> & {
-    revokedReason: Exclude<RefreshTokenEntity["revokedReason"], null>;
-  },
-  tx?: MutateTxOptions,
-) => Promise<void>;
+type RevokeByAuthAccountIdParams = Pick<RefreshTokenEntity, "authAccountId"> & {
+  revokedReason: Exclude<RefreshTokenEntity["revokedReason"], null>;
+};
+export type RevokeByAuthAccountId = (params: RevokeByAuthAccountIdParams, tx?: MutateTxOptions) => Promise<void>;
 
+type RevokeByAuthAccountIdExceptFamilyIdParams = Pick<RefreshTokenEntity, "authAccountId" | "familyId"> & {
+  revokedReason: Exclude<RefreshTokenEntity["revokedReason"], null>;
+};
 export type RevokeByAuthAccountIdExceptFamilyId = (
-  data: Pick<RefreshTokenEntity, "authAccountId" | "familyId"> & {
-    revokedReason: Exclude<RefreshTokenEntity["revokedReason"], null>;
-  },
+  params: RevokeByAuthAccountIdExceptFamilyIdParams,
   tx?: MutateTxOptions,
 ) => Promise<void>;

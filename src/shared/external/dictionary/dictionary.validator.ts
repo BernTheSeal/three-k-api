@@ -13,5 +13,3 @@ const entrySchema = z.object({
 export const fetchSensesSchema = z.object({
   entries: z.array(entrySchema),
 });
-
-export type Senses = z.infer<typeof senseSchema>;

@@ -3,10 +3,9 @@ import { wordRepo } from "./word.repo";
 import { getWordCache, setWordCache } from "./word.cache";
 import { wordConfig } from "@/shared/config/word.config";
 import { getSafeOffset } from "@/shared/utils/pagination.util";
+import { WordDetailShape } from "@/shared/types/shapes/word.shape";
 
-import { List, FindByWord, FindByWordWithSenses, FindByWordResponse } from "./word.service.type";
-
-const inflightRequests = new Map<string, Promise<FindByWordResponse | null>>();
+import { List, FindByWord, FindByWordWithSenses } from "./word.service.type";
 
 const list: List = async (input) => {
   const { filters, paginate } = input;
@@ -40,6 +39,7 @@ const list: List = async (input) => {
   };
 };
 
+const inflightRequests = new Map<string, Promise<WordDetailShape | null>>();
 const findByWord: FindByWord = async (input) => {
   const { word } = input;
 
@@ -54,7 +54,7 @@ const findByWord: FindByWord = async (input) => {
   }
 
   try {
-    const requestPromise = async (): Promise<FindByWordResponse | null> => {
+    const requestPromise = async (): Promise<WordDetailShape | null> => {
       const wordResponse = await wordRepo.findByWord({ word });
 
       const first = wordResponse[0];
@@ -67,7 +67,7 @@ const findByWord: FindByWord = async (input) => {
         wordId: first.wordId,
         word: first.word,
         phonetics: [...new Map(wordResponse.map((w) => [w.locale, { locale: w.locale, text: w.text, mp3: w.mp3 }])).values()],
-        entries: [...new Map(wordResponse.map((w) => [w.pos, { partOfSpeech: w.pos, level: w.level }])).values()],
+        entries: [...new Map(wordResponse.map((w) => [w.pos, { pos: w.pos, level: w.level }])).values()],
       };
 
       return wordDetails;
@@ -92,9 +92,9 @@ const findByWord: FindByWord = async (input) => {
 };
 
 const findByWordWithSenses: FindByWordWithSenses = async (input) => {
-  const { userId, word } = input;
+  const { word } = input;
 
-  const wordResponse = await findByWord({ word, userId });
+  const wordResponse = await findByWord({ word });
 
   if (!wordResponse) {
     return null;
@@ -104,7 +104,7 @@ const findByWordWithSenses: FindByWordWithSenses = async (input) => {
   const missingPos: string[] = [];
 
   for (const [key] of senses) {
-    const isExists = wordResponse.entries.some((e) => e.partOfSpeech == key);
+    const isExists = wordResponse.entries.some((e) => e.pos == key);
 
     if (!isExists) {
       missingPos.push(key);
@@ -119,7 +119,7 @@ const findByWordWithSenses: FindByWordWithSenses = async (input) => {
     ...wordResponse,
     entries: wordResponse.entries.map((e) => ({
       ...e,
-      senses: senses.get(e.partOfSpeech) || [],
+      senses: senses.get(e.pos) || [],
     })),
   };
 

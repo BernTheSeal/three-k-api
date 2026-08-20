@@ -1,5 +1,6 @@
 import { getExecutor, getLock } from "@/shared/lib/db/db.provider";
-import { List, FindByWordResult, FindByWord, ListResult } from "./word.repo.type";
+import { List, FindByWord } from "./word.repo.type";
+import { WordSummaryEnriched, WordDetailEnriched } from "@/shared/types/enriched/word.enriched";
 
 const list: List = async (params, tx) => {
   const { offset, limit } = params.paginate;
@@ -20,12 +21,12 @@ const list: List = async (params, tx) => {
 
   if (level && level.length > 0) {
     queryParams.push(level);
-    conditions.push(`levels && $${queryParams.length}::varchar[]`);
+    conditions.push(`level && $${queryParams.length}::varchar[]`);
   }
 
   const where = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
 
-  const executor = getExecutor<ListResult>(tx?.client);
+  const executor = getExecutor<WordSummaryEnriched>(tx?.client);
 
   const response = await executor(
     `
@@ -34,7 +35,7 @@ const list: List = async (params, tx) => {
           w.word_id,
           w.word,
           array_agg(DISTINCT p.pos) AS pos, 
-          array_agg(DISTINCT l.level) AS levels
+          array_agg(DISTINCT l.level) AS level
         FROM words w
         JOIN word_pos_levels wpl ON w.word_id = wpl.word_id
         JOIN pos p ON p.pos_id = wpl.pos_id
@@ -67,7 +68,7 @@ const list: List = async (params, tx) => {
 const findByWord: FindByWord = async (params, tx) => {
   const { word } = params;
 
-  const executor = getExecutor<FindByWordResult>(tx?.client);
+  const executor = getExecutor<WordDetailEnriched>(tx?.client);
 
   const lock = getLock(tx?.lock);
 
@@ -86,7 +87,6 @@ const findByWord: FindByWord = async (params, tx) => {
         JOIN word_phonetics wp ON wp.word_id = w.word_id
         WHERE w.word = $1 
         ${lock}`,
-
     [word],
   );
 

@@ -1,8 +1,13 @@
 import { UserEntity } from "@/shared/types/entities";
 import { MutateTxOptions, FindTxOptions } from "@/shared/types/transaction.type";
 
-export type Create = (params: Pick<UserEntity, "username" | "isActive">, tx?: MutateTxOptions) => Promise<UserEntity>;
+type CreateParams = Pick<UserEntity, "username" | "isActive">;
+type CreateResult = Promise<UserEntity>;
+export type Create = (params: CreateParams, tx?: MutateTxOptions) => CreateResult;
 
-export type FindById = (params: Pick<UserEntity, "userId">, tx?: FindTxOptions) => Promise<UserEntity | undefined>;
+type FindByIdParams = Pick<UserEntity, "userId">;
+type FindByIdResult = Promise<UserEntity | undefined>;
+export type FindById = (params: FindByIdParams, tx?: FindTxOptions) => FindByIdResult;
 
-export type ActivateById = (params: Pick<UserEntity, "userId">, tx?: MutateTxOptions) => Promise<void>;
+type ActivateByIdParams = Pick<UserEntity, "userId">;
+export type ActivateById = (params: ActivateByIdParams, tx?: MutateTxOptions) => Promise<void>;
