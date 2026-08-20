@@ -70,13 +70,13 @@ const login: Login = async (_req, res) => {
 };
 
 const refresh: Refresh = async (req, res) => {
-  const cookieRt = req.cookies.refreshToken;
+  const cookie = req.cookies.refreshToken;
 
-  const { accessToken, rawRefreshToken } = await authService.refresh({
-    cookieRt,
+  const { accessToken, refreshToken } = await authService.refresh({
+    cookie,
   });
 
-  setRefreshTokenCookie(res, rawRefreshToken);
+  setRefreshTokenCookie(res, refreshToken);
 
   sendSuccessResponse(res, HTTP_STATUS.OK, "New access token is successfully created!", { accessToken });
 
@@ -84,9 +84,9 @@ const refresh: Refresh = async (req, res) => {
 };
 
 const logout: Logout = async (req, res) => {
-  const cookieRt = req.cookies.refreshToken;
+  const cookie = req.cookies.refreshToken;
 
-  const { isAlreadyLoggedOut } = await authService.logout({ cookieRt });
+  const { isAlreadyLoggedOut } = await authService.logout({ cookie });
 
   clearRefreshTokenCookie(res);
 

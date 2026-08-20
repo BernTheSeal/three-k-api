@@ -1,11 +1,11 @@
 import { setSensesCache, getSensesCache } from "./dictionary.cache";
 import { fetchDictionaryEntry } from "./dictionary.client";
+import { fetchSensesSchema } from "./dictionary.validator";
+import { WordSenseShape } from "@/shared/types/shapes/word.shape";
 
-import { fetchSensesSchema, Senses } from "./dictionary.validator";
+const inflightRequests = new Map<string, Promise<Map<string, WordSenseShape[]>>>();
 
-const inflightRequests = new Map<string, Promise<Map<string, Senses[]>>>();
-
-const getSenses = async (word: string): Promise<Map<string, Senses[]>> => {
+const getSenses = async (word: string): Promise<Map<string, WordSenseShape[]>> => {
   const sensesFromCache = await getSensesCache(word);
 
   if (sensesFromCache) {
@@ -17,14 +17,15 @@ const getSenses = async (word: string): Promise<Map<string, Senses[]>> => {
   }
 
   try {
-    const newPromise = async (): Promise<Map<string, Senses[]>> => {
+    const newPromise = async (): Promise<Map<string, WordSenseShape[]>> => {
       const wordEntry = await fetchDictionaryEntry(word);
 
       const parsedData = fetchSensesSchema.parse(wordEntry);
 
       const mappedData = parsedData.entries.reduce(
-        (acc: Map<string, Senses[]>, curr) => acc.set(curr.partOfSpeech, [...(acc.get(curr.partOfSpeech) || []), ...curr.senses]),
-        new Map<string, Senses[]>(),
+        (acc: Map<string, WordSenseShape[]>, curr) =>
+          acc.set(curr.partOfSpeech, [...(acc.get(curr.partOfSpeech) || []), ...curr.senses]),
+        new Map<string, WordSenseShape[]>(),
       );
 
       const dataToObject = Object.fromEntries(mappedData);

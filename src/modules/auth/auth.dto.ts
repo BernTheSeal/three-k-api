@@ -7,7 +7,7 @@ import {
   ResetPasswordDto,
 } from "@/modules/auth/auth.validator";
 
-import { AuthHandler, PublicHandler } from "@/shared/types/requestHandler";
+import { AuthHandler, PublicHandler } from "@/shared/types/requestHandler.type";
 
 export type Me = AuthHandler;
 export type Register = PublicHandler<RegisterDto>;

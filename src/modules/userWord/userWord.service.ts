@@ -1,4 +1,4 @@
-import { Create, Remove, Update } from "@/shared/types/services/userWord.service.type";
+import { Create, Remove, Update } from "./userWord.service.type";
 import { userWordRepo } from "./userWord.repo";
 import { NotFoundError } from "@/shared/errors";
 

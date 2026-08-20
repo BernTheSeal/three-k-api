@@ -1,5 +1,5 @@
 import { getExecutor, getLock } from "@/shared/lib/db/db.provider";
-import { Create, FindByToken, Revoke, MarkAsUsed } from "@/shared/types/repositories/authToken.repo.type";
+import { Create, FindByToken, Revoke, MarkAsUsed } from "./authToken.repo.type";
 import { AuthTokenEntity } from "@/shared/types/entities";
 
 const create: Create = async (params, tx) => {

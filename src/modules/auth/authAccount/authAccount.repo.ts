@@ -1,14 +1,7 @@
 import { getExecutor, getLock } from "@/shared/lib/db/db.provider";
 import { AuthAccountEntity } from "@/shared/types/entities";
 
-import {
-  Create,
-  FindById,
-  FindByProviderAccountId,
-  FindByEmail,
-  VerifyById,
-  UpdatePassword,
-} from "@/shared/types/repositories/authAccount.repo.type";
+import { Create, FindById, FindByProviderAccountId, FindByEmail, VerifyById, UpdatePassword } from "./authAccount.repo.type";
 
 const create: Create = async (params, tx) => {
   const { userId, provider, providerAccountId, email, passwordHash, isVerified } = params;

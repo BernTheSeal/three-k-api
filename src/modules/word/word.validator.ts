@@ -1,17 +1,14 @@
 import z from "zod";
-import { booleanSchema, enumSchema, numberSchema, stringArraySchema, stringSchema } from "@/shared/lib/validate/builders";
+import { enumArraySchema, stringArraySchema, stringSchema } from "@/shared/lib/validate/builders";
 import { offsetSchema, searchSchema } from "../../shared/lib/validate/common";
 
-export const getWordsSchema = z.object({
+export const listWordSchema = z.object({
   query: z
     .object({
       offset: offsetSchema,
       search: searchSchema,
       pos: stringArraySchema("pos", { fromUrl: true }),
-      level: stringArraySchema("level", { fromUrl: true }),
-      mode: enumSchema("mode", ["mine", "all"]),
-      status: enumSchema("status", ["known", "learning"]),
-      is_favorite: booleanSchema("isFavorite", { fromString: true }),
+      level: enumArraySchema("level", ["a1", "a2", "b1", "b2", "c1", "c2"], { fromUrl: true }),
     })
     .partial(),
 });
@@ -22,7 +19,5 @@ export const getWordByIdSchema = z.object({
   }),
 });
 
-export type GetWordDto = z.infer<typeof getWordsSchema>;
+export type ListWordDto = z.infer<typeof listWordSchema>;
 export type GetWordByIdDto = z.infer<typeof getWordByIdSchema>;
-
-export type GetWordInput = Omit<GetWordDto["query"], "offset">;

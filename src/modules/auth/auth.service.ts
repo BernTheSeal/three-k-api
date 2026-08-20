@@ -1,6 +1,8 @@
 import { withTransaction } from "@/shared/lib/db/db.provider";
 
-import { authAccountRepo, refreshTokenRepo, authTokenRepo } from "./repositories";
+import { authAccountRepo } from "./authAccount/authAccount.repo";
+import { refreshTokenRepo } from "./refreshToken/refreshToken.repo";
+import { authTokenRepo } from "./authToken/authToken.repo";
 
 import { userRepo } from "../user/user.repo";
 
@@ -32,7 +34,7 @@ import {
   ChangePassword,
   ForgotPassword,
   ResetPassword,
-} from "@/shared/types/services/auth.service.type";
+} from "@/modules/auth/auth.service.type";
 
 import { sendEmailVerificationUrl, sendPasswordResetUrl } from "./auth.email";
 
@@ -229,12 +231,12 @@ const loginGoogle: LoginGoogle = async (input) => {
 };
 
 const refresh: Refresh = async (input) => {
-  const { cookieRt } = input;
+  const { cookie } = input;
 
-  if (!cookieRt) {
+  if (!cookie) {
     throw new UnauthorizedError({ message: "Refresh token is not found in cookie!", code: "REFRESH_TOKEN_NOT_FOUND_IN_COOKIE" });
   }
-  const hashedCookieRt = hashAuthToken(cookieRt);
+  const hashedCookieRt = hashAuthToken(cookie);
 
   const newRawRefreshToken = generateRefreshToken();
   const newHashedRefreshToken = hashAuthToken(newRawRefreshToken);
@@ -323,18 +325,18 @@ const refresh: Refresh = async (input) => {
 
   const accessToken = generateAccessToken(userId, familyId, authAccountId);
 
-  return { accessToken, rawRefreshToken: newRawRefreshToken };
+  return { accessToken, refreshToken: newRawRefreshToken };
 };
 
 const logout: Logout = async (input) => {
-  const { cookieRt } = input;
+  const { cookie } = input;
   let isAlreadyLoggedOut = true;
 
-  if (!cookieRt) {
+  if (!cookie) {
     return { isAlreadyLoggedOut };
   }
 
-  const hashedCookieRt = hashAuthToken(cookieRt);
+  const hashedCookieRt = hashAuthToken(cookie);
 
   const refreshToken = await refreshTokenRepo.findByTokenHash({
     tokenHash: hashedCookieRt,
