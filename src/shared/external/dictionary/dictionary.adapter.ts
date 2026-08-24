@@ -1,9 +1,8 @@
+import { singleflight } from "@/shared/helpers/singleflight.helper";
 import { setSensesCache, getSensesCache } from "./dictionary.cache";
 import { fetchDictionaryEntry } from "./dictionary.client";
 import { fetchSensesSchema } from "./dictionary.validator";
 import { WordSenseShape } from "@/shared/types/shapes/word.shape";
-
-const inflightRequests = new Map<string, Promise<Map<string, WordSenseShape[]>>>();
 
 const getSenses = async (word: string): Promise<Map<string, WordSenseShape[]>> => {
   const sensesFromCache = await getSensesCache(word);
@@ -12,12 +11,8 @@ const getSenses = async (word: string): Promise<Map<string, WordSenseShape[]>> =
     return new Map(Object.entries(sensesFromCache));
   }
 
-  if (inflightRequests.has(word)) {
-    return await inflightRequests.get(word)!;
-  }
-
   try {
-    const newPromise = async (): Promise<Map<string, WordSenseShape[]>> => {
+    return await singleflight(`dictionary:${word}`, async () => {
       const wordEntry = await fetchDictionaryEntry(word);
 
       const parsedData = fetchSensesSchema.parse(wordEntry);
@@ -28,22 +23,12 @@ const getSenses = async (word: string): Promise<Map<string, WordSenseShape[]>> =
         new Map<string, WordSenseShape[]>(),
       );
 
-      const dataToObject = Object.fromEntries(mappedData);
-
-      await setSensesCache(word, dataToObject);
+      await setSensesCache(word, Object.fromEntries(mappedData));
 
       return mappedData;
-    };
-
-    const promise = newPromise();
-
-    inflightRequests.set(word, promise);
-
-    return await promise;
+    });
   } catch (error) {
     return new Map();
-  } finally {
-    inflightRequests.delete(word);
   }
 };
 

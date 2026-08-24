@@ -6,6 +6,7 @@ import { getSafeOffset } from "@/shared/utils/pagination.util";
 import { WordDetailShape } from "@/shared/types/shapes/word.shape";
 
 import { List, FindByWord, FindByWordWithSenses } from "./word.service.type";
+import { singleflight } from "@/shared/helpers/singleflight.helper";
 
 const list: List = async (input) => {
   const { filters, paginate } = input;
@@ -39,7 +40,6 @@ const list: List = async (input) => {
   };
 };
 
-const inflightRequests = new Map<string, Promise<WordDetailShape | null>>();
 const findByWord: FindByWord = async (input) => {
   const { word } = input;
 
@@ -49,46 +49,26 @@ const findByWord: FindByWord = async (input) => {
     return wordFromCache;
   }
 
-  if (inflightRequests.has(word)) {
-    return await inflightRequests.get(word)!;
-  }
+  return await singleflight(`word:${word}`, async () => {
+    const wordResponse = await wordRepo.findByWord({ word });
 
-  try {
-    const requestPromise = async (): Promise<WordDetailShape | null> => {
-      const wordResponse = await wordRepo.findByWord({ word });
+    const first = wordResponse[0];
 
-      const first = wordResponse[0];
-
-      if (!first) {
-        return null;
-      }
-
-      const wordDetails = {
-        wordId: first.wordId,
-        word: first.word,
-        phonetics: [...new Map(wordResponse.map((w) => [w.locale, { locale: w.locale, text: w.text, mp3: w.mp3 }])).values()],
-        entries: [...new Map(wordResponse.map((w) => [w.pos, { pos: w.pos, level: w.level }])).values()],
-      };
-
-      return wordDetails;
-    };
-
-    const promise = requestPromise();
-
-    inflightRequests.set(word, promise);
-
-    const res = await promise;
-
-    if (!res) {
+    if (!first) {
       return null;
     }
 
-    await setWordCache(word, res);
+    const wordDetails = {
+      wordId: first.wordId,
+      word: first.word,
+      phonetics: [...new Map(wordResponse.map((w) => [w.locale, { locale: w.locale, text: w.text, mp3: w.mp3 }])).values()],
+      entries: [...new Map(wordResponse.map((w) => [w.pos, { pos: w.pos, level: w.level }])).values()],
+    };
 
-    return res;
-  } finally {
-    inflightRequests.delete(word);
-  }
+    await setWordCache(word, wordDetails);
+
+    return wordDetails;
+  });
 };
 
 const findByWordWithSenses: FindByWordWithSenses = async (input) => {
