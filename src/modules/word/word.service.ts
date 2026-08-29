@@ -1,12 +1,33 @@
 import { dictionaryAdapter } from "@/shared/external/dictionary/dictionary.adapter";
 import { wordRepo } from "./word.repo";
-import { getWordCache, setWordCache } from "./word.cache";
+import { getWordsLen, getWordCache, setAllWordsCache, setWordCache } from "./word.cache";
 import { wordConfig } from "@/shared/config/word.config";
 import { getSafeOffset } from "@/shared/utils/pagination.util";
-import { WordDetailShape } from "@/shared/types/shapes/word.shape";
 
 import { List, FindByWord, FindByWordWithSenses } from "./word.service.type";
 import { singleflight } from "@/shared/helpers/singleflight.helper";
+
+const initializeWordsCache = async () => {
+  const length = await getWordsLen();
+
+  if (length > 0) {
+    console.log("Words cache already initialized, skipping.");
+    return;
+  }
+  const words = await wordRepo.getAll();
+
+  const wordsObject = words.reduce(
+    (acc, curr) => {
+      acc[curr.word] = curr.wordId;
+      return acc;
+    },
+    {} as Record<string, number>,
+  );
+
+  await setAllWordsCache(wordsObject);
+
+  console.log(`Words cache initialized with ${words.length} words.`);
+};
 
 const list: List = async (input) => {
   const { filters, paginate } = input;
@@ -107,6 +128,7 @@ const findByWordWithSenses: FindByWordWithSenses = async (input) => {
 };
 
 export const wordService = {
+  initializeWordsCache,
   list,
   findByWord,
   findByWordWithSenses,

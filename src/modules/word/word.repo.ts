@@ -1,6 +1,15 @@
 import { getExecutor, getLock } from "@/shared/lib/db/db.provider";
-import { List, FindByWord } from "./word.repo.type";
+import { List, FindByWord, GetAll } from "./word.repo.type";
 import { WordSummaryEnriched, WordDetailEnriched } from "@/shared/types/enriched/word.enriched";
+import { WordEntity } from "@/shared/types/entities";
+
+const getAll: GetAll = async (tx) => {
+  const executor = getExecutor<WordEntity>(tx?.client);
+
+  const response = await executor(`SELECT * FROM words`, []);
+
+  return response.rows;
+};
 
 const list: List = async (params, tx) => {
   const { offset, limit } = params.paginate;
@@ -94,6 +103,7 @@ const findByWord: FindByWord = async (params, tx) => {
 };
 
 export const wordRepo = {
+  getAll,
   list,
   findByWord,
 };

@@ -3,9 +3,10 @@ import { cacheProvider } from "@/shared/lib/cache/cache.provider";
 import { keyBuilder } from "@/shared/utils/cache.util";
 import { WordDetailShape } from "@/shared/types/shapes/word.shape";
 
-const NAMESPACE = wordConfig.cache.namespace;
-const VERSION = wordConfig.cache.version;
-const TTL = wordConfig.cache.ttlSec;
+const NAMESPACE = wordConfig.cache.detail.namespace;
+const VERSION = wordConfig.cache.detail.version;
+const TTL = wordConfig.cache.detail.ttlSec;
+const HASH_KEY = wordConfig.cache.all.key;
 
 const setWordCache = async (word: string, value: WordDetailShape): Promise<void> => {
   const key = keyBuilder(NAMESPACE, VERSION, word);
@@ -18,4 +19,12 @@ const getWordCache = async (word: string): Promise<WordDetailShape | null> => {
   return value !== null ? (value as WordDetailShape) : null;
 };
 
-export { setWordCache, getWordCache };
+const setAllWordsCache = async (words: Record<string, number>) => {
+  await cacheProvider.setHash(HASH_KEY, words);
+};
+
+const getWordsLen = async (): Promise<number> => {
+  return await cacheProvider.hashLen(HASH_KEY);
+};
+
+export { setWordCache, getWordCache, setAllWordsCache, getWordsLen };

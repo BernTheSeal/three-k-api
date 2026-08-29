@@ -1,7 +1,11 @@
 import { WordSummaryEnriched, WordDetailEnriched } from "@/shared/types/enriched/word.enriched";
+import { WordEntity } from "@/shared/types/entities";
 import { ReqPaginate } from "@/shared/types/paginate.type";
 import { WordFilterShape } from "@/shared/types/shapes/word.shape";
 import { FindTxOptions } from "@/shared/types/transaction.type";
+
+type GetAllResult = Promise<WordEntity[]>;
+export type GetAll = (tx?: FindTxOptions) => GetAllResult;
 
 type ListParams = {
   filters: WordFilterShape;
