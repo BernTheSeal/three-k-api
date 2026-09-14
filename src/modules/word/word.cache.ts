@@ -27,4 +27,9 @@ const getWordsLen = async (): Promise<number> => {
   return await cacheProvider.hashLen(HASH_KEY);
 };
 
-export { setWordCache, getWordCache, setAllWordsCache, getWordsLen };
+const getWordIndexMany = async (lemmas: string[]): Promise<(number | null)[]> => {
+  const results = await cacheProvider.getHashMany(HASH_KEY, lemmas);
+  return results.map((value) => (value !== null ? Number(value) : null));
+};
+
+export { setWordCache, getWordCache, setAllWordsCache, getWordsLen, getWordIndexMany };
