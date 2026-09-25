@@ -48,8 +48,50 @@ const del = async (key: string): Promise<void> => {
   }
 };
 
+const setHash = async <T extends number | string | Buffer>(key: string, fields: Record<string, T>): Promise<void> => {
+  try {
+    await redisClient.hSet(key, fields);
+  } catch (error) {
+    throw new ExternalServiceError({
+      message: "Cache set hash failed!",
+      statusCode: HTTP_STATUS.BAD_GATEWAY,
+      service: "CACHE",
+      cause: error,
+    });
+  }
+};
+
+const getHashMany = async (key: string, fields: string[]): Promise<(string | null)[]> => {
+  try {
+    return await redisClient.hmGet(key, fields);
+  } catch (error) {
+    throw new ExternalServiceError({
+      message: "Cache get hash many failed!",
+      statusCode: HTTP_STATUS.BAD_GATEWAY,
+      service: "CACHE",
+      cause: error,
+    });
+  }
+};
+
+const hashLen = async (key: string): Promise<number> => {
+  try {
+    return await redisClient.hLen(key);
+  } catch (error) {
+    throw new ExternalServiceError({
+      message: "Cache hash len failed!",
+      statusCode: HTTP_STATUS.BAD_GATEWAY,
+      service: "CACHE",
+      cause: error,
+    });
+  }
+};
+
 export const cacheProvider = {
   set,
   get,
   del,
+  setHash,
+  getHashMany,
+  hashLen,
 };

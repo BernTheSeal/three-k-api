@@ -7,3 +7,5 @@ export * from "./level.entity";
 export * from "./pos.entity";
 export * from "./userWord.entity";
 export * from "./wordPhonetic.entity";
+export * from "./sentence.entity";
+export * from "./sentenceWord.entity";

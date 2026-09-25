@@ -1,12 +1,33 @@
 import { dictionaryAdapter } from "@/shared/external/dictionary/dictionary.adapter";
 import { wordRepo } from "./word.repo";
-import { getWordCache, setWordCache } from "./word.cache";
+import { wordCache } from "./word.cache";
 import { wordConfig } from "@/shared/config/word.config";
 import { getSafeOffset } from "@/shared/utils/pagination.util";
-import { WordDetailShape } from "@/shared/types/shapes/word.shape";
 
 import { List, FindByWord, FindByWordWithSenses } from "./word.service.type";
 import { singleflight } from "@/shared/helpers/singleflight.helper";
+
+const initializeWordsCache = async () => {
+  const length = await wordCache.getLen();
+
+  if (length > 0) {
+    console.log("Words cache already initialized, skipping.");
+    return;
+  }
+  const words = await wordRepo.getAll();
+
+  const wordsObject = words.reduce(
+    (acc, curr) => {
+      acc[curr.word] = curr.wordId;
+      return acc;
+    },
+    {} as Record<string, number>,
+  );
+
+  await wordCache.setAll(wordsObject);
+
+  console.log(`Words cache initialized with ${words.length} words.`);
+};
 
 const list: List = async (input) => {
   const { filters, paginate } = input;
@@ -43,7 +64,7 @@ const list: List = async (input) => {
 const findByWord: FindByWord = async (input) => {
   const { word } = input;
 
-  const wordFromCache = await getWordCache(word);
+  const wordFromCache = await wordCache.get(word);
 
   if (wordFromCache) {
     return wordFromCache;
@@ -65,7 +86,7 @@ const findByWord: FindByWord = async (input) => {
       entries: [...new Map(wordResponse.map((w) => [w.pos, { pos: w.pos, level: w.level }])).values()],
     };
 
-    await setWordCache(word, wordDetails);
+    await wordCache.set(word, wordDetails);
 
     return wordDetails;
   });
@@ -107,6 +128,7 @@ const findByWordWithSenses: FindByWordWithSenses = async (input) => {
 };
 
 export const wordService = {
+  initializeWordsCache,
   list,
   findByWord,
   findByWordWithSenses,
