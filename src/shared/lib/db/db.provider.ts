@@ -1,6 +1,7 @@
 import { pool } from "./db.client";
 import { QueryResult, PoolClient, DatabaseError } from "pg";
 import { errorMapper, toCamelCase } from "./db.helper";
+import { ExternalServiceError } from "@/shared/errors";
 
 export const query = async <T extends Record<string, unknown>>(text: string, params?: any[]): Promise<QueryResult<T>> => {
   try {
@@ -11,7 +12,13 @@ export const query = async <T extends Record<string, unknown>>(text: string, par
     if (error instanceof DatabaseError) {
       throw errorMapper(error);
     }
-    throw error;
+
+    throw new ExternalServiceError({
+      message: "Database is unreachable",
+      code: "DATABASE_UNAVAILABLE",
+      service: "DATABASE",
+      cause: error,
+    });
   }
 };
 
@@ -28,7 +35,13 @@ const clientQuery = async <T extends Record<string, unknown>>(
     if (error instanceof DatabaseError) {
       throw errorMapper(error);
     }
-    throw error;
+
+    throw new ExternalServiceError({
+      message: "Database is unreachable",
+      code: "DATABASE_UNAVAILABLE",
+      service: "DATABASE",
+      cause: error,
+    });
   }
 };
 

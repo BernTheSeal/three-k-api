@@ -35,7 +35,7 @@ export const sendMail = async (data: { subject: string; html: string }) => {
 
       throw new ExternalServiceError({
         message: "Failed to send email. Please try again later.",
-        statusCode: HTTP_STATUS.BAD_GATEWAY,
+        code: "EMAIL_UNAVAILABLE",
         service: "EMAIL",
         cause: err,
       });

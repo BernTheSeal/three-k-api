@@ -32,6 +32,7 @@ export const errorMapper = (error: DatabaseError): ConflictError | InternalServe
         return new InternalServerError({
           message: `Unmapped constraint => ${error.constraint}`,
           code: "UNMAPPED_DB_CONSTRAINT",
+          cause: error,
         });
     }
   }
@@ -40,12 +41,14 @@ export const errorMapper = (error: DatabaseError): ConflictError | InternalServe
     return new InternalServerError({
       message: "Invalid data reached the database layer — validation likely bypassed.",
       code: "DB_TYPE_MISMATCH",
+      cause: error,
     });
   }
 
   return new InternalServerError({
     message: `Unmapped database error => ${error.message}`,
     code: "UNMAPPED_DB_ERROR",
+    cause: error,
   });
 };
 

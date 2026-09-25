@@ -31,8 +31,10 @@ export const retryRequest = async <T>({
       const res = await axios.get(url, { timeout: timeoutMs });
       return res.data;
     } catch (err) {
+      let statusCode: number | undefined = undefined;
+
       if (axios.isAxiosError(err)) {
-        const statusCode = err.response?.status;
+        statusCode = err.response?.status;
 
         if (shouldRetry(statusCode) && attempt < maxAttempt) {
           await new Promise((res) => setTimeout(res, retryDelayMs * attempt));
@@ -42,7 +44,9 @@ export const retryRequest = async <T>({
 
       throw new ExternalServiceError({
         message: `${service} service failed!`,
+        code: `${service.toUpperCase()}_UNAVAILABLE`,
         statusCode: HTTP_STATUS.BAD_GATEWAY,
+        upstreamStatus: statusCode,
         service,
         cause: err,
       });

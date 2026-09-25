@@ -1,13 +1,7 @@
 import { ErrorStatusCode } from "../types/statusCode.type";
+import { ConstructorType } from "./type";
 
-type AppErrorConst<D> = {
-  message: string;
-  statusCode: ErrorStatusCode;
-  code: string;
-  details: D;
-  isOperational: boolean;
-  cause?: unknown;
-};
+type AppErrorConst<D extends unknown[]> = { statusCode: ErrorStatusCode } & ConstructorType<D>;
 
 export class AppError<D extends unknown[] = []> extends Error {
   public readonly statusCode: ErrorStatusCode;
@@ -19,8 +13,8 @@ export class AppError<D extends unknown[] = []> extends Error {
     super(message, { cause });
     this.name = this.constructor.name;
     this.statusCode = statusCode;
-    this.isOperational = isOperational;
-    this.details = details;
+    this.isOperational = isOperational ?? true;
+    this.details = details ?? ([] as unknown as D);
     this.code = code;
   }
 }
