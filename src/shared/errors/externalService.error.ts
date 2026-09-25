@@ -4,7 +4,7 @@ import { AppError } from "./app.error";
 type ExternalServiceErrorConst = {
   message: string;
   statusCode: ErrorStatusCode;
-  service: "CACHE" | "DICTIONARY" | "EMAIL";
+  service: "CACHE" | "DICTIONARY" | "EMAIL" | "LEMMATIZE";
   cause: unknown;
 };
 

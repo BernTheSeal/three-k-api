@@ -1,4 +1,4 @@
-export type sentenceWordEntity = {
+export type SentenceWordEntity = {
   sentenceWordId: number;
   sentenceId: number;
   wordId: number;
