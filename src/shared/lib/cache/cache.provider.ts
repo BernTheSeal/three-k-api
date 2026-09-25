@@ -10,6 +10,7 @@ const get = async (key: string): Promise<unknown> => {
   } catch (error) {
     throw new ExternalServiceError({
       message: "Cache get failed!",
+      code: "CACHE_GET_FAILED",
       statusCode: HTTP_STATUS.BAD_GATEWAY,
       service: "CACHE",
       cause: error,
@@ -28,7 +29,7 @@ const set = async (key: string, value: unknown, ttlSeconds?: number): Promise<vo
   } catch (error) {
     throw new ExternalServiceError({
       message: "Cache set failed!",
-      statusCode: HTTP_STATUS.BAD_GATEWAY,
+      code: "CACHE_SET_FAILED",
       service: "CACHE",
       cause: error,
     });
@@ -41,7 +42,7 @@ const del = async (key: string): Promise<void> => {
   } catch (error) {
     throw new ExternalServiceError({
       message: "Cache delete failed!",
-      statusCode: HTTP_STATUS.BAD_GATEWAY,
+      code: "CACHE_DELETE_FAILED",
       service: "CACHE",
       cause: error,
     });
@@ -54,7 +55,7 @@ const setHash = async <T extends number | string | Buffer>(key: string, fields: 
   } catch (error) {
     throw new ExternalServiceError({
       message: "Cache set hash failed!",
-      statusCode: HTTP_STATUS.BAD_GATEWAY,
+      code: "CACHE_SET_HASH_FAILED",
       service: "CACHE",
       cause: error,
     });
@@ -67,7 +68,7 @@ const getHashMany = async (key: string, fields: string[]): Promise<(string | nul
   } catch (error) {
     throw new ExternalServiceError({
       message: "Cache get hash many failed!",
-      statusCode: HTTP_STATUS.BAD_GATEWAY,
+      code: "CACHE_GET_HASH_MANY_FAILED",
       service: "CACHE",
       cause: error,
     });
@@ -80,7 +81,7 @@ const hashLen = async (key: string): Promise<number> => {
   } catch (error) {
     throw new ExternalServiceError({
       message: "Cache hash len failed!",
-      statusCode: HTTP_STATUS.BAD_GATEWAY,
+      code: "CACHE_HASH_LEN_FAILED",
       service: "CACHE",
       cause: error,
     });

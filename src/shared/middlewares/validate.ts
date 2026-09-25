@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { Request, Response, NextFunction } from "express";
-import { ValidateError } from "../errors";
+import { BadRequestError } from "../errors";
 
 export const validate = (
   schema: z.ZodObject<{
@@ -34,7 +34,7 @@ export const validate = (
           location: issue.path[0] as "body" | "query" | "params",
         }));
 
-        throw new ValidateError({ message: "Some fields are invalid!", code: "VALIDATE_ERROR", details: formattedErrors });
+        throw new BadRequestError({ message: "Some fields are invalid!", code: "VALIDATE_ERROR", details: formattedErrors });
       }
       throw err;
     }
