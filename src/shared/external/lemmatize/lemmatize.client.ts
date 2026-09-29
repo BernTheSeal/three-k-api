@@ -1,29 +1,31 @@
 import { ExternalServiceError } from "@/shared/errors";
 import { lemmatizeConfig } from "@/shared/config/lemmatize.config";
 import axios from "axios";
+import { lemmatizeResponseSchema } from "./lemmatize.validator";
+import { ZodError } from "zod";
 
-type LemmatizeResponse = {
-  lemma: string;
-  pos: string;
-  text: string;
-};
-
-export const lemmatizeClient = async (sentence: string): Promise<LemmatizeResponse[]> => {
+export const lemmatizeClient = async (sentence: string) => {
   try {
     const response = await axios.post(lemmatizeConfig.url, { sentence }, { timeout: lemmatizeConfig.timeoutMs });
-    return response.data.data;
+    const parsedResponse = lemmatizeResponseSchema.parse(response.data.data);
+    return parsedResponse;
   } catch (err) {
-    let statusCode: number | undefined = undefined;
-
-    if (axios.isAxiosError(err)) {
-      statusCode = err.response?.status;
+    if (err instanceof ZodError) {
+      throw new ExternalServiceError({
+        message: "Lemmatizer returned an unexpected response shape",
+        code: "LEMMATIZE_INVALID_RESPONSE",
+        service: "LEMMATIZE",
+        cause: err,
+      });
     }
+
+    const upstreamStatus = axios.isAxiosError(err) ? err.response?.status : undefined;
 
     throw new ExternalServiceError({
       message: "Lemmatizer service failed",
       code: "LEMMATIZER_UNAVAILABLE",
       service: "LEMMATIZE",
-      upstreamStatus: statusCode,
+      upstreamStatus,
       cause: err,
     });
   }

@@ -1,4 +1,3 @@
-import { lemmatizeClient } from "@/shared/external/lemmatize/lemmatize.client";
 import { wordCache } from "../word/word.cache";
 import { BadRequestError, NotFoundError } from "@/shared/errors";
 import { withTransaction } from "@/shared/lib/db/db.provider";
@@ -6,6 +5,7 @@ import { sentenceRepo } from "./sentence.repo";
 import { sentenceWordRepo } from "./sentenceWords/sentenceWord.repo";
 import { Create } from "./sentence.service.type";
 import { clearSentence } from "./sentence.utils";
+import { lemmatizeProvider } from "@/shared/external/lemmatize/lemmatize.provider";
 
 const create: Create = async (input) => {
   const { content, userId } = input;
@@ -19,19 +19,26 @@ const create: Create = async (input) => {
     });
   }
 
-  const lemmatizedSentence = await lemmatizeClient(clearedSentence);
+  const lemmatizedSentence = await lemmatizeProvider.lemmatize(clearedSentence);
 
-  const wordsIdx = await wordCache.getIndexMany(lemmatizedSentence.map((l) => l.lemma.toLowerCase()));
+  const wordsLemmas = lemmatizedSentence.map((w) => w.lemma.toLowerCase());
+
+  const wordsIds = await wordCache.getIndexMany(wordsLemmas);
 
   const unknownWords: { lemma: string; text: string }[] = [];
-  const knownIdx: number[] = [];
+  const knownWords: { wordId: number; surfaceForm: string }[] = [];
 
-  wordsIdx.forEach((w, i) => {
-    if (w == null) {
-      const item = lemmatizedSentence[i]!;
+  wordsIds.forEach((wi, i) => {
+    const item = lemmatizedSentence[i]!;
+
+    if (item.pos === "proper noun") {
+      return;
+    }
+
+    if (wi == null) {
       unknownWords.push({ lemma: item.lemma, text: item.text });
     } else {
-      knownIdx.push(w);
+      knownWords.push({ wordId: wi, surfaceForm: item.text });
     }
   });
 
@@ -48,8 +55,8 @@ const create: Create = async (input) => {
     await sentenceWordRepo.createBulk(
       {
         sentenceId: sentenceResponse.sentenceId,
-        indexes: knownIdx,
-        words: lemmatizedSentence.map((l) => l.text),
+        wordIds: knownWords.map((kw) => kw.wordId),
+        surfaceForms: knownWords.map((kw) => kw.surfaceForm),
       },
       { client },
     );

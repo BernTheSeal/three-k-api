@@ -1,0 +1,16 @@
+export const POS_TAG_MAP = {
+  ADP: "preposition",
+  PRON: "pronoun",
+  VERB: "verb",
+  SCONJ: "conjunction",
+  CCONJ: "conjunction",
+  DET: "determiner",
+  ADJ: "adjective",
+  ADV: "adverb",
+  NOUN: "noun",
+  AUX: "auxiliary verb",
+  INTJ: "exclamation",
+  NUM: "number",
+  PART: "infinitive marker",
+  PROPN: "proper noun",
+} as const;
