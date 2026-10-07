@@ -1,6 +1,6 @@
 import z from "zod";
 
-export function enumArraySchema<T extends string>(target: string, values: [T, ...T[]], options?: { fromUrl?: boolean }) {
+export function enumArraySchema<T extends string>(target: string, values: readonly [T, ...T[]], options?: { fromUrl?: boolean }) {
   const elementMsg = `${target} must be one of: ${values.join(", ")}!`;
   const arrayMsg = `${target} must be an array!`;
 

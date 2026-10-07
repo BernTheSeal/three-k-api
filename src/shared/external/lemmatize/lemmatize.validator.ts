@@ -1,13 +1,11 @@
 import { z } from "zod";
-import { POS_TAG_MAP } from "./lemmatize.map";
 import { enumSchema } from "@/shared/lib/validate/builders";
-
-const posTagArray = Object.keys(POS_TAG_MAP) as [keyof typeof POS_TAG_MAP, ...(keyof typeof POS_TAG_MAP)[]];
+import { EXPECTED_POS_FROM_NLP } from "./lemmatize.map";
 
 export const lemmatizeResponseSchema = z.array(
   z.object({
     lemma: z.string(),
-    pos: enumSchema("pos", posTagArray),
+    pos: enumSchema("pos", EXPECTED_POS_FROM_NLP),
     text: z.string(),
   }),
 );

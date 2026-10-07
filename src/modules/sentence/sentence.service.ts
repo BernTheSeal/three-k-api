@@ -5,7 +5,7 @@ import { sentenceRepo } from "./sentence.repo";
 import { sentenceWordRepo } from "./sentenceWords/sentenceWord.repo";
 import { Create } from "./sentence.service.type";
 import { clearSentence } from "./sentence.utils";
-import { lemmatizeProvider } from "@/shared/external/lemmatize/lemmatize.provider";
+import { lemmatizeAdapter } from "@/shared/external/lemmatize/lemmatize.adapter";
 
 const create: Create = async (input) => {
   const { content, userId } = input;
@@ -19,7 +19,7 @@ const create: Create = async (input) => {
     });
   }
 
-  const lemmatizedSentence = await lemmatizeProvider.lemmatize(clearedSentence);
+  const lemmatizedSentence = await lemmatizeAdapter.lemmatize(clearedSentence);
 
   const wordsLemmas = lemmatizedSentence.map((w) => w.lemma.toLowerCase());
 
