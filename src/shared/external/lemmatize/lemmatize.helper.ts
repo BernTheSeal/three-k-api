@@ -1,5 +1,5 @@
 import { LemmatizeEntity } from "./lemmatize.type";
-import { CONVERT_DET_TO, UNION_WORDS, MODAL_VERBS } from "./lemmatize.map";
+import { CONVERT_DET_TO, UNION_WORDS, MODAL_VERBS, LEMMA_EXCEPTIONS } from "./lemmatize.map";
 import { PosEntity } from "@/shared/types/entities";
 
 type TryClassifyDet = (input: LemmatizeEntity) =>
@@ -78,4 +78,17 @@ export const tryClassifyAux: TryClassifyAux = (input) => {
   }
 
   return { success: true, newPos: "modal verb" };
+};
+
+type TrySkipLemmatization = (input: { text: string }) => { success: true; newLemma: string } | { success: false; newLemma: null };
+
+export const trySkipLemmatization: TrySkipLemmatization = (input) => {
+  const { text } = input;
+  const isLemmaException = LEMMA_EXCEPTIONS.has(text);
+
+  if (!isLemmaException) {
+    return { success: false, newLemma: null };
+  }
+
+  return { success: true, newLemma: text };
 };

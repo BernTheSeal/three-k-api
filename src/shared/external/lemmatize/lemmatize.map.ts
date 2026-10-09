@@ -55,3 +55,28 @@ export const CONVERT_DET_TO = new Map<string, Extract<PosEntity["pos"], "indefin
 ]);
 
 export const MODAL_VERBS = new Set<string>(["should", "could", "must", "need", "may", "might", "would", "will", "can", "ought"]);
+
+export const LEMMA_EXCEPTIONS = new Set([
+  "better",
+  "best",
+  "worse",
+  "worst",
+  "less",
+  "least",
+  "more",
+  "most",
+  "further",
+  "furthest",
+  "farther",
+  "farthest",
+  "elder",
+  "eldest",
+  "later",
+  "latest",
+  "i",
+  "me",
+  "him",
+  "her",
+  "us",
+  "them",
+]);

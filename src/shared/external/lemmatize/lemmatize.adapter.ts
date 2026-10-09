@@ -1,7 +1,7 @@
 import { lemmatizeClient } from "./lemmatize.client";
 import { NLP_POS_TO_DB_POS } from "./lemmatize.map";
 import { posCache } from "@/modules/pos/pos.cache";
-import { tryClassifyAux, tryClassifyDet, tryUnion } from "./lemmatize.helper";
+import { tryClassifyAux, tryClassifyDet, trySkipLemmatization, tryUnion } from "./lemmatize.helper";
 
 const lemmatize = async (sentence: string) => {
   const lemmatizedSentence = await lemmatizeClient(sentence);
@@ -15,10 +15,10 @@ const lemmatize = async (sentence: string) => {
     let currPos = NLP_POS_TO_DB_POS[pos];
     let currText = text;
 
-    const determiner = tryClassifyDet({ lemma: currLemma, pos: currPos });
+    const skipLemmatization = trySkipLemmatization({ text });
 
-    if (determiner.success) {
-      currPos = determiner.newPos;
+    if (skipLemmatization.success) {
+      currLemma = skipLemmatization.newLemma;
     }
 
     const union = tryUnion({
@@ -43,6 +43,12 @@ const lemmatize = async (sentence: string) => {
 
     if (auxilaryVerb.success) {
       currPos = auxilaryVerb.newPos;
+    }
+
+    const determiner = tryClassifyDet({ lemma: currLemma, pos: currPos });
+
+    if (determiner.success) {
+      currPos = determiner.newPos;
     }
 
     const posId = posCache.get(currPos);
