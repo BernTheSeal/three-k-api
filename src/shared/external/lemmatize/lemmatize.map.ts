@@ -48,12 +48,6 @@ export const UNION_WORDS = new Map<string, { withSuffix?: string; second: string
   ["can", { second: "not", pos: "modal verb", unionForm: "cannot" }],
 ]);
 
-export const CONVERT_DET_TO = new Map<string, Extract<PosEntity["pos"], "indefinite article" | "definite article">>([
-  ["a", "indefinite article"],
-  ["an", "indefinite article"],
-  ["the", "definite article"],
-]);
-
 export const MODAL_VERBS = new Set<string>(["should", "could", "must", "need", "may", "might", "would", "will", "can", "ought"]);
 
 export const LEMMA_EXCEPTIONS = new Set([
@@ -79,4 +73,11 @@ export const LEMMA_EXCEPTIONS = new Set([
   "her",
   "us",
   "them",
+]);
+
+export const OVERRIDE_POS = new Map<String, PosEntity["pos"]>([
+  ["not", "adverb"],
+  ["a", "indefinite article"],
+  ["an", "indefinite article"],
+  ["the", "definite article"],
 ]);

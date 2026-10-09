@@ -1,30 +1,6 @@
 import { LemmatizeEntity } from "./lemmatize.type";
-import { CONVERT_DET_TO, UNION_WORDS, MODAL_VERBS, LEMMA_EXCEPTIONS } from "./lemmatize.map";
+import { UNION_WORDS, MODAL_VERBS, LEMMA_EXCEPTIONS, OVERRIDE_POS } from "./lemmatize.map";
 import { PosEntity } from "@/shared/types/entities";
-
-type TryClassifyDet = (input: LemmatizeEntity) =>
-  | {
-      newPos: Extract<LemmatizeEntity["pos"], "definite article" | "indefinite article">;
-      success: true;
-    }
-  | {
-      newPos: null;
-      success: false;
-    };
-
-export const tryClassifyDet: TryClassifyDet = (input) => {
-  const { lemma, pos } = input;
-  const newPos = CONVERT_DET_TO.get(lemma);
-
-  if (pos != "determiner" || !newPos) {
-    return {
-      newPos: null,
-      success: false,
-    };
-  }
-
-  return { newPos, success: true };
-};
 
 type TryUnion = (input: {
   curr: { lemma: string; text: string };
@@ -91,4 +67,20 @@ export const trySkipLemmatization: TrySkipLemmatization = (input) => {
   }
 
   return { success: true, newLemma: text };
+};
+
+type TryOverridePos = (input: {
+  lemma: string;
+}) => { success: true; newPos: PosEntity["pos"] } | { success: false; newPos: null };
+
+export const tryOverridePos: TryOverridePos = (input) => {
+  const { lemma } = input;
+
+  const newPos = OVERRIDE_POS.get(lemma);
+
+  if (!newPos) {
+    return { success: false, newPos: null };
+  }
+
+  return { success: true, newPos };
 };
