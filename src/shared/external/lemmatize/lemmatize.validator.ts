@@ -7,5 +7,6 @@ export const lemmatizeResponseSchema = z.array(
     lemma: z.string(),
     pos: enumSchema("pos", EXPECTED_POS_FROM_NLP),
     text: z.string(),
+    isOov: z.boolean(),
   }),
 );

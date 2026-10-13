@@ -12,6 +12,8 @@ const create: Create = async (input) => {
 
   const clearedSentence = clearSentence(content);
 
+  console.log("CLEARED SEN", clearedSentence);
+
   if (clearedSentence.length === 0) {
     throw new BadRequestError({
       message: "Sentence must contain at least one English word.",
@@ -21,7 +23,7 @@ const create: Create = async (input) => {
 
   const lemmatizedSentence = await lemmatizeAdapter.lemmatize(clearedSentence);
 
-  const wordsLemmas = lemmatizedSentence.map((w) => w.lemma.toLowerCase());
+  const wordsLemmas = lemmatizedSentence.map((w) => w.lemma);
 
   const wordsIds = await wordCache.getIndexMany(wordsLemmas);
 
@@ -32,6 +34,10 @@ const create: Create = async (input) => {
     const item = lemmatizedSentence[i]!;
 
     if (item.pos === "proper noun") {
+      if (item.isOov) {
+        unknownWords.push({ lemma: item.lemma, text: item.text });
+      }
+
       return;
     }
 

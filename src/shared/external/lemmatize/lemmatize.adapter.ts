@@ -9,7 +9,7 @@ const lemmatize = async (sentence: string) => {
   const result = [];
 
   for (let i = 0; i < lemmatizedSentence.length; i++) {
-    const { lemma, pos, text } = lemmatizedSentence[i]!;
+    const { lemma, pos, text, isOov } = lemmatizedSentence[i]!;
 
     let currLemma = lemma;
     let currPos = NLP_POS_TO_DB_POS[pos];
@@ -53,7 +53,7 @@ const lemmatize = async (sentence: string) => {
 
     const posId = posCache.get(currPos);
 
-    result.push({ lemma: currLemma, pos: currPos, text: currText, posId });
+    result.push({ lemma: currLemma, pos: currPos, text: currText, posId, isOov });
   }
 
   return result;
