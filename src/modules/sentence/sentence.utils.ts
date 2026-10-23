@@ -1,9 +1,7 @@
 export const clearSentence = (sentence: string) => {
   return sentence
     .toLowerCase()
-    .replace(/[’‘]/g, "'")
-    .replace(/[^a-zA-Z'\s]/g, " ")
-    .replace(/(?<![a-zA-Z])'|'(?![a-zA-Z])/g, "")
+    .replace(/[.,!?":;]|(?<![a-z])'|'(?![a-z])/g, " $& ")
     .replace(/\s+/g, " ")
     .trim();
 };

@@ -1,7 +1,6 @@
 import { lemmatizeClient } from "./lemmatize.client";
-import { NLP_POS_TO_DB_POS } from "./lemmatize.map";
-import { posCache } from "@/modules/pos/pos.cache";
-import { tryClassifyAux, trySkipLemmatization, tryUnion, tryOverridePos } from "./lemmatize.helper";
+import { NLP_POS_TO_LEMMATIZE_POS } from "./lemmatize.map";
+import { lemmatizeHelper } from "./lemmatize.helper";
 
 const lemmatize = async (sentence: string) => {
   const lemmatizedSentence = await lemmatizeClient(sentence);
@@ -9,51 +8,49 @@ const lemmatize = async (sentence: string) => {
   const result = [];
 
   for (let i = 0; i < lemmatizedSentence.length; i++) {
-    const { lemma, pos, text, isOov } = lemmatizedSentence[i]!;
+    const { lemma, pos, surfaceForm, isOov } = lemmatizedSentence[i]!;
 
     let currLemma = lemma;
-    let currPos = NLP_POS_TO_DB_POS[pos];
-    let currText = text;
+    let currPos = NLP_POS_TO_LEMMATIZE_POS[pos];
+    let currSurfaceForm = surfaceForm;
 
-    const skipLemmatization = trySkipLemmatization({ text });
+    const skipLemmatization = lemmatizeHelper.trySkipLemmatization({ surfaceForm });
 
     if (skipLemmatization.success) {
       currLemma = skipLemmatization.newLemma;
     }
 
-    const union = tryUnion({
+    const union = lemmatizeHelper.tryUnion({
       curr: {
         lemma: currLemma,
-        text: currText,
+        surfaceForm: currSurfaceForm,
       },
       next: {
         lemma: lemmatizedSentence[i + 1]?.lemma,
-        text: lemmatizedSentence[i + 1]?.text,
+        surfaceForm: lemmatizedSentence[i + 1]?.surfaceForm,
       },
     });
 
     if (union.success) {
       currPos = union.newPos;
       currLemma = union.newLemma;
-      currText = union.newText;
+      currSurfaceForm = union.newSurfaceForm;
       i++;
     }
 
-    const auxilaryVerb = tryClassifyAux({ lemma: currLemma, pos: currPos });
+    const auxilaryVerb = lemmatizeHelper.tryClassifyAux({ lemma: currLemma, pos: currPos });
 
     if (auxilaryVerb.success) {
       currPos = auxilaryVerb.newPos;
     }
 
-    const override = tryOverridePos({ lemma });
+    const override = lemmatizeHelper.tryOverridePos({ lemma });
 
     if (override.success) {
       currPos = override.newPos;
     }
 
-    const posId = posCache.get(currPos);
-
-    result.push({ lemma: currLemma, pos: currPos, text: currText, posId, isOov });
+    result.push({ lemma: currLemma, pos: currPos, surfaceForm: currSurfaceForm, isOov });
   }
 
   return result;

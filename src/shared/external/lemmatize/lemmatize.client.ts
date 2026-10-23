@@ -16,6 +16,7 @@ export const lemmatizeClient = async (sentence: string) => {
         code: "LEMMATIZE_INVALID_RESPONSE",
         service: "LEMMATIZE",
         cause: err,
+        isOperational: false,
       });
     }
 
@@ -27,6 +28,7 @@ export const lemmatizeClient = async (sentence: string) => {
       service: "LEMMATIZE",
       upstreamStatus,
       cause: err,
+      isOperational: false,
     });
   }
 };

@@ -1,9 +1,11 @@
-import { PosEntity } from "@/shared/types/entities";
+import { Pos } from "@/shared/types/entities";
 
-type ExtraPos = "proper noun";
-export type PosFromEntityWithExtra = PosEntity["pos"] | ExtraPos;
+type ExtraPos = "proper noun" | "symbol" | "other";
 
-export type LemmatizeEntity = {
+export type LemmatizePos = Pos | ExtraPos;
+
+export type LemmatizeShape = {
   lemma: string;
-  pos: PosFromEntityWithExtra;
+  surfaceForm: string;
+  pos: LemmatizePos;
 };

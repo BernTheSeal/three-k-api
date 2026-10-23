@@ -1,4 +1,4 @@
-export const POS_NAMES = [
+export const POS = [
   "verb",
   "noun",
   "adjective",
@@ -14,11 +14,14 @@ export const POS_NAMES = [
   "modal verb",
   "definite article",
   "infinitive marker",
+  "punctuation",
 ] as const;
 
-type PosName = (typeof POS_NAMES)[number];
+export type Pos = (typeof POS)[number];
+
+export const PUNC = "punctuation" satisfies Pos;
 
 export type PosEntity = {
   posId: number;
-  pos: PosName;
+  pos: Pos;
 };

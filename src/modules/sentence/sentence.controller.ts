@@ -7,7 +7,7 @@ const create: Create = async (req, res) => {
   const { sentence } = res.locals.validatedData.body;
   const { userId } = res.locals.user;
 
-  const createdSentence = await sentenceService.create({ userId, content: sentence });
+  const createdSentence = await sentenceService.create({ userId, sentence });
 
   sendSuccessResponse(res, HTTP_STATUS.CREATED, "Sentence was successfully created!", createdSentence);
 };

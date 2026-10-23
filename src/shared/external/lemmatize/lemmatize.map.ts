@@ -1,5 +1,4 @@
-import { PosEntity } from "@/shared/types/entities";
-import { PosFromEntityWithExtra } from "./lemmatize.type";
+import { LemmatizePos } from "./lemmatize.type";
 
 export const EXPECTED_POS_FROM_NLP = [
   "ADP",
@@ -16,9 +15,12 @@ export const EXPECTED_POS_FROM_NLP = [
   "NUM",
   "PART",
   "PROPN",
+  "PUNCT",
+  "X",
+  "SYM",
 ] as const;
 
-export const NLP_POS_TO_DB_POS: Record<(typeof EXPECTED_POS_FROM_NLP)[number], PosFromEntityWithExtra> = {
+export const NLP_POS_TO_LEMMATIZE_POS: Record<(typeof EXPECTED_POS_FROM_NLP)[number], LemmatizePos> = {
   ADP: "preposition",
   PRON: "pronoun",
   VERB: "verb",
@@ -32,10 +34,13 @@ export const NLP_POS_TO_DB_POS: Record<(typeof EXPECTED_POS_FROM_NLP)[number], P
   INTJ: "exclamation",
   NUM: "number",
   PART: "infinitive marker",
+  PUNCT: "punctuation",
   PROPN: "proper noun",
+  X: "other",
+  SYM: "symbol",
 } as const;
 
-export const UNION_WORDS = new Map<string, { withSuffix?: string; second: string; pos: PosEntity["pos"]; unionForm: string }>([
+export const UNION_WORDS = new Map<string, { withSuffix?: string; second: string; pos: LemmatizePos; unionForm: string }>([
   ["have", { second: "to", pos: "modal verb", unionForm: "have to" }],
   ["use", { withSuffix: "used", second: "to", pos: "modal verb", unionForm: "used to" }],
   ["used", { second: "to", pos: "modal verb", unionForm: "used to" }],
@@ -75,7 +80,7 @@ export const LEMMA_EXCEPTIONS = new Set([
   "them",
 ]);
 
-export const OVERRIDE_POS = new Map<String, PosEntity["pos"]>([
+export const OVERRIDE_POS = new Map<string, LemmatizePos>([
   ["not", "adverb"],
   ["a", "indefinite article"],
   ["an", "indefinite article"],

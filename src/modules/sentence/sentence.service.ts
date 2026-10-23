@@ -1,76 +1,110 @@
 import { wordCache } from "../word/word.cache";
-import { BadRequestError, NotFoundError } from "@/shared/errors";
-import { withTransaction } from "@/shared/lib/db/db.provider";
-import { sentenceRepo } from "./sentence.repo";
-import { sentenceWordRepo } from "./sentenceWords/sentenceWord.repo";
+import { BadRequestError, InternalServerError, NotFoundError, UnprocessableContentError } from "@/shared/errors";
 import { Create } from "./sentence.service.type";
 import { clearSentence } from "./sentence.utils";
 import { lemmatizeAdapter } from "@/shared/external/lemmatize/lemmatize.adapter";
+import { posCache } from "../pos/pos.cache";
+import { sentenceHelper } from "./sentence.helper";
+import { withTransaction } from "@/shared/lib/db/db.provider";
+import { sentenceRepo } from "./sentence.repo";
+import { sentenceWordRepo } from "./sentenceWords/sentenceWord.repo";
+import { Pos } from "@/shared/types/entities";
 
 const create: Create = async (input) => {
-  const { content, userId } = input;
+  const { sentence, userId } = input;
 
-  const clearedSentence = clearSentence(content);
+  const clearedSentence = clearSentence(sentence);
+  const lemmatizedSentence = await lemmatizeAdapter.lemmatize(clearedSentence);
+  const wordIndexes = await wordCache.getIndexMany(lemmatizedSentence.map((l) => l.lemma));
 
-  console.log("CLEARED SEN", clearedSentence);
-
-  if (clearedSentence.length === 0) {
-    throw new BadRequestError({
-      message: "Sentence must contain at least one English word.",
-      code: "SENTENCE_HAS_NO_WORDS",
+  if (lemmatizedSentence.length !== wordIndexes.length) {
+    throw new InternalServerError({
+      message:
+        "wordCache.getIndexMany returned a different number of results than the lemmas sent. " +
+        "Either the lemmatize adapter produced an unexpected lemma list or the word cache dropped/added entries; " +
+        "results are positional, so this cannot be processed.",
+      code: "WORD_INDEX_LENGTH_MISMATCH",
+      details: [
+        {
+          lemmatizedLength: lemmatizedSentence.length,
+          wordIndexesLength: wordIndexes.length,
+          sentence: clearedSentence,
+        },
+      ],
     });
   }
 
-  const lemmatizedSentence = await lemmatizeAdapter.lemmatize(clearedSentence);
+  const withWordIds = lemmatizedSentence.map((e, i) => ({ ...e, wordId: wordIndexes[i] ?? null }));
 
-  const wordsLemmas = lemmatizedSentence.map((w) => w.lemma);
+  const unknownWords = sentenceHelper.findUnknownWords(withWordIds);
 
-  const wordsIds = await wordCache.getIndexMany(wordsLemmas);
-
-  const unknownWords: { lemma: string; text: string }[] = [];
-  const knownWords: { wordId: number; surfaceForm: string }[] = [];
-
-  wordsIds.forEach((wi, i) => {
-    const item = lemmatizedSentence[i]!;
-
-    if (item.pos === "proper noun") {
-      if (item.isOov) {
-        unknownWords.push({ lemma: item.lemma, text: item.text });
-      }
-
-      return;
-    }
-
-    if (wi == null) {
-      unknownWords.push({ lemma: item.lemma, text: item.text });
-    } else {
-      knownWords.push({ wordId: wi, surfaceForm: item.text });
-    }
-  });
-
-  if (unknownWords.length >= 1) {
+  if (unknownWords.length > 0) {
     throw new NotFoundError({
-      message: "Sentence contains words that are not in the 3K word list.",
-      code: "WORDS_NOT_IN_THREE_K",
+      message: "Sentence passed validation, but some words were not found in the 3K word list.",
+      code: "WORDS_NOT_FOUND",
       details: unknownWords,
     });
   }
 
-  const cretedSentence = await withTransaction(async (client) => {
-    const sentenceResponse = await sentenceRepo.create({ userId, content }, { client });
-    await sentenceWordRepo.createBulk(
-      {
-        sentenceId: sentenceResponse.sentenceId,
-        wordIds: knownWords.map((kw) => kw.wordId),
-        surfaceForms: knownWords.map((kw) => kw.surfaceForm),
-      },
-      { client },
-    );
+  const unknownPos = sentenceHelper.findUnknownPos(withWordIds);
 
-    return sentenceResponse;
+  if (unknownPos.length > 0) {
+    throw new UnprocessableContentError({
+      message:
+        "Sentence passed the 3K word check, but lemmatizer tagged some words with a part of speech the system does not accept." +
+        "Likely a tagging issue, rephrasing may help.",
+      code: "WORDS_NOT_PROCESSABLE",
+      details: unknownPos,
+    });
+  }
+
+  const withIds = withWordIds.map((e, i) => {
+    const posId = posCache.get(e.pos);
+
+    if (posId === undefined) {
+      throw new InternalServerError({
+        message:
+          "Pos id not found in posCache for a pos that passed validation. " +
+          "The cache is probably empty or incomplete: check that initializePosCache ran at startup and the pos table has all rows.",
+        code: "POS_ID_NOT_FOUND",
+        details: [{ pos: e.pos, position: i }],
+      });
+    }
+
+    return { ...e, posId, pos: e.pos as Pos };
   });
 
-  return cretedSentence;
+  const puncInARow = sentenceHelper.findPuncInARow(withIds);
+
+  if (puncInARow.length > 0) {
+    throw new BadRequestError({
+      message: "Sentence contains consecutive punctuation marks. Use a single punctuation mark between words.",
+      code: "PUNCTUATION_IN_A_ROW",
+      details: puncInARow,
+    });
+  }
+
+  const withDisplayFlags = sentenceHelper.addDisplayFlags(withIds);
+
+  const sentenceId = await withTransaction(async (client) => {
+    const sentenceResponse = await sentenceRepo.create({ userId }, { client });
+    sentenceWordRepo.createBulk({ sentenceId: sentenceResponse.sentenceId, sentenceWords: withDisplayFlags }, { client });
+    return sentenceResponse.sentenceId;
+  });
+
+  const words = withDisplayFlags.map((e) => ({
+    position: e.position,
+    surfaceForm: e.surfaceForm,
+    word: e.lemma,
+    wordId: e.wordId,
+    pos: e.pos,
+    posId: e.posId,
+    isMergePrev: e.isMergePrev,
+    isCapitalize: e.isCapitalize,
+    isPunc: e.isPunc,
+  }));
+
+  return { sentenceId, words };
 };
 
 export const sentenceService = {

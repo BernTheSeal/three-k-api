@@ -1,5 +1,8 @@
-import { SentenceEntity } from "@/shared/types/entities";
+import { Pos, SentenceEntity, SentenceWordEntity, WordEntity } from "@/shared/types/entities";
 
-type CreateInput = Pick<SentenceEntity, "userId" | "content">;
-type CreateOutput = Promise<SentenceEntity>;
-export type Create = (input: CreateInput) => CreateOutput;
+type CreateInput = Pick<SentenceEntity, "userId"> & { sentence: string };
+type CreateOutput = {
+  sentenceId: SentenceWordEntity["sentenceId"];
+  words: (Omit<SentenceWordEntity, "sentenceId"> & { word: WordEntity["word"]; pos: Pos })[];
+};
+export type Create = (input: CreateInput) => Promise<CreateOutput>;

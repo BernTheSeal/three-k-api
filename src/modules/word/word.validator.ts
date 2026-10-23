@@ -1,7 +1,7 @@
 import z from "zod";
-import { enumArraySchema, stringArraySchema, stringSchema } from "@/shared/lib/validate/builders";
+import { enumArraySchema, stringSchema } from "@/shared/lib/validate/builders";
 import { offsetSchema, searchSchema } from "../../shared/lib/validate/common";
-import { POS_NAMES } from "@/shared/types/entities";
+import { POS } from "@/shared/types/entities";
 
 export const listWordSchema = z.object({
   query: z
@@ -9,7 +9,7 @@ export const listWordSchema = z.object({
       offset: offsetSchema,
       search: searchSchema,
 
-      pos: enumArraySchema("pos", POS_NAMES, { fromUrl: true }),
+      pos: enumArraySchema("pos", POS, { fromUrl: true }),
       level: enumArraySchema("level", ["a1", "a2", "b1", "b2", "c1", "c2"], { fromUrl: true }),
     })
     .partial(),

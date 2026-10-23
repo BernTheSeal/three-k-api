@@ -5,5 +5,6 @@ export * from "./http/badRequest.error";
 export * from "./http/conflict.error";
 export * from "./http/internalServer.error";
 export * from "./http/externalService.error";
+export * from "./http/unprocessableContent.error";
 
 export * from "./internal/refreshToken.error";

@@ -31,4 +31,4 @@ def lemmatize(payload: LemmatizeRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail="Unexpected error!")
 
-    return {"data": [{"text": t.text, "lemma": t.lemma_, "pos": t.pos_, "isOov": t.is_oov} for t in doc]}
+    return {"data": [{"surfaceForm": t.text, "lemma": t.lemma_, "pos": t.pos_, "isOov": t.is_oov} for t in doc]}

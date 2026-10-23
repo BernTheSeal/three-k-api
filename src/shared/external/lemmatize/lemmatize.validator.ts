@@ -6,7 +6,7 @@ export const lemmatizeResponseSchema = z.array(
   z.object({
     lemma: z.string(),
     pos: enumSchema("pos", EXPECTED_POS_FROM_NLP),
-    text: z.string(),
+    surfaceForm: z.string(),
     isOov: z.boolean(),
   }),
 );
