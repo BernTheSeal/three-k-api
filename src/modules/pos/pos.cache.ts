@@ -8,8 +8,8 @@ const set = (posEntry: PosEntity[]) => {
   });
 };
 
-const get = (pos: string): number | undefined => {
-  return posIndexes.get(pos);
+const get = (pos: string): number | null => {
+  return posIndexes.get(pos) ?? null;
 };
 
 export const posCache = {

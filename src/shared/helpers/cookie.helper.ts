@@ -1,7 +1,7 @@
 import { Response } from "express";
 import { appConfig } from "../config/app.config";
 
-export const setSecureCookie = (res: Response, name: string, value: string, maxAgeMs: number) => {
+const setSecureCookie = (res: Response, name: string, value: string, maxAgeMs: number) => {
   res.cookie(name, value, {
     httpOnly: true,
     secure: appConfig.nodeEnv === "production",
@@ -10,6 +10,11 @@ export const setSecureCookie = (res: Response, name: string, value: string, maxA
   });
 };
 
-export const clearCookie = (res: Response, name: string) => {
+const clearCookie = (res: Response, name: string) => {
   res.clearCookie(name);
+};
+
+export const cookieHelper = {
+  setSecureCookie,
+  clearCookie,
 };

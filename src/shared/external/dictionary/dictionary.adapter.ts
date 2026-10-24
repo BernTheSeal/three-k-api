@@ -1,4 +1,4 @@
-import { singleflight } from "@/shared/helpers/singleflight.helper";
+import { singleFlightHelper } from "@/shared/helpers/singleflight.helper";
 import { setSensesCache, getSensesCache } from "./dictionary.cache";
 import { fetchDictionaryEntry } from "./dictionary.client";
 import { fetchSensesSchema } from "./dictionary.validator";
@@ -12,7 +12,7 @@ const getSenses = async (word: string): Promise<Map<string, WordSenseShape[]>> =
   }
 
   try {
-    return await singleflight(`dictionary:${word}`, async () => {
+    return await singleFlightHelper.run(`dictionary:${word}`, async () => {
       const wordEntry = await fetchDictionaryEntry(word);
 
       const parsedData = fetchSensesSchema.parse(wordEntry);

@@ -1,8 +1,8 @@
-import { getExecutor } from "@/shared/lib/db/db.provider";
+import { dbProvider } from "@/shared/lib/db";
 import { PosEntity } from "@/shared/types/entities";
 
 const getAll = async (): Promise<PosEntity[]> => {
-  const executor = getExecutor<PosEntity>();
+  const executor = dbProvider.getExecutor<PosEntity>();
 
   const response = await executor(
     `

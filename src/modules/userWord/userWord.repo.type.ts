@@ -1,5 +1,5 @@
 import { UserWordEntity } from "@/shared/types/entities/userWord.entity";
-import { MutateTxOptions, FindTxOptions } from "@/shared/types/transaction.type";
+import { MutateTxOptions } from "@/shared/types/transaction.type";
 
 type CreateParams = Omit<UserWordEntity, "createdAt" | "updatedAt">;
 type CreateResult = Promise<UserWordEntity>;

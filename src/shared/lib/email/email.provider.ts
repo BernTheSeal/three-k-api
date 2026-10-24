@@ -1,11 +1,9 @@
-import { Resend } from "resend";
+import { resend } from "./email.client";
 import { emailConfig } from "@/shared/config/email.config";
-import { ExternalServiceError } from "../errors";
-import { HTTP_STATUS } from "../constants/httpStatus.const";
+import { HTTP_STATUS } from "@/shared/constants/httpStatus.const";
+import { ExternalServiceError } from "@/shared/errors";
 
-const resend = new Resend(emailConfig.api);
-
-export const sendMail = async (data: { subject: string; html: string }) => {
+const sendMail = async (data: { subject: string; html: string }) => {
   for (let i = 1; i <= emailConfig.maxAttempt; i++) {
     try {
       const { subject, html } = data;
@@ -41,4 +39,8 @@ export const sendMail = async (data: { subject: string; html: string }) => {
       });
     }
   }
+};
+
+export const emailProvider = {
+  sendMail,
 };

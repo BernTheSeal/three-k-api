@@ -1,10 +1,10 @@
-import { getExecutor } from "@/shared/lib/db/db.provider";
+import { dbProvider } from "@/shared/lib/db";
 import { Create } from "./sentence.repo.type";
 import { SentenceEntity } from "@/shared/types/entities";
 
 const create: Create = async (params, tx) => {
   const { userId } = params;
-  const executor = getExecutor<SentenceEntity>(tx?.client);
+  const executor = dbProvider.getExecutor<SentenceEntity>(tx?.client);
 
   const response = await executor(
     `

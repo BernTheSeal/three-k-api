@@ -1,4 +1,4 @@
-import { CreateDto, RemoveDto, UpdateDto } from "@/modules/userWord/userWord.validator";
+import { CreateDto, RemoveDto, UpdateDto } from "./userWord.validator";
 import { AuthHandler } from "@/shared/types/requestHandler.type";
 
 export type Create = AuthHandler<CreateDto>;

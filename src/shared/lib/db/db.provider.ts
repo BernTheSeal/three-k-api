@@ -1,6 +1,6 @@
 import { pool } from "./db.client";
 import { PoolClient, DatabaseError } from "pg";
-import { errorMapper, toCamelCase } from "./db.helper";
+import { dbHelper } from "./db.helper";
 import { ExternalServiceError } from "@/shared/errors";
 
 const run = async (client: PoolClient | undefined, text: string, params?: any[]) => {
@@ -9,7 +9,7 @@ const run = async (client: PoolClient | undefined, text: string, params?: any[])
     return await exec.query(text, params);
   } catch (error) {
     if (error instanceof DatabaseError) {
-      throw errorMapper(error);
+      throw dbHelper.errorMapper(error);
     }
 
     throw new ExternalServiceError({
@@ -21,16 +21,16 @@ const run = async (client: PoolClient | undefined, text: string, params?: any[])
   }
 };
 
-export const getExecutor = <T extends Record<string, unknown>>(client?: PoolClient) => {
+const getExecutor = <T extends Record<string, unknown>>(client?: PoolClient) => {
   return async (text: string, params: any[] = []) => {
     const res = await run(client, text, params);
-    return { ...res, rows: toCamelCase<T>(res.rows) };
+    return { ...res, rows: dbHelper.toCamelCase<T>(res.rows) };
   };
 };
 
-export const getLock = (lock?: boolean) => (lock ? "FOR UPDATE" : "");
+const getLock = (lock?: boolean) => (lock ? "FOR UPDATE" : "");
 
-export const withTransaction = async <T>(fn: (client: PoolClient) => Promise<T>): Promise<T> => {
+const withTransaction = async <T>(fn: (client: PoolClient) => Promise<T>): Promise<T> => {
   const client = await pool.connect();
   try {
     await client.query("BEGIN");
@@ -43,4 +43,10 @@ export const withTransaction = async <T>(fn: (client: PoolClient) => Promise<T>)
   } finally {
     client.release();
   }
+};
+
+export const dbProvider = {
+  getExecutor,
+  getLock,
+  withTransaction,
 };

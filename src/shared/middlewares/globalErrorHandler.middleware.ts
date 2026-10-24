@@ -1,6 +1,6 @@
 import { AppError } from "../errors/app.error";
 import { ErrorRequestHandler } from "express";
-import { sendErrorResponse } from "../helpers/response.helper";
+import { responseHelper } from "../helpers/response.helper";
 import { ErrorStatusCode } from "../types/statusCode.type";
 import { HTTP_STATUS } from "../constants/httpStatus.const";
 
@@ -19,5 +19,5 @@ export const globalErrorHandler: ErrorRequestHandler = (err, req, res, next) => 
     code = err.code;
   }
 
-  sendErrorResponse(res, statusCode, message, details, code);
+  responseHelper.sendError(res, statusCode, message, details, code);
 };

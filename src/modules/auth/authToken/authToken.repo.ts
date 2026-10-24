@@ -1,11 +1,11 @@
-import { getExecutor, getLock } from "@/shared/lib/db/db.provider";
+import { dbProvider } from "@/shared/lib/db";
 import { Create, FindByToken, Revoke, MarkAsUsed } from "./authToken.repo.type";
 import { AuthTokenEntity } from "@/shared/types/entities";
 
 const create: Create = async (params, tx) => {
   const { authAccountId, tokenHash, tokenType, expiresAt } = params;
 
-  const executor = getExecutor<AuthTokenEntity>(tx?.client);
+  const executor = dbProvider.getExecutor<AuthTokenEntity>(tx?.client);
 
   const response = await executor(
     `
@@ -22,9 +22,9 @@ const create: Create = async (params, tx) => {
 const findByToken: FindByToken = async (params, tx) => {
   const { tokenHash } = params;
 
-  const executor = getExecutor<AuthTokenEntity>(tx?.client);
+  const executor = dbProvider.getExecutor<AuthTokenEntity>(tx?.client);
 
-  const lock = getLock(tx?.lock);
+  const lock = dbProvider.getLock(tx?.lock);
 
   const response = await executor(
     ` 
@@ -40,7 +40,7 @@ const findByToken: FindByToken = async (params, tx) => {
 const revoke: Revoke = async (params, tx) => {
   const { authAccountId, tokenType } = params;
 
-  const executor = getExecutor(tx?.client);
+  const executor = dbProvider.getExecutor(tx?.client);
 
   await executor(
     `
@@ -59,7 +59,7 @@ const revoke: Revoke = async (params, tx) => {
 const markAsUsed: MarkAsUsed = async (params, tx) => {
   const { authTokenId } = params;
 
-  const executor = getExecutor(tx?.client);
+  const executor = dbProvider.getExecutor(tx?.client);
 
   await executor(
     `

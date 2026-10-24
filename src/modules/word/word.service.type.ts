@@ -16,3 +16,7 @@ export type FindByWord = (input: FindByWordInput) => FindByWordOutput;
 type FindByWordWithSensesInput = { word: string };
 type FindByWordWithSensesOutput = Promise<WordDetailWithSenseShape | null>;
 export type FindByWordWithSenses = (input: FindByWordWithSensesInput) => FindByWordWithSensesOutput;
+
+type GetWordIdsFromCacheInput = { words: string[] };
+type GetWordIdsFromCacheOutput = (number | null)[];
+export type GetWordIdsFromCache = (input: GetWordIdsFromCacheInput) => Promise<GetWordIdsFromCacheOutput>;

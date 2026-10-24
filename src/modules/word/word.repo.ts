@@ -1,10 +1,11 @@
-import { getExecutor, getLock } from "@/shared/lib/db/db.provider";
 import { List, FindByWord, GetAll } from "./word.repo.type";
+
+import { dbProvider } from "@/shared/lib/db";
 import { WordSummaryEnriched, WordDetailEnriched } from "@/shared/types/enriched/word.enriched";
 import { WordEntity } from "@/shared/types/entities";
 
 const getAll: GetAll = async (tx) => {
-  const executor = getExecutor<WordEntity>(tx?.client);
+  const executor = dbProvider.getExecutor<WordEntity>(tx?.client);
 
   const response = await executor(`SELECT * FROM words`, []);
 
@@ -35,7 +36,7 @@ const list: List = async (params, tx) => {
 
   const where = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
 
-  const executor = getExecutor<WordSummaryEnriched>(tx?.client);
+  const executor = dbProvider.getExecutor<WordSummaryEnriched>(tx?.client);
 
   const response = await executor(
     `
@@ -77,9 +78,9 @@ const list: List = async (params, tx) => {
 const findByWord: FindByWord = async (params, tx) => {
   const { word } = params;
 
-  const executor = getExecutor<WordDetailEnriched>(tx?.client);
+  const executor = dbProvider.getExecutor<WordDetailEnriched>(tx?.client);
 
-  const lock = getLock(tx?.lock);
+  const lock = dbProvider.getLock(tx?.lock);
 
   const response = await executor(
     `

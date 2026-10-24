@@ -1,21 +1,23 @@
-import { wordCache } from "../word/word.cache";
-import { BadRequestError, InternalServerError, NotFoundError, UnprocessableContentError } from "@/shared/errors";
 import { Create } from "./sentence.service.type";
-import { clearSentence } from "./sentence.utils";
-import { lemmatizeAdapter } from "@/shared/external/lemmatize/lemmatize.adapter";
-import { posCache } from "../pos/pos.cache";
+import { sentenceUtils } from "./sentence.util";
 import { sentenceHelper } from "./sentence.helper";
-import { withTransaction } from "@/shared/lib/db/db.provider";
 import { sentenceRepo } from "./sentence.repo";
 import { sentenceWordRepo } from "./sentenceWords/sentenceWord.repo";
+
+import { wordService } from "@/modules/word";
+import { posService } from "@/modules/pos";
+
+import { lemmatizeAdapter } from "@/shared/external/lemmatize";
+import { dbProvider } from "@/shared/lib/db/";
+import { BadRequestError, InternalServerError, NotFoundError, UnprocessableContentError } from "@/shared/errors";
 import { Pos } from "@/shared/types/entities";
 
 const create: Create = async (input) => {
   const { sentence, userId } = input;
 
-  const clearedSentence = clearSentence(sentence);
+  const clearedSentence = sentenceUtils.clearSentence(sentence);
   const lemmatizedSentence = await lemmatizeAdapter.lemmatize(clearedSentence);
-  const wordIndexes = await wordCache.getIndexMany(lemmatizedSentence.map((l) => l.lemma));
+  const wordIndexes = await wordService.getWordIdsFromCache({ words: lemmatizedSentence.map((l) => l.lemma) });
 
   if (lemmatizedSentence.length !== wordIndexes.length) {
     throw new InternalServerError({
@@ -59,9 +61,9 @@ const create: Create = async (input) => {
   }
 
   const withIds = withWordIds.map((e, i) => {
-    const posId = posCache.get(e.pos);
+    const posId = posService.getIdByPosFromCache({ pos: e.pos });
 
-    if (posId === undefined) {
+    if (!posId) {
       throw new InternalServerError({
         message:
           "Pos id not found in posCache for a pos that passed validation. " +
@@ -86,7 +88,7 @@ const create: Create = async (input) => {
 
   const withDisplayFlags = sentenceHelper.addDisplayFlags(withIds);
 
-  const sentenceId = await withTransaction(async (client) => {
+  const sentenceId = await dbProvider.withTransaction(async (client) => {
     const sentenceResponse = await sentenceRepo.create({ userId }, { client });
     sentenceWordRepo.createBulk({ sentenceId: sentenceResponse.sentenceId, sentenceWords: withDisplayFlags }, { client });
     return sentenceResponse.sentenceId;

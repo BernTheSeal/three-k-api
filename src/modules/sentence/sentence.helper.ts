@@ -1,4 +1,4 @@
-import { ALLOWED_PUNC, CONTRACTIONS, SENTENCE_END, ATTACH_PUNC, ALLOWED_POS } from "./sentence.map";
+import { SENTENCE_CONST } from "./sentence.const";
 import { PUNC } from "@/shared/types/entities";
 import { FindUnknownWordsInput, FindUnknownPosInput, FindPuncInARowInput, AddDisplayFlagsInput } from "./sentence.helper.type";
 
@@ -8,7 +8,7 @@ const findUnknownWords = (input: FindUnknownWordsInput[]) => {
   for (let i = 0; i < input.length; i++) {
     const curr = input[i]!;
 
-    const isValidPunc = curr.pos === PUNC && ALLOWED_PUNC.has(curr.surfaceForm);
+    const isValidPunc = curr.pos === PUNC && SENTENCE_CONST.ALLOWED_PUNC.has(curr.surfaceForm);
 
     if (curr.wordId || isValidPunc) {
       continue;
@@ -30,7 +30,7 @@ const findUnknownPos = (input: FindUnknownPosInput[]) => {
   for (let i = 0; i < input.length; i++) {
     const curr = input[i]!;
 
-    if (!ALLOWED_POS.has(curr.pos)) {
+    if (!SENTENCE_CONST.ALLOWED_POS.has(curr.pos)) {
       unknownPos.push({ pos: curr.pos, position: i });
     }
   }
@@ -62,8 +62,8 @@ const addDisplayFlags = <I extends AddDisplayFlagsInput>(input: I[]) => {
     const curr = e;
     const prev = arr[i - 1];
 
-    const isCapitalize = curr.surfaceForm === "i" || !prev || SENTENCE_END.has(prev.surfaceForm);
-    const isMergePrev = CONTRACTIONS.has(curr.surfaceForm) || ATTACH_PUNC.has(curr.surfaceForm);
+    const isCapitalize = curr.surfaceForm === "i" || !prev || SENTENCE_CONST.SENTENCE_END.has(prev.surfaceForm);
+    const isMergePrev = SENTENCE_CONST.CONTRACTIONS.has(curr.surfaceForm) || SENTENCE_CONST.ATTACH_PUNC.has(curr.surfaceForm);
     const isPunc = curr.pos === PUNC;
 
     return { ...e, isCapitalize, isMergePrev, isPunc, position: i };

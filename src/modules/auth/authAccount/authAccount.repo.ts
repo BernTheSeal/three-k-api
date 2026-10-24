@@ -1,4 +1,4 @@
-import { getExecutor, getLock } from "@/shared/lib/db/db.provider";
+import { dbProvider } from "@/shared/lib/db/";
 import { AuthAccountEntity } from "@/shared/types/entities";
 
 import { Create, FindById, FindByProviderAccountId, FindByEmail, VerifyById, UpdatePassword } from "./authAccount.repo.type";
@@ -6,7 +6,7 @@ import { Create, FindById, FindByProviderAccountId, FindByEmail, VerifyById, Upd
 const create: Create = async (params, tx) => {
   const { userId, provider, providerAccountId, email, passwordHash, isVerified } = params;
 
-  const executor = getExecutor<AuthAccountEntity>(tx?.client);
+  const executor = dbProvider.getExecutor<AuthAccountEntity>(tx?.client);
 
   const response = await executor(
     `
@@ -23,9 +23,9 @@ const create: Create = async (params, tx) => {
 const findById: FindById = async (params, tx) => {
   const { authAccountId, provider } = params;
 
-  const executor = getExecutor<AuthAccountEntity>(tx?.client);
+  const executor = dbProvider.getExecutor<AuthAccountEntity>(tx?.client);
 
-  const lock = getLock(tx?.lock);
+  const lock = dbProvider.getLock(tx?.lock);
 
   const response = await executor(
     `
@@ -42,9 +42,9 @@ const findById: FindById = async (params, tx) => {
 const findByProviderAccountId: FindByProviderAccountId = async (params, tx) => {
   const { providerAccountId, provider } = params;
 
-  const executor = getExecutor<AuthAccountEntity>(tx?.client);
+  const executor = dbProvider.getExecutor<AuthAccountEntity>(tx?.client);
 
-  const lock = getLock(tx?.lock);
+  const lock = dbProvider.getLock(tx?.lock);
 
   const response = await executor(
     `
@@ -61,9 +61,9 @@ const findByProviderAccountId: FindByProviderAccountId = async (params, tx) => {
 const findByEmail: FindByEmail = async (params, tx) => {
   const { email, provider } = params;
 
-  const executor = getExecutor<AuthAccountEntity>(tx?.client);
+  const executor = dbProvider.getExecutor<AuthAccountEntity>(tx?.client);
 
-  const lock = getLock(tx?.lock);
+  const lock = dbProvider.getLock(tx?.lock);
 
   const response = await executor(
     `
@@ -80,7 +80,7 @@ const findByEmail: FindByEmail = async (params, tx) => {
 const verifyById: VerifyById = async (params, tx) => {
   const { authAccountId } = params;
 
-  const executor = getExecutor(tx?.client);
+  const executor = dbProvider.getExecutor(tx?.client);
 
   await executor(
     `
@@ -95,7 +95,7 @@ const verifyById: VerifyById = async (params, tx) => {
 const updatePassword: UpdatePassword = async (params, tx) => {
   const { authAccountId, passwordHash } = params;
 
-  const executor = getExecutor(tx?.client);
+  const executor = dbProvider.getExecutor(tx?.client);
 
   await executor(
     `

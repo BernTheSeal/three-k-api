@@ -1,7 +1,7 @@
 import { Router } from "express";
 
-import { authRouter } from "./modules/auth/auth.router";
-import { wordRouter } from "./modules/word/word.router";
+import { authRouter } from "@/modules/auth";
+import { wordRouter } from "@/modules/word";
 import { userWordRouter } from "./modules/userWord/userWord.route";
 import { sentenceRouter } from "./modules/sentence/sentence.router";
 

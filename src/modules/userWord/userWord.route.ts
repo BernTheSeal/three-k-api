@@ -1,8 +1,9 @@
 import express from "express";
+
 import { userWordController } from "./userWord.controller";
 import { createSchema, removeSchema, updateSchema } from "./userWord.validator";
-import { validate } from "@/shared/middlewares/validate";
-import { authenticate } from "@/shared/middlewares/authenticate";
+
+import { validate, authenticate } from "@/shared/middlewares";
 
 const userWordRouter = express.Router();
 

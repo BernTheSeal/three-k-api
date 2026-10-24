@@ -1,12 +1,11 @@
-import { getExecutor } from "@/shared/lib/db/db.provider";
+import { dbProvider } from "@/shared/lib/db";
 import { CreateBulk } from "./sentenceWord.repo.type";
-import { SentenceWordEntity } from "@/shared/types/entities";
 
 const createBulk: CreateBulk = async (params, tx) => {
   const { sentenceId, sentenceWords } = params;
-  const executor = getExecutor(tx?.client);
+  const executor = dbProvider.getExecutor(tx?.client);
 
-  const response = await executor(
+  await executor(
     `
     INSERT INTO sentence_words (
       sentence_id, word_id, pos_id, surface_form, position, is_merge_prev, is_capitalize, is_punc

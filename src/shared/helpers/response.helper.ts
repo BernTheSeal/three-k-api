@@ -1,7 +1,7 @@
 import { Response } from "express";
 import { ErrorStatusCode, SuccessStatusCode } from "../types/statusCode.type";
 
-const sendSuccessResponse = <T>(res: Response, statusCode: SuccessStatusCode, message: string, data?: T) => {
+const sendSuccess = <T>(res: Response, statusCode: SuccessStatusCode, message: string, data?: T) => {
   res.status(statusCode).json({
     success: true,
     message,
@@ -9,7 +9,7 @@ const sendSuccessResponse = <T>(res: Response, statusCode: SuccessStatusCode, me
   });
 };
 
-const sendErrorResponse = <T>(res: Response, statusCode: ErrorStatusCode, message: string, details: T, code: string) => {
+const sendError = <T>(res: Response, statusCode: ErrorStatusCode, message: string, details: T, code: string) => {
   res.status(statusCode).json({
     success: false,
     message,
@@ -18,4 +18,7 @@ const sendErrorResponse = <T>(res: Response, statusCode: ErrorStatusCode, messag
   });
 };
 
-export { sendSuccessResponse, sendErrorResponse };
+export const responseHelper = {
+  sendSuccess,
+  sendError,
+};

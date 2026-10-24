@@ -1,4 +1,4 @@
-import { getExecutor } from "@/shared/lib/db/db.provider";
+import { dbProvider } from "@/shared/lib/db";
 
 import { Create, Remove, Update } from "./userWord.repo.type";
 
@@ -7,7 +7,7 @@ import { UserWordEntity } from "@/shared/types/entities";
 const create: Create = async (params, tx) => {
   const { userId, wordId, status, note, isFavorite } = params;
 
-  const executor = getExecutor<UserWordEntity>(tx?.client);
+  const executor = dbProvider.getExecutor<UserWordEntity>(tx?.client);
 
   const response = await executor(
     `
@@ -24,7 +24,7 @@ const create: Create = async (params, tx) => {
 const remove: Remove = async (params, tx) => {
   const { wordId, userId } = params;
 
-  const executor = getExecutor<Pick<UserWordEntity, "wordId">>(tx?.client);
+  const executor = dbProvider.getExecutor<Pick<UserWordEntity, "wordId">>(tx?.client);
 
   const response = await executor(
     `
@@ -57,7 +57,7 @@ const update: Update = async (params, tx) => {
 
   const conditionsForSql = queryConditions.join(", ");
 
-  const executor = getExecutor<UserWordEntity>(tx?.client);
+  const executor = dbProvider.getExecutor<UserWordEntity>(tx?.client);
 
   const response = await executor(
     `

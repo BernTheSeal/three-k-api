@@ -1,6 +1,5 @@
 import { wordConfig } from "@/shared/config/word.config";
-import { cacheProvider } from "@/shared/lib/cache/cache.provider";
-import { keyBuilder } from "@/shared/utils/cache.util";
+import { cacheProvider } from "@/shared/lib/cache";
 import { WordDetailShape } from "@/shared/types/shapes/word.shape";
 
 const NAMESPACE = wordConfig.cache.detail.namespace;
@@ -9,12 +8,12 @@ const TTL = wordConfig.cache.detail.ttlSec;
 const HASH_KEY = wordConfig.cache.all.key;
 
 const set = async (word: string, value: WordDetailShape): Promise<void> => {
-  const key = keyBuilder(NAMESPACE, VERSION, word);
+  const key = cacheProvider.keyBuilder(NAMESPACE, VERSION, word);
   await cacheProvider.set(key, value, TTL);
 };
 
 const get = async (word: string): Promise<WordDetailShape | null> => {
-  const key = keyBuilder(NAMESPACE, VERSION, word);
+  const key = cacheProvider.keyBuilder(NAMESPACE, VERSION, word);
   const value = await cacheProvider.get(key);
   return value !== null ? (value as WordDetailShape) : null;
 };

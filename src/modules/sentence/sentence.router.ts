@@ -1,8 +1,9 @@
 import express from "express";
+
 import { createSchema } from "./sentence.validator";
-import { validate } from "@/shared/middlewares/validate";
-import { authenticate } from "@/shared/middlewares/authenticate";
 import { sentenceController } from "./sentence.controller";
+
+import { authenticate, validate } from "@/shared/middlewares";
 
 const sentenceRouter = express.Router();
 

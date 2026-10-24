@@ -1,7 +1,8 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
-import { UnauthorizedError } from "../errors";
-import { verifyAccessToken } from "@/modules/auth/auth.helper";
+
+import { UnauthorizedError } from "@/shared/errors";
+import { authConfig } from "@/shared/config/auth.config";
 
 export const authenticate = (req: Request, res: Response, next: NextFunction) => {
   const authHeader = req.headers.authorization;
@@ -17,7 +18,7 @@ export const authenticate = (req: Request, res: Response, next: NextFunction) =>
   }
 
   try {
-    const decoded = verifyAccessToken(token);
+    const decoded = jwt.verify(token, authConfig.jwt.secret);
 
     if (typeof decoded === "string" || !decoded || !("userId" in decoded)) {
       throw new UnauthorizedError({ message: "Access token is invalid!", code: "INVALID_ACCESS_TOKEN" });

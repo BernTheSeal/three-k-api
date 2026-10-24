@@ -1,8 +1,9 @@
 import axios from "axios";
-import { ExternalServiceError, InternalServerError } from "@/shared/errors";
-import { HTTP_STATUS } from "../constants/httpStatus.const";
 
-type RetryRequestOptions = {
+import { ExternalServiceError, InternalServerError } from "@/shared/errors";
+import { HTTP_STATUS } from "@/shared/constants/httpStatus.const";
+
+type RetryOptions = {
   service: "DICTIONARY";
   url: string;
   maxAttempt: number;
@@ -11,14 +12,7 @@ type RetryRequestOptions = {
   shouldRetry: (statusCode: number | undefined) => boolean;
 };
 
-export const retryRequest = async <T>({
-  service,
-  url,
-  maxAttempt,
-  retryDelayMs,
-  timeoutMs,
-  shouldRetry,
-}: RetryRequestOptions): Promise<T> => {
+const retry = async <T>({ service, url, maxAttempt, retryDelayMs, timeoutMs, shouldRetry }: RetryOptions): Promise<T> => {
   if (maxAttempt <= 0) {
     throw new InternalServerError({
       message: "Max attempt must be at least 1",
@@ -57,4 +51,8 @@ export const retryRequest = async <T>({
     message: `Retry loop exited unexpectedly (maxAttempt=${maxAttempt})`,
     code: "UNREACHABLE_LOOP_EXIT",
   });
+};
+
+export const requestHelper = {
+  retry,
 };
