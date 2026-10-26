@@ -1,4 +1,4 @@
-import { sendMail } from "@/shared/lib/email.lib";
+import { emailProvider } from "@/shared/lib/email";
 import { authConfig } from "@/shared/config/auth.config";
 
 const sendEmailVerificationUrl = async (data: { token: string; email: string }) => {
@@ -22,7 +22,7 @@ const sendEmailVerificationUrl = async (data: { token: string; email: string }) 
       <p>If you didn't request this, ignore this email.</p>
     </div>
   `;
-  sendMail({ subject, html });
+  emailProvider.sendMail({ subject, html });
 };
 
 const sendPasswordResetUrl = async (data: { token: string; email: string }) => {
@@ -47,7 +47,10 @@ const sendPasswordResetUrl = async (data: { token: string; email: string }) => {
     </div>
   `;
 
-  await sendMail({ subject, html });
+  await emailProvider.sendMail({ subject, html });
 };
 
-export { sendEmailVerificationUrl, sendPasswordResetUrl };
+export const authEmail = {
+  sendEmailVerificationUrl,
+  sendPasswordResetUrl,
+};

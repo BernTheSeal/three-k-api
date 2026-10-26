@@ -1,11 +1,12 @@
-import { getExecutor, getLock } from "@/shared/lib/db/db.provider";
 import { Create, FindById, ActivateById } from "./user.repo.type";
+
+import { dbProvider } from "@/shared/lib/db";
 import { UserEntity } from "@/shared/types/entities";
 
 const create: Create = async (params, tx) => {
   const { username, isActive } = params;
 
-  const executor = getExecutor<UserEntity>(tx?.client);
+  const executor = dbProvider.getExecutor<UserEntity>(tx?.client);
 
   const response = await executor(
     `INSERT INTO users (username , is_active)
@@ -21,9 +22,9 @@ const create: Create = async (params, tx) => {
 const findById: FindById = async (params, tx) => {
   const { userId } = params;
 
-  const executor = getExecutor<UserEntity>(tx?.client);
+  const executor = dbProvider.getExecutor<UserEntity>(tx?.client);
 
-  const lock = getLock(tx?.lock);
+  const lock = dbProvider.getLock(tx?.lock);
 
   const response = await executor(
     `
@@ -40,7 +41,7 @@ const findById: FindById = async (params, tx) => {
 const activateById: ActivateById = async (params, tx) => {
   const { userId } = params;
 
-  const executor = getExecutor(tx?.client);
+  const executor = dbProvider.getExecutor(tx?.client);
 
   await executor(
     `

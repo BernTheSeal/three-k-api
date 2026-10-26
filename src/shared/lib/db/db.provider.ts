@@ -1,16 +1,15 @@
 import { pool } from "./db.client";
-import { QueryResult, PoolClient, DatabaseError } from "pg";
-import { errorMapper, toCamelCase } from "./db.helper";
+import { PoolClient, DatabaseError } from "pg";
+import { dbHelper } from "./db.helper";
 import { ExternalServiceError } from "@/shared/errors";
 
-export const query = async <T extends Record<string, unknown>>(text: string, params?: any[]): Promise<QueryResult<T>> => {
+const run = async (client: PoolClient | undefined, text: string, params?: any[]) => {
   try {
-    const res = await pool.query(text, params);
-    res.rows = toCamelCase<T>(res.rows);
-    return res;
+    const exec = client ?? pool;
+    return await exec.query(text, params);
   } catch (error) {
     if (error instanceof DatabaseError) {
-      throw errorMapper(error);
+      throw dbHelper.errorMapper(error);
     }
 
     throw new ExternalServiceError({
@@ -22,38 +21,16 @@ export const query = async <T extends Record<string, unknown>>(text: string, par
   }
 };
 
-const clientQuery = async <T extends Record<string, unknown>>(
-  client: PoolClient,
-  text: string,
-  params?: any[],
-): Promise<QueryResult<T>> => {
-  try {
-    const res = await client.query(text, params);
-    res.rows = toCamelCase<T>(res.rows);
-    return res;
-  } catch (error) {
-    if (error instanceof DatabaseError) {
-      throw errorMapper(error);
-    }
-
-    throw new ExternalServiceError({
-      message: "Database is unreachable",
-      code: "DATABASE_UNAVAILABLE",
-      service: "DATABASE",
-      cause: error,
-    });
-  }
+const getExecutor = <T extends Record<string, unknown>>(client?: PoolClient) => {
+  return async (text: string, params: any[] = []) => {
+    const res = await run(client, text, params);
+    return { ...res, rows: dbHelper.toCamelCase<T>(res.rows) };
+  };
 };
 
-export const getExecutor = <T extends Record<string, unknown>>(client?: PoolClient) => {
-  return client
-    ? (text: string, params: any[]) => clientQuery<T>(client, text, params)
-    : (text: string, params: any[]) => query<T>(text, params);
-};
+const getLock = (lock?: boolean) => (lock ? "FOR UPDATE" : "");
 
-export const getLock = (lock?: boolean) => (lock ? "FOR UPDATE" : "");
-
-export const withTransaction = async <T>(fn: (client: PoolClient) => Promise<T>): Promise<T> => {
+const withTransaction = async <T>(fn: (client: PoolClient) => Promise<T>): Promise<T> => {
   const client = await pool.connect();
   try {
     await client.query("BEGIN");
@@ -66,4 +43,10 @@ export const withTransaction = async <T>(fn: (client: PoolClient) => Promise<T>)
   } finally {
     client.release();
   }
+};
+
+export const dbProvider = {
+  getExecutor,
+  getLock,
+  withTransaction,
 };

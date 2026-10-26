@@ -1,6 +1,7 @@
 import { Router } from "express";
+
 import { authController } from "./auth.controller";
-import { validate } from "@/shared/middlewares/validate";
+import passport from "./auth.strategy";
 import {
   loginSchema,
   registerSchema,
@@ -9,9 +10,8 @@ import {
   forgotPasswordSchema,
   resetPasswordSchema,
 } from "./auth.validator";
-import { authenticate } from "@/shared/middlewares/authenticate";
 
-import passport from "./auth.strategy";
+import { authenticate, validate } from "@/shared/middlewares";
 
 const authRouter = Router();
 

@@ -1,4 +1,4 @@
-import { InternalServerError } from "../errors";
+import { InternalServerError } from "@/shared/errors";
 
 const requiredEnvs = [
   "PORT",

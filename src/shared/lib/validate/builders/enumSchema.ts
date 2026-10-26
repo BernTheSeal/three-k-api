@@ -1,6 +1,6 @@
 import z from "zod";
 
-export const enumSchema = <T extends string>(target: string, values: [T, ...T[]]) => {
+export const enumSchema = <T extends string>(target: string, values: readonly [T, ...T[]]) => {
   return z
     .string()
     .trim()

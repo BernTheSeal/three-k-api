@@ -2,9 +2,11 @@ import "dotenv/config";
 import express from "express";
 import cookieParser from "cookie-parser";
 import apiRouter from "./api.router";
+
 import { appConfig } from "@/shared/config/app.config";
-import { globalErrorHandler } from "@/shared/middlewares/globalErrorHandler";
+import { globalErrorHandler } from "@/shared/middlewares";
 import { wordService } from "@/modules/word";
+import { posService } from "@/modules/pos";
 
 const app = express();
 app.use(cookieParser());
@@ -20,6 +22,7 @@ process.on("unhandledRejection", (reason) => {
 });
 
 const bootstrap = async () => {
+  await posService.initializePosCache();
   await wordService.initializeWordsCache();
   app.listen(appConfig.port, () => console.log(`Server running on port ${appConfig.port}`));
 };

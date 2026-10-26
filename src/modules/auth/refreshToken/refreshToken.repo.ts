@@ -1,4 +1,5 @@
-import { getExecutor, getLock } from "@/shared/lib/db/db.provider";
+import { dbProvider } from "@/shared/lib/db";
+import { AuthAccountEntity, RefreshTokenEntity } from "@/shared/types/entities";
 
 import {
   Create,
@@ -9,12 +10,11 @@ import {
   RevokeByAuthAccountId,
   RevokeByAuthAccountIdExceptFamilyId,
 } from "./refreshToken.repo.type";
-import { AuthAccountEntity, RefreshTokenEntity } from "@/shared/types/entities";
 
 const create: Create = async (params, tx) => {
   const { tokenHash, authAccountId, familyId, expiresAt } = params;
 
-  const executor = getExecutor<RefreshTokenEntity>(tx?.client);
+  const executor = dbProvider.getExecutor<RefreshTokenEntity>(tx?.client);
 
   const response = await executor(
     `INSERT INTO refresh_tokens (token_hash, auth_account_id, family_id, expires_at)
@@ -29,8 +29,8 @@ const create: Create = async (params, tx) => {
 const findByTokenHash: FindByTokenHash = async (params, tx) => {
   const { tokenHash } = params;
 
-  const executor = getExecutor<RefreshTokenEntity>(tx?.client);
-  const lock = getLock(tx?.lock);
+  const executor = dbProvider.getExecutor<RefreshTokenEntity>(tx?.client);
+  const lock = dbProvider.getLock(tx?.lock);
 
   const response = await executor(
     `
@@ -47,9 +47,9 @@ const findByTokenHash: FindByTokenHash = async (params, tx) => {
 const findByTokenHashWithAuthAccount: FindByTokenHashWithAuthAccount = async (params, tx) => {
   const { tokenHash } = params;
 
-  const executor = getExecutor<RefreshTokenEntity & AuthAccountEntity>(tx?.client);
+  const executor = dbProvider.getExecutor<RefreshTokenEntity & AuthAccountEntity>(tx?.client);
 
-  const lock = getLock(tx?.lock);
+  const lock = dbProvider.getLock(tx?.lock);
 
   const response = await executor(
     `
@@ -67,7 +67,7 @@ const findByTokenHashWithAuthAccount: FindByTokenHashWithAuthAccount = async (pa
 const revokeByTokenHash: RevokeByTokenHash = async (params, tx) => {
   const { tokenHash, revokedReason } = params;
 
-  const executor = getExecutor(tx?.client);
+  const executor = dbProvider.getExecutor(tx?.client);
 
   await executor(
     `UPDATE refresh_tokens
@@ -80,7 +80,7 @@ const revokeByTokenHash: RevokeByTokenHash = async (params, tx) => {
 const revokeByFamilyId: RevokeByFamilyId = async (params, tx) => {
   const { familyId, revokedReason } = params;
 
-  const executor = getExecutor(tx?.client);
+  const executor = dbProvider.getExecutor(tx?.client);
 
   await executor(
     `UPDATE refresh_tokens
@@ -93,7 +93,7 @@ const revokeByFamilyId: RevokeByFamilyId = async (params, tx) => {
 const revokeByAuthAccountId: RevokeByAuthAccountId = async (params, tx) => {
   const { authAccountId, revokedReason } = params;
 
-  const executor = getExecutor(tx?.client);
+  const executor = dbProvider.getExecutor(tx?.client);
 
   await executor(
     `
@@ -111,7 +111,7 @@ const revokeByAuthAccountId: RevokeByAuthAccountId = async (params, tx) => {
 const revokeByAuthAccountIdExceptFamilyId: RevokeByAuthAccountIdExceptFamilyId = async (params, tx) => {
   const { familyId, revokedReason, authAccountId } = params;
 
-  const executor = getExecutor(tx?.client);
+  const executor = dbProvider.getExecutor(tx?.client);
 
   await executor(
     `UPDATE refresh_tokens

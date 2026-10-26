@@ -1,11 +1,11 @@
-import { dictionaryAdapter } from "@/shared/external/dictionary/dictionary.adapter";
 import { wordRepo } from "./word.repo";
 import { wordCache } from "./word.cache";
-import { wordConfig } from "@/shared/config/word.config";
-import { getSafeOffset } from "@/shared/utils/pagination.util";
+import { List, FindByWord, FindByWordWithSenses, GetWordIdsFromCache } from "./word.service.type";
 
-import { List, FindByWord, FindByWordWithSenses } from "./word.service.type";
-import { singleflight } from "@/shared/helpers/singleflight.helper";
+import { dictionaryAdapter } from "@/shared/external/dictionary";
+import { wordConfig } from "@/shared/config/word.config";
+import { paginationUtil } from "@/shared/utils/pagination.util";
+import { singleFlightHelper } from "@/shared/helpers/singleflight.helper";
 
 const initializeWordsCache = async () => {
   const length = await wordCache.getLen();
@@ -29,12 +29,17 @@ const initializeWordsCache = async () => {
   console.log(`Words cache initialized with ${words.length} words.`);
 };
 
+const getWordIdsFromCache: GetWordIdsFromCache = async (input) => {
+  const { words } = input;
+  return await wordCache.getIndexMany(words);
+};
+
 const list: List = async (input) => {
   const { filters, paginate } = input;
 
   const limit = wordConfig.pagination.limit;
 
-  const safeOffset = getSafeOffset({ limit, offset: paginate?.offset });
+  const safeOffset = paginationUtil.getSafeOffset({ limit, offset: paginate?.offset });
 
   const words = await wordRepo.list({
     filters,
@@ -70,7 +75,7 @@ const findByWord: FindByWord = async (input) => {
     return wordFromCache;
   }
 
-  return await singleflight(`word:${word}`, async () => {
+  return await singleFlightHelper.run(`word:${word}`, async () => {
     const wordResponse = await wordRepo.findByWord({ word });
 
     const first = wordResponse[0];
@@ -129,6 +134,7 @@ const findByWordWithSenses: FindByWordWithSenses = async (input) => {
 
 export const wordService = {
   initializeWordsCache,
+  getWordIdsFromCache,
   list,
   findByWord,
   findByWordWithSenses,

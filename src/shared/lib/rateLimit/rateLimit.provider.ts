@@ -1,21 +1,14 @@
 import rateLimit, { ipKeyGenerator } from "express-rate-limit";
-import { RateLimitError } from "../errors";
-
 import { RedisStore } from "rate-limit-redis";
-import { redisClient } from "./cache/cache.client";
 
-type Window =
-  { m: number; h?: number; d?: number } | { m?: number; h: number; d?: number } | { m?: number; h?: number; d: number };
+import { Options } from "./rateLimit.type";
 
-type Params = {
-  key: "auth" | "ip" | "email";
-  window: Window;
-  limit: number;
-  route: string;
-  message?: string;
-};
+import { cacheProvider } from "@/shared/lib/cache";
+import { RateLimitError } from "@/shared/errors";
 
-export const createRateLimiter = ({ key, window, limit, message, route }: Params) => {
+const createLimiter = (options: Options) => {
+  const { key, window, limit, route, message } = options;
+
   const windowMs = (window.m ?? 0) * 60 * 1000 + (window.h ?? 0) * 60 * 60 * 1000 + (window.d ?? 0) * 24 * 60 * 60 * 1000;
 
   return rateLimit({
@@ -23,7 +16,7 @@ export const createRateLimiter = ({ key, window, limit, message, route }: Params
     limit,
 
     store: new RedisStore({
-      sendCommand: (...args: string[]) => redisClient.sendCommand(args),
+      sendCommand: (...args: string[]) => cacheProvider.sendCommand(args),
       prefix: `rl:${route}:${key}:`,
     }),
     standardHeaders: "draft-8",
@@ -31,9 +24,9 @@ export const createRateLimiter = ({ key, window, limit, message, route }: Params
     keyGenerator: (req, res) => {
       switch (key) {
         case "auth":
-          return res.locals.user.auth_account_id?.toString() || "unknown-auth";
+          return res.locals.user.authAccountId?.toString() || "unknown-auth";
         case "email":
-          return res.locals.validated_data.body.email || "unknown-email";
+          return res.locals.validatedData.body.email || "unknown-email";
         case "ip":
         default:
           return ipKeyGenerator(req.ip ?? "unknown-ip", 56);
@@ -43,4 +36,8 @@ export const createRateLimiter = ({ key, window, limit, message, route }: Params
       throw new RateLimitError({ message: message || "too many request!", code: `TOO_MANY_REQUEST_${key.toUpperCase()}` });
     },
   });
+};
+
+export const rateLimitProvider = {
+  createLimiter,
 };

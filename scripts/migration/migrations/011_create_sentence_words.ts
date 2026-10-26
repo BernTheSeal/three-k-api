@@ -5,22 +5,24 @@ const migration = {
 
   up: async (client: PoolClient) => {
     await client.query(`
-        CREATE TABLE IF NOT EXISTS sentence_words (
-            sentence_word_id SERIAL PRIMARY KEY,
-            sentence_id INTEGER NOT NULL REFERENCES sentences(sentence_id),
-            word_id INTEGER NOT NULL REFERENCES words(word_id),
-            surface_form TEXT NOT NULL 
+        CREATE TABLE sentence_words (
+            sentence_id INTEGER NOT NULL REFERENCES sentences(sentence_id) ON DELETE CASCADE,
+            word_id INTEGER REFERENCES words(word_id),
+            pos_id INTEGER NOT NULL REFERENCES pos(pos_id),
+            surface_form TEXT NOT NULL, 
+            position INTEGER NOT NULL,
+            is_merge_prev BOOLEAN NOT NULL,
+            is_capitalize BOOLEAN NOT NULL,
+            is_punc BOOLEAN NOT NULL,
+
+            PRIMARY KEY (sentence_id, position),
+            CHECK (word_id IS NOT NULL OR is_punc)
         );
-                
-        CREATE INDEX idx_sentence_words_sentence_id ON sentence_words(sentence_id);
-        CREATE INDEX idx_sentence_words_word_id ON sentence_words(word_id);
     `);
   },
 
   down: async (client: PoolClient) => {
     await client.query(`
-        DROP INDEX IF EXISTS idx_sentence_words_word_id;
-        DROP INDEX IF EXISTS idx_sentence_words_sentence_id;
         DROP TABLE IF EXISTS sentence_words;
     `);
   },

@@ -1,8 +1,9 @@
 import { Router } from "express";
-import { validate } from "../../shared/middlewares/validate";
-import { authenticate } from "../../shared/middlewares/authenticate";
+
 import { getWordByIdSchema, listWordSchema } from "./word.validator";
 import { wordController } from "./word.controller";
+
+import { validate, authenticate } from "@/shared/middlewares";
 
 const wordRouter = Router();
 

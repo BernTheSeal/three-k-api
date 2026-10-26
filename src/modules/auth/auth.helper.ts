@@ -1,10 +1,11 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import { authConfig } from "@/shared/config/auth.config";
-import { generateRandomHex, sha256, generateUUID } from "@/shared/lib/crypto.lib";
-import { getExpiresAt, HOURS, DAYS } from "@/shared/utils/date.util";
-import { setSecureCookie, clearCookie } from "@/shared/utils/cookie.util";
 import { Response } from "express";
+
+import { authConfig } from "@/shared/config/auth.config";
+import { cryptoProvider } from "@/shared/lib/crypto/crypto.provider";
+import { dateUtil } from "@/shared/utils/date.util";
+import { cookieHelper } from "@/shared/helpers/cookie.helper";
 
 const hashPassword = async (password: string) => {
   return await bcrypt.hash(password, authConfig.password.saltRounds);
@@ -35,44 +36,49 @@ const generateUsername = (email: string) => {
 };
 
 const generateRefreshToken = () => {
-  return generateRandomHex(authConfig.token.refresh.byteLength);
+  return cryptoProvider.generateRandomHex(authConfig.token.refresh.byteLength);
 };
 
 const getRefreshTokenExpiresAt = () => {
-  return getExpiresAt(DAYS(authConfig.token.refresh.expiresInDays));
+  return dateUtil.getExpiresAt(dateUtil.daysToMs(authConfig.token.refresh.expiresInDays));
 };
 
 const setRefreshTokenCookie = (res: Response, token: string) => {
-  setSecureCookie(res, authConfig.token.refresh.cookieName, token, DAYS(authConfig.token.refresh.expiresInDays));
+  cookieHelper.setSecureCookie(
+    res,
+    authConfig.token.refresh.cookieName,
+    token,
+    dateUtil.daysToMs(authConfig.token.refresh.expiresInDays),
+  );
 };
 
 const clearRefreshTokenCookie = (res: Response) => {
-  clearCookie(res, authConfig.token.refresh.cookieName);
+  cookieHelper.clearCookie(res, authConfig.token.refresh.cookieName);
 };
 
 const generateVerifyEmailToken = () => {
-  return generateRandomHex(authConfig.token.verifyEmail.byteLength);
+  return cryptoProvider.generateRandomHex(authConfig.token.verifyEmail.byteLength);
 };
 
 const getVerifyEmailTokenExpiresAt = () => {
-  return getExpiresAt(HOURS(authConfig.token.verifyEmail.expiresInHours));
+  return dateUtil.getExpiresAt(dateUtil.hoursToMs(authConfig.token.verifyEmail.expiresInHours));
 };
 
 const generateResetPasswordToken = () => {
-  return generateRandomHex(authConfig.token.resetPassword.byteLength);
+  return cryptoProvider.generateRandomHex(authConfig.token.resetPassword.byteLength);
 };
 
 const getResetPasswordTokenExpiresAt = () => {
-  return getExpiresAt(HOURS(authConfig.token.resetPassword.expiresInHours));
+  return dateUtil.getExpiresAt(dateUtil.hoursToMs(authConfig.token.resetPassword.expiresInHours));
 };
 
-const hashAuthToken = sha256;
+const hashAuthToken = cryptoProvider.sha256;
 
 const generateFamilyId = () => {
-  return generateUUID();
+  return cryptoProvider.generateUUID();
 };
 
-export {
+export const authHelper = {
   hashPassword,
   comparePassword,
   generateAccessToken,

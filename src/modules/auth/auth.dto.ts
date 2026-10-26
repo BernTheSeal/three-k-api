@@ -1,12 +1,4 @@
-import {
-  RegisterDto,
-  LoginDto,
-  VerifyEmailDto,
-  ChangePasswordDto,
-  ForgotPasswordDto,
-  ResetPasswordDto,
-} from "@/modules/auth/auth.validator";
-
+import { RegisterDto, LoginDto, VerifyEmailDto, ChangePasswordDto, ForgotPasswordDto, ResetPasswordDto } from "./auth.validator";
 import { AuthHandler, PublicHandler } from "@/shared/types/requestHandler.type";
 
 export type Me = AuthHandler;

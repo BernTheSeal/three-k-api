@@ -1,7 +1,7 @@
 import { DatabaseError } from "pg";
 import { ConflictError, InternalServerError, NotFoundError } from "@/shared/errors";
 
-export const errorMapper = (error: DatabaseError): ConflictError | InternalServerError | NotFoundError => {
+const errorMapper = (error: DatabaseError): ConflictError | InternalServerError | NotFoundError => {
   if (error.code === "23505" || error.code === "23503") {
     switch (error.constraint) {
       case "uq_users_username":
@@ -52,7 +52,7 @@ export const errorMapper = (error: DatabaseError): ConflictError | InternalServe
   });
 };
 
-export const toCamelCase = <T extends Record<string, unknown>>(rows: Record<string, unknown>[]): T[] => {
+const toCamelCase = <T extends Record<string, unknown>>(rows: Record<string, unknown>[]): T[] => {
   const first = rows[0];
 
   if (!first) {
@@ -77,4 +77,9 @@ export const toCamelCase = <T extends Record<string, unknown>>(rows: Record<stri
 
     return newObj;
   }) as T[];
+};
+
+export const dbHelper = {
+  errorMapper,
+  toCamelCase,
 };

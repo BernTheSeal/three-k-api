@@ -1,28 +1,8 @@
-import { withTransaction } from "@/shared/lib/db/db.provider";
-
 import { authAccountRepo } from "./authAccount/authAccount.repo";
 import { refreshTokenRepo } from "./refreshToken/refreshToken.repo";
 import { authTokenRepo } from "./authToken/authToken.repo";
-
-import { userRepo } from "../user/user.repo";
-
-import { NotFoundError, UnauthorizedError, BadRequestError, RefreshTokenError, InternalServerError } from "@/shared/errors";
-
-import {
-  hashPassword,
-  comparePassword,
-  generateUsername,
-  generateAccessToken,
-  generateRefreshToken,
-  generateFamilyId,
-  getRefreshTokenExpiresAt,
-  generateVerifyEmailToken,
-  hashAuthToken,
-  generateResetPasswordToken,
-  getVerifyEmailTokenExpiresAt,
-  getResetPasswordTokenExpiresAt,
-} from "./auth.helper";
-
+import { authHelper } from "./auth.helper";
+import { authEmail } from "./auth.email";
 import {
   Register,
   Login,
@@ -34,20 +14,22 @@ import {
   ChangePassword,
   ForgotPassword,
   ResetPassword,
-} from "@/modules/auth/auth.service.type";
+} from "./auth.service.type";
 
-import { sendEmailVerificationUrl, sendPasswordResetUrl } from "./auth.email";
+import { userRepo } from "@/modules/user";
+import { NotFoundError, UnauthorizedError, BadRequestError, InternalServerError, RefreshTokenError } from "@/shared/errors";
+import { dbProvider } from "@/shared/lib/db";
 
 const register: Register = async (input) => {
   const { email, username, password } = input;
 
-  const hashedPassword = await hashPassword(password);
-  const rt = generateRefreshToken();
-  const hashedRt = hashAuthToken(rt);
-  const familyId = generateFamilyId();
-  const expiresAt = getRefreshTokenExpiresAt();
+  const hashedPassword = await authHelper.hashPassword(password);
+  const rt = authHelper.generateRefreshToken();
+  const hashedRt = authHelper.hashAuthToken(rt);
+  const familyId = authHelper.generateFamilyId();
+  const expiresAt = authHelper.getRefreshTokenExpiresAt();
 
-  const { user, authAccount } = await withTransaction(async (client) => {
+  const { user, authAccount } = await dbProvider.withTransaction(async (client) => {
     const user = await userRepo.create({ username, isActive: true }, { client });
 
     const authAccount = await authAccountRepo.create(
@@ -75,7 +57,7 @@ const register: Register = async (input) => {
     return { user, authAccount };
   });
 
-  const accessToken = generateAccessToken(user.userId, familyId, authAccount.authAccountId);
+  const accessToken = authHelper.generateAccessToken(user.userId, familyId, authAccount.authAccountId);
 
   const { passwordHash, userId, ...safeAuthAccount } = authAccount;
 
@@ -99,16 +81,16 @@ const login: Login = async (input) => {
     throw new UnauthorizedError({ message: "Email or password is not correct!", code: "EMAIL_OR_PASSWORD_NOT_CORRECT" });
   }
 
-  const isMatch = await comparePassword(password, authAccount.passwordHash);
+  const isMatch = await authHelper.comparePassword(password, authAccount.passwordHash);
 
   if (!isMatch) {
     throw new UnauthorizedError({ message: "Email or password is not correct!", code: "EMAIL_OR_PASSWORD_NOT_CORRECT" });
   }
 
-  const rt = generateRefreshToken();
-  const hashedRt = hashAuthToken(rt);
-  const familyId = generateFamilyId();
-  const expiresAt = getRefreshTokenExpiresAt();
+  const rt = authHelper.generateRefreshToken();
+  const hashedRt = authHelper.hashAuthToken(rt);
+  const familyId = authHelper.generateFamilyId();
+  const expiresAt = authHelper.getRefreshTokenExpiresAt();
 
   const user = await userRepo.findById({ userId: authAccount.userId });
 
@@ -123,7 +105,7 @@ const login: Login = async (input) => {
     expiresAt,
   });
 
-  const accessToken = generateAccessToken(user.userId, familyId, authAccount.authAccountId);
+  const accessToken = authHelper.generateAccessToken(user.userId, familyId, authAccount.authAccountId);
 
   const { userId, passwordHash, ...safeAuthAccount } = authAccount;
 
@@ -148,10 +130,10 @@ const loginGoogle: LoginGoogle = async (input) => {
     throw new UnauthorizedError({ message: "Google account does not have an email address!", code: "GOOGLE_NO_EMAIL" });
   }
 
-  const rt = generateRefreshToken();
-  const hashedRt = hashAuthToken(rt);
-  const familyId = generateFamilyId();
-  const expiresAt = getRefreshTokenExpiresAt();
+  const rt = authHelper.generateRefreshToken();
+  const hashedRt = authHelper.hashAuthToken(rt);
+  const familyId = authHelper.generateFamilyId();
+  const expiresAt = authHelper.getRefreshTokenExpiresAt();
 
   const authAccount = await authAccountRepo.findByProviderAccountId({
     providerAccountId: sub,
@@ -174,7 +156,7 @@ const loginGoogle: LoginGoogle = async (input) => {
       expiresAt,
     });
 
-    const accessToken = generateAccessToken(user.userId, familyId, authAccount.authAccountId);
+    const accessToken = authHelper.generateAccessToken(user.userId, familyId, authAccount.authAccountId);
 
     const { userId, passwordHash, ...safeAuthAccount } = authAccount;
 
@@ -185,9 +167,9 @@ const loginGoogle: LoginGoogle = async (input) => {
       refreshToken: rt,
     };
   } else {
-    const randomUsername = generateUsername(email);
+    const randomUsername = authHelper.generateUsername(email);
 
-    const data = await withTransaction(async (client) => {
+    const data = await dbProvider.withTransaction(async (client) => {
       const user = await userRepo.create({ username: randomUsername, isActive: true }, { client });
 
       const authAccount = await authAccountRepo.create(
@@ -217,7 +199,7 @@ const loginGoogle: LoginGoogle = async (input) => {
       return { user, authAccount };
     });
 
-    const accessToken = generateAccessToken(data.user.userId, familyId, data.authAccount.authAccountId);
+    const accessToken = authHelper.generateAccessToken(data.user.userId, familyId, data.authAccount.authAccountId);
 
     const { userId, passwordHash, ...safeAuthAccount } = data.authAccount;
 
@@ -236,18 +218,18 @@ const refresh: Refresh = async (input) => {
   if (!cookie) {
     throw new UnauthorizedError({ message: "Refresh token is not found in cookie!", code: "REFRESH_TOKEN_NOT_FOUND_IN_COOKIE" });
   }
-  const hashedCookieRt = hashAuthToken(cookie);
+  const hashedCookieRt = authHelper.hashAuthToken(cookie);
 
-  const newRawRefreshToken = generateRefreshToken();
-  const newHashedRefreshToken = hashAuthToken(newRawRefreshToken);
-  const expiresAt = getRefreshTokenExpiresAt();
+  const newRawRefreshToken = authHelper.generateRefreshToken();
+  const newHashedRefreshToken = authHelper.hashAuthToken(newRawRefreshToken);
+  const expiresAt = authHelper.getRefreshTokenExpiresAt();
 
   let userId: number | null = null;
   let familyId: string | null = null;
   let authAccountId: number | null = null;
 
   try {
-    const data = await withTransaction(async (client) => {
+    const data = await dbProvider.withTransaction(async (client) => {
       const rt = await refreshTokenRepo.findByTokenHashWithAuthAccount(
         {
           tokenHash: hashedCookieRt,
@@ -323,7 +305,7 @@ const refresh: Refresh = async (input) => {
     throw error;
   }
 
-  const accessToken = generateAccessToken(userId, familyId, authAccountId);
+  const accessToken = authHelper.generateAccessToken(userId, familyId, authAccountId);
 
   return { accessToken, refreshToken: newRawRefreshToken };
 };
@@ -336,7 +318,7 @@ const logout: Logout = async (input) => {
     return { isAlreadyLoggedOut };
   }
 
-  const hashedCookieRt = hashAuthToken(cookie);
+  const hashedCookieRt = authHelper.hashAuthToken(cookie);
 
   const refreshToken = await refreshTokenRepo.findByTokenHash({
     tokenHash: hashedCookieRt,
@@ -368,11 +350,11 @@ const logout: Logout = async (input) => {
 const requestEmailVerification: RequestEmailVerification = async (input) => {
   const { authAccountId } = input;
 
-  const token = generateVerifyEmailToken();
-  const hashedToken = hashAuthToken(token);
-  const expiresAt = getVerifyEmailTokenExpiresAt();
+  const token = authHelper.generateVerifyEmailToken();
+  const hashedToken = authHelper.hashAuthToken(token);
+  const expiresAt = authHelper.getVerifyEmailTokenExpiresAt();
 
-  const authAccount = await withTransaction(async (client) => {
+  const authAccount = await dbProvider.withTransaction(async (client) => {
     const authAccount = await authAccountRepo.findById(
       {
         authAccountId,
@@ -410,7 +392,7 @@ const requestEmailVerification: RequestEmailVerification = async (input) => {
     return authAccount;
   });
 
-  await sendEmailVerificationUrl({
+  await authEmail.sendEmailVerificationUrl({
     email: authAccount.email,
     token,
   });
@@ -419,9 +401,9 @@ const requestEmailVerification: RequestEmailVerification = async (input) => {
 const verifyEmail: VerifyEmail = async (input) => {
   const { token } = input;
 
-  const hashedToken = hashAuthToken(token);
+  const hashedToken = authHelper.hashAuthToken(token);
 
-  await withTransaction(async (client) => {
+  await dbProvider.withTransaction(async (client) => {
     const authToken = await authTokenRepo.findByToken(
       {
         tokenHash: hashedToken,
@@ -462,9 +444,9 @@ const changePassword: ChangePassword = async (input) => {
     throw new BadRequestError({ message: "New passwords do not match!", code: "PASSWORD_MISMATCH" });
   }
 
-  const newPasswordHashed = await hashPassword(newPassword);
+  const newPasswordHashed = await authHelper.hashPassword(newPassword);
 
-  await withTransaction(async (client) => {
+  await dbProvider.withTransaction(async (client) => {
     const authAccount = await authAccountRepo.findById(
       {
         authAccountId,
@@ -477,7 +459,7 @@ const changePassword: ChangePassword = async (input) => {
       throw new BadRequestError({ message: "No local account found.", code: "NO_LOCAL_ACCOUNT" });
     }
 
-    const isCurrentPasswordCorrect = await comparePassword(currentPassword, authAccount.passwordHash);
+    const isCurrentPasswordCorrect = await authHelper.comparePassword(currentPassword, authAccount.passwordHash);
 
     if (!isCurrentPasswordCorrect) {
       throw new BadRequestError({ message: "Current password is incorrect.", code: "INVALID_CURRENT_PASSWORD" });
@@ -505,13 +487,13 @@ const changePassword: ChangePassword = async (input) => {
 const forgotPassword: ForgotPassword = async (input) => {
   const { email } = input;
 
-  const token = generateResetPasswordToken();
-  const tokenHash = hashAuthToken(token);
-  const expiresAt = getResetPasswordTokenExpiresAt();
+  const token = authHelper.generateResetPasswordToken();
+  const tokenHash = authHelper.hashAuthToken(token);
+  const expiresAt = authHelper.getResetPasswordTokenExpiresAt();
 
   let shouldSendEmail = false;
 
-  await withTransaction(async (client) => {
+  await dbProvider.withTransaction(async (client) => {
     const authAccount = await authAccountRepo.findByEmail(
       {
         email,
@@ -546,7 +528,7 @@ const forgotPassword: ForgotPassword = async (input) => {
   });
 
   if (shouldSendEmail) {
-    await sendPasswordResetUrl({
+    await authEmail.sendPasswordResetUrl({
       token,
       email,
     });
@@ -560,10 +542,10 @@ const resetPassword: ResetPassword = async (input) => {
     throw new BadRequestError({ message: "New passwords do not match!", code: "PASSWORD_MISMATCH" });
   }
 
-  const hashedToken = hashAuthToken(token);
-  const hashedPassword = await hashPassword(newPassword);
+  const hashedToken = authHelper.hashAuthToken(token);
+  const hashedPassword = await authHelper.hashPassword(newPassword);
 
-  await withTransaction(async (client) => {
+  await dbProvider.withTransaction(async (client) => {
     const authToken = await authTokenRepo.findByToken(
       {
         tokenHash: hashedToken,

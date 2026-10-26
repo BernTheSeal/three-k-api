@@ -1,6 +1,13 @@
+import { RedisReply } from "rate-limit-redis";
+
 import { redisClient } from "./cache.client";
+
 import { ExternalServiceError } from "@/shared/errors";
 import { HTTP_STATUS } from "@/shared/constants/httpStatus.const";
+
+const sendCommand = async (args: string[]) => {
+  return redisClient.sendCommand(args) as Promise<RedisReply>;
+};
 
 const get = async (key: string): Promise<unknown> => {
   try {
@@ -88,11 +95,17 @@ const hashLen = async (key: string): Promise<number> => {
   }
 };
 
+export const keyBuilder = (namespace: string, version: number, id: string) => {
+  return `${namespace}:v${version}:${id}`;
+};
+
 export const cacheProvider = {
+  sendCommand,
   set,
   get,
   del,
   setHash,
   getHashMany,
   hashLen,
+  keyBuilder,
 };

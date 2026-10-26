@@ -1,9 +1,9 @@
 import { dictionaryConfig } from "@/shared/config/dictionary.config";
 import { HTTP_STATUS } from "@/shared/constants/httpStatus.const";
-import { retryRequest } from "@/shared/helpers/retryRequest.helper";
+import { requestHelper } from "@/shared/helpers/request.helper";
 
 export const fetchDictionaryEntry = async (word: string): Promise<unknown> => {
-  return await retryRequest({
+  return await requestHelper.retry({
     service: "DICTIONARY",
     url: `${dictionaryConfig.url}/entries/en/${word}`,
     timeoutMs: dictionaryConfig.timeoutMs,

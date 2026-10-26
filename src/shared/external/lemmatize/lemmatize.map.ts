@@ -1,0 +1,88 @@
+import { LemmatizePos } from "./lemmatize.type";
+
+export const EXPECTED_POS_FROM_NLP = [
+  "ADP",
+  "PRON",
+  "VERB",
+  "SCONJ",
+  "CCONJ",
+  "DET",
+  "ADJ",
+  "ADV",
+  "NOUN",
+  "AUX",
+  "INTJ",
+  "NUM",
+  "PART",
+  "PROPN",
+  "PUNCT",
+  "X",
+  "SYM",
+] as const;
+
+export const NLP_POS_TO_LEMMATIZE_POS: Record<(typeof EXPECTED_POS_FROM_NLP)[number], LemmatizePos> = {
+  ADP: "preposition",
+  PRON: "pronoun",
+  VERB: "verb",
+  SCONJ: "conjunction",
+  CCONJ: "conjunction",
+  DET: "determiner",
+  ADJ: "adjective",
+  ADV: "adverb",
+  NOUN: "noun",
+  AUX: "auxiliary verb",
+  INTJ: "exclamation",
+  NUM: "number",
+  PART: "infinitive marker",
+  PUNCT: "punctuation",
+  PROPN: "proper noun",
+  X: "other",
+  SYM: "symbol",
+} as const;
+
+export const UNION_WORDS = new Map<string, { withSuffix?: string; second: string; pos: LemmatizePos; unionForm: string }>([
+  ["have", { second: "to", pos: "modal verb", unionForm: "have to" }],
+  ["use", { withSuffix: "used", second: "to", pos: "modal verb", unionForm: "used to" }],
+  ["used", { second: "to", pos: "modal verb", unionForm: "used to" }],
+  ["accord", { withSuffix: "according", second: "to", pos: "preposition", unionForm: "according to" }],
+  ["according", { second: "to", pos: "preposition", unionForm: "according to" }],
+  ["ice", { second: "cream", pos: "noun", unionForm: "ice cream" }],
+  ["no", { second: "one", pos: "pronoun", unionForm: "no one" }],
+  ["next", { second: "to", pos: "preposition", unionForm: "next to" }],
+  ["all", { second: "right", pos: "adverb", unionForm: "all right" }],
+  ["can", { second: "not", pos: "modal verb", unionForm: "cannot" }],
+]);
+
+export const MODAL_VERBS = new Set<string>(["should", "could", "must", "need", "may", "might", "would", "will", "can", "ought"]);
+
+export const LEMMA_EXCEPTIONS = new Set([
+  "better",
+  "best",
+  "worse",
+  "worst",
+  "less",
+  "least",
+  "more",
+  "most",
+  "further",
+  "furthest",
+  "farther",
+  "farthest",
+  "elder",
+  "eldest",
+  "later",
+  "latest",
+  "i",
+  "me",
+  "him",
+  "her",
+  "us",
+  "them",
+]);
+
+export const OVERRIDE_POS = new Map<string, LemmatizePos>([
+  ["not", "adverb"],
+  ["a", "indefinite article"],
+  ["an", "indefinite article"],
+  ["the", "definite article"],
+]);

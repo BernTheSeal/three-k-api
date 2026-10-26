@@ -10,7 +10,7 @@ const singleflightMap = new Map<
 
 let promiseId = 0;
 
-export const singleflight = async <T>(key: SingleflightKey, cb: () => Promise<T>): Promise<T> => {
+const run = async <T>(key: SingleflightKey, cb: () => Promise<T>): Promise<T> => {
   const existing = singleflightMap.get(key);
 
   if (existing) {
@@ -27,4 +27,8 @@ export const singleflight = async <T>(key: SingleflightKey, cb: () => Promise<T>
   } finally {
     singleflightMap.delete(key);
   }
+};
+
+export const singleFlightHelper = {
+  run,
 };
