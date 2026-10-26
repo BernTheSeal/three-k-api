@@ -3,8 +3,8 @@ import path from "path";
 import { pathToFileURL } from "url";
 import { PoolClient } from "pg";
 
-import { withTransaction } from "../../src/shared/lib/db/db.provider";
-import { logger } from "../scriptLogger";
+import { dbProvider } from "../../src/shared/lib/db";
+import { logUtil } from "../../src/shared/utils/log.util";
 
 interface Migration {
   version: number;
@@ -13,11 +13,9 @@ interface Migration {
 }
 
 async function migrate() {
-  console.log("\n========================================");
-  console.log("        MIGRATION STARTING...");
-  console.log("========================================\n");
+  logUtil.title("MIGRATION STARTING...");
 
-  await withTransaction(async (client) => {
+  await dbProvider.withTransaction(async (client) => {
     await client.query(`
     CREATE TABLE IF NOT EXISTS migrations (
       id SERIAL PRIMARY KEY,
@@ -57,7 +55,7 @@ async function migrate() {
       prevVersion += 1;
 
       if (!executedVersions.includes(version)) {
-        logger.running(`${file}`);
+        logUtil.info(`${file}`, { tag: "running", singleLine: true });
 
         try {
           const migrationPath = path.join(__dirname, "/migrations", file);
@@ -75,29 +73,26 @@ async function migrate() {
 
           await client.query("INSERT INTO migrations (version, name) VALUES ($1, $2)", [version, migrationName]);
 
-          logger.done(`${file} completed successfully! \n`);
+          logUtil.success(`${file} completed successfully!`, { tag: "done", gap: true });
         } catch (error: any) {
           if (error.constraint === "migrations_version_key") {
-            logger.error(`Duplicate version detected in "${file}": version ${version} already exists in migrations table`);
+            logUtil.error(`Duplicate version detected in "${file}": version ${version} already exists in migrations table`);
           } else {
-            logger.error(error instanceof Error ? error.message : error);
+            logUtil.error(error instanceof Error ? error.message : error);
           }
 
           process.exit(1);
         }
       } else {
-        logger.skip(`${file} (already executed) \n`);
+        logUtil.warning(`${file} (already executed)`, { tag: "skip", gap: true });
       }
     }
   });
-
-  console.log("\n========================================");
-  console.log("      MIGRATION COMPLETED!");
-  console.log("========================================\n");
+  logUtil.title("MIGRATION COMPLETED!", "green");
   process.exit(0);
 }
 
 migrate().catch((error) => {
-  logger.error(error.message);
+  logUtil.error(error.message);
   process.exit(1);
 });

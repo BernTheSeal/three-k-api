@@ -1,17 +1,17 @@
 import { wordRepo } from "./word.repo";
 import { wordCache } from "./word.cache";
 import { List, FindByWord, FindByWordWithSenses, GetWordIdsFromCache } from "./word.service.type";
-
 import { dictionaryAdapter } from "@/shared/external/dictionary";
 import { wordConfig } from "@/shared/config/word.config";
 import { paginationUtil } from "@/shared/utils/pagination.util";
 import { singleFlightHelper } from "@/shared/helpers/singleflight.helper";
+import { logUtil } from "@/shared/utils/log.util";
 
 const initializeWordsCache = async () => {
   const length = await wordCache.getLen();
 
   if (length > 0) {
-    console.log("Words cache already initialized, skipping.");
+    logUtil.info("Words cache already initialized, skipping.");
     return;
   }
   const words = await wordRepo.getAll();
@@ -26,7 +26,7 @@ const initializeWordsCache = async () => {
 
   await wordCache.setAll(wordsObject);
 
-  console.log(`Words cache initialized with ${words.length} words.`);
+  logUtil.info(`Words cache initialized with ${words.length} words.`);
 };
 
 const getWordIdsFromCache: GetWordIdsFromCache = async (input) => {
@@ -118,7 +118,7 @@ const findByWordWithSenses: FindByWordWithSenses = async (input) => {
   }
 
   if (missingPos.length > 0) {
-    console.warn(`SOME POS ARE MISSING FOR ${word} => ${missingPos.join("-")}`);
+    logUtil.warning(`SOME POS ARE MISSING FOR ${word}`, { payload: missingPos });
   }
 
   const mergeWordAndSenses = {

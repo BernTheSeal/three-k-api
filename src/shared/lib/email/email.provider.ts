@@ -19,8 +19,6 @@ const sendMail = async (data: { subject: string; html: string }) => {
         throw error;
       }
     } catch (err: any) {
-      console.error(err);
-
       const statusCode = err?.statusCode || err?.status;
 
       const shouldRetry =

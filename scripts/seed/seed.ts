@@ -1,11 +1,9 @@
-import { seedWords, seedPos, seedLevels, seedWordPhonetics, seedWordPosLevels } from "./data";
-
+import { PoolClient } from "pg";
 import readline from "readline";
 
-import { withTransaction } from "../../src/shared/lib/db/db.provider";
-import { PoolClient } from "pg";
-
-import { logger } from "../scriptLogger";
+import { seedWords, seedPos, seedLevels, seedWordPhonetics, seedWordPosLevels } from "./data";
+import { dbProvider } from "../../src/shared/lib/db/";
+import { logUtil } from "../../src/shared/utils/log.util";
 
 const confirm = async (message: string): Promise<boolean> => {
   const rl = readline.createInterface({
@@ -24,44 +22,43 @@ const confirm = async (message: string): Promise<boolean> => {
 const truncateTables = async (client: PoolClient) => {
   const tables = ["word_pos_levels", "word_phonetics", "words", "pos", "levels"];
 
-  logger.running("Truncating tables...");
+  logUtil.info("Truncating tables...", { tag: "running" });
 
-  for (const table of tables) {
+  for (let i = 0; i < tables.length; i++) {
+    const table = tables[i]!;
+
     const exists = await client.query(
       `SELECT EXISTS (
-        SELECT FROM information_schema.tables 
-        WHERE table_name = $1
-      )`,
+      SELECT FROM information_schema.tables 
+      WHERE table_name = $1
+    )`,
       [table],
     );
 
     if (!exists.rows[0].exists) {
-      logger.skip(`${table} does not exist`);
+      logUtil.warning(`${table} does not exist`, { tag: "skip" });
       continue;
     }
 
     await client.query(`TRUNCATE TABLE ${table} RESTART IDENTITY CASCADE`);
-    logger.done(`${table} cleared`);
+    logUtil.success(`${table} cleared`, { tag: "done", gap: i == tables.length - 1 });
   }
-
-  console.log("\n");
 };
 
 export const seed = async () => {
-  logger.warning("This will delete all existing data and reseed the database.");
+  logUtil.warning("This will delete all existing data and reseed the database.");
 
   const confirmed = await confirm("Are you sure you want to continue?");
 
   if (!confirmed) {
-    console.log("Seed operation cancelled.");
+    logUtil.info("Seed operation cancelled.");
     process.exit(0);
   }
-  console.log("\n========================================");
-  console.log("      SEED OPERATION STARTING...");
-  console.log("========================================\n");
+
+  logUtil.title("SEED OPERATION STARTING...");
 
   try {
-    await withTransaction(async (client) => {
+    await dbProvider.withTransaction(async (client) => {
       await truncateTables(client);
       await seedWords(client);
       await seedPos(client);
@@ -70,14 +67,10 @@ export const seed = async () => {
       await seedWordPosLevels(client);
     });
 
-    console.log("\n========================================");
-    console.log("      SEED OPERATION COMPLETED!");
-    console.log("========================================\n");
-
+    logUtil.title("SEED OPERATION COMPLETED!", "green");
     process.exit(0);
   } catch (err) {
-    logger.error("Seed operation failed!");
-    console.error(err);
+    logUtil.error(`Seed operation failed! , ${err}`);
     process.exit(1);
   }
 };
