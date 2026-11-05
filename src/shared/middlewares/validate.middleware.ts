@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { Request, Response, NextFunction } from "express";
-import { BadRequestError } from "../errors";
+
+import { BadRequestError } from "@/shared/errors/http";
 
 export const validate = (
   schema: z.ZodObject<{

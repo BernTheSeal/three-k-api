@@ -1,7 +1,8 @@
-import { singleFlightHelper } from "@/shared/helpers/singleflight.helper";
 import { setSensesCache, getSensesCache } from "./dictionary.cache";
 import { fetchDictionaryEntry } from "./dictionary.client";
 import { fetchSensesSchema } from "./dictionary.validator";
+
+import { singleFlightHelper } from "@/shared/helpers/singleflight.helper";
 import { WordSenseShape } from "@/shared/types/shapes/word.shape";
 
 const getSenses = async (word: string): Promise<Map<string, WordSenseShape[]>> => {

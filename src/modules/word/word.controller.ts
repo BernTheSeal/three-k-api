@@ -1,6 +1,7 @@
 import { wordService } from "./word.service";
-import { HTTP_STATUS } from "@/shared/constants/httpStatus.const";
 import { List, GetByWord } from "./word.dto";
+
+import { HTTP_STATUS } from "@/shared/constants/httpStatus.const";
 import { responseHelper } from "@/shared/helpers/response.helper";
 
 const list: List = async (req, res) => {

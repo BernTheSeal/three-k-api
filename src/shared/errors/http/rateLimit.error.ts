@@ -1,6 +1,6 @@
 import { AppError } from "../app.error";
-import { HTTP_STATUS } from "../../constants/httpStatus.const";
 import { ConstructorType } from "../type";
+import { HTTP_STATUS } from "@/shared/constants/httpStatus.const";
 
 export class RateLimitError<D extends unknown[] = []> extends AppError<D> {
   constructor(c: Omit<ConstructorType<D>, "isOperational">) {

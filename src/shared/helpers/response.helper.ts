@@ -1,5 +1,5 @@
 import { Response } from "express";
-import { ErrorStatusCode, SuccessStatusCode } from "../types/statusCode.type";
+import { ErrorStatusCode, SuccessStatusCode } from "@/shared/types/statusCode.type";
 
 const sendSuccess = <T>(res: Response, statusCode: SuccessStatusCode, message: string, data?: T) => {
   res.status(statusCode).json({

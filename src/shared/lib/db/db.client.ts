@@ -1,5 +1,6 @@
-import { poolConfig } from "../../config/db.config";
 import { Pool } from "pg";
+
+import { poolConfig } from "@/shared/config/db.config";
 import { logUtil } from "@/shared/utils/log.util";
 
 export const pool = new Pool(poolConfig);

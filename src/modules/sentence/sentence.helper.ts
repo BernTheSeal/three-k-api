@@ -1,6 +1,7 @@
 import { SENTENCE_CONST } from "./sentence.const";
-import { PUNC } from "@/shared/types/entities";
 import { FindUnknownWordsInput, FindUnknownPosInput, FindPuncInARowInput, AddDisplayFlagsInput } from "./sentence.helper.type";
+
+import { PUNC } from "@/shared/types/entities";
 
 const findUnknownWords = (input: FindUnknownWordsInput[]) => {
   const unknownWords = [];

@@ -1,8 +1,10 @@
+import axios from "axios";
+import { ZodError } from "zod";
+
+import { lemmatizeResponseSchema } from "./lemmatize.validator";
+
 import { ExternalServiceError } from "@/shared/errors";
 import { lemmatizeConfig } from "@/shared/config/lemmatize.config";
-import axios from "axios";
-import { lemmatizeResponseSchema } from "./lemmatize.validator";
-import { ZodError } from "zod";
 
 export const lemmatizeClient = async (sentence: string) => {
   try {

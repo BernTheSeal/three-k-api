@@ -1,5 +1,5 @@
 import { Response } from "express";
-import { appConfig } from "../config/app.config";
+import { appConfig } from "@/shared/config/app.config";
 
 const setSecureCookie = (res: Response, name: string, value: string, maxAgeMs: number) => {
   res.cookie(name, value, {

@@ -1,6 +1,7 @@
-import { HTTP_STATUS } from "@/shared/constants/httpStatus.const";
 import { ConstructorType } from "../type";
 import { AppError } from "../app.error";
+
+import { HTTP_STATUS } from "@/shared/constants/httpStatus.const";
 import { ErrorStatusCode } from "@/shared/types/statusCode.type";
 
 type Service = "CACHE" | "DICTIONARY" | "EMAIL" | "LEMMATIZE" | "DATABASE";

@@ -1,6 +1,7 @@
-import first_3000_word from "../import/first_3000_words.json";
 import { PoolClient } from "pg";
-import { logUtil } from "../../../src/shared/utils/log.util";
+
+import first_3000_word from "../import/first_3000_words.json";
+import { logUtil } from "@/shared/utils/log.util";
 
 export const seedWordPhonetics = async (client: PoolClient) => {
   const words = first_3000_word;

@@ -1,6 +1,6 @@
 import z from "zod";
 import { enumArraySchema, stringSchema } from "@/shared/lib/validate/builders";
-import { offsetSchema, searchSchema } from "../../shared/lib/validate/common";
+import { offsetSchema, searchSchema } from "@/shared/lib/validate/common";
 import { POS } from "@/shared/types/entities";
 
 export const listWordSchema = z.object({

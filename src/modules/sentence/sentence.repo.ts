@@ -1,5 +1,6 @@
-import { dbProvider } from "@/shared/lib/db";
 import { Create } from "./sentence.repo.type";
+
+import { dbProvider } from "@/shared/lib/db";
 import { SentenceEntity } from "@/shared/types/entities";
 
 const create: Create = async (params, tx) => {

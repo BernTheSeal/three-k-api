@@ -1,5 +1,5 @@
 import { PoolClient } from "pg";
-import { logUtil } from "../../../src/shared/utils/log.util";
+import { logUtil } from "@/shared/utils/log.util";
 
 export const seedLevels = async (client: PoolClient) => {
   const levels = ["a1", "a2", "b1", "b2", "c1", "c2"];

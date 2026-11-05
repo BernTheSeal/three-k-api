@@ -3,8 +3,8 @@ import path from "path";
 import { pathToFileURL } from "url";
 import { PoolClient } from "pg";
 
-import { dbProvider } from "../../src/shared/lib/db";
-import { logUtil } from "../../src/shared/utils/log.util";
+import { dbProvider } from "@/shared/lib/db";
+import { logUtil } from "@/shared/utils/log.util";
 
 interface Migration {
   version: number;

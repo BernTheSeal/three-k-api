@@ -1,10 +1,7 @@
 import { Profile } from "passport-google-oauth20";
+
 import { authService } from "./auth.service";
 import { authHelper } from "./auth.helper";
-
-import { responseHelper } from "@/shared/helpers/response.helper";
-import { HTTP_STATUS } from "@/shared/constants/httpStatus.const";
-
 import {
   Me,
   Register,
@@ -18,6 +15,9 @@ import {
   ForgotPassword,
   ResetPassword,
 } from "./auth.dto";
+
+import { responseHelper } from "@/shared/helpers/response.helper";
+import { HTTP_STATUS } from "@/shared/constants/httpStatus.const";
 
 const me: Me = async (_req, res, next) => {
   const { userId, familyId, authAccountId } = res.locals.user;

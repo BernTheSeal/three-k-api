@@ -1,7 +1,7 @@
+import { Create, FindById, FindByProviderAccountId, FindByEmail, VerifyById, UpdatePassword } from "./authAccount.repo.type";
+
 import { dbProvider } from "@/shared/lib/db/";
 import { AuthAccountEntity } from "@/shared/types/entities";
-
-import { Create, FindById, FindByProviderAccountId, FindByEmail, VerifyById, UpdatePassword } from "./authAccount.repo.type";
 
 const create: Create = async (params, tx) => {
   const { userId, provider, providerAccountId, email, passwordHash, isVerified } = params;

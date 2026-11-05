@@ -7,7 +7,7 @@ import { appConfig } from "@/shared/config/app.config";
 import { globalErrorHandler } from "@/shared/middlewares";
 import { wordService } from "@/modules/word";
 import { posService } from "@/modules/pos";
-import { logUtil } from "./shared/utils/log.util";
+import { logUtil } from "@/shared/utils/log.util";
 
 const app = express();
 app.use(cookieParser());

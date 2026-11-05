@@ -1,6 +1,7 @@
 import { wordRepo } from "./word.repo";
 import { wordCache } from "./word.cache";
 import { List, FindByWord, FindByWordWithSenses, GetWordIdsFromCache } from "./word.service.type";
+
 import { dictionaryAdapter } from "@/shared/external/dictionary";
 import { wordConfig } from "@/shared/config/word.config";
 import { paginationUtil } from "@/shared/utils/pagination.util";

@@ -1,6 +1,3 @@
-import { dbProvider } from "@/shared/lib/db";
-import { AuthAccountEntity, RefreshTokenEntity } from "@/shared/types/entities";
-
 import {
   Create,
   FindByTokenHash,
@@ -10,6 +7,9 @@ import {
   RevokeByAuthAccountId,
   RevokeByAuthAccountIdExceptFamilyId,
 } from "./refreshToken.repo.type";
+
+import { dbProvider } from "@/shared/lib/db";
+import { AuthAccountEntity, RefreshTokenEntity } from "@/shared/types/entities";
 
 const create: Create = async (params, tx) => {
   const { tokenHash, authAccountId, familyId, expiresAt } = params;

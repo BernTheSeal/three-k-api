@@ -1,6 +1,8 @@
-import { pool } from "./db.client";
 import { PoolClient, DatabaseError } from "pg";
+
+import { pool } from "./db.client";
 import { dbHelper } from "./db.helper";
+
 import { ExternalServiceError } from "@/shared/errors";
 
 const run = async (client: PoolClient | undefined, text: string, params?: any[]) => {

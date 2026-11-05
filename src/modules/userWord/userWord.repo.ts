@@ -1,7 +1,6 @@
-import { dbProvider } from "@/shared/lib/db";
-
 import { Create, Remove, Update } from "./userWord.repo.type";
 
+import { dbProvider } from "@/shared/lib/db";
 import { UserWordEntity } from "@/shared/types/entities";
 
 const create: Create = async (params, tx) => {

@@ -2,8 +2,9 @@ import { PoolClient } from "pg";
 import readline from "readline";
 
 import { seedWords, seedPos, seedLevels, seedWordPhonetics, seedWordPosLevels } from "./data";
-import { dbProvider } from "../../src/shared/lib/db/";
-import { logUtil } from "../../src/shared/utils/log.util";
+
+import { dbProvider } from "@/shared/lib/db";
+import { logUtil } from "@/shared/utils/log.util";
 
 const confirm = async (message: string): Promise<boolean> => {
   const rl = readline.createInterface({

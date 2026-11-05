@@ -2,8 +2,8 @@ import { Router } from "express";
 
 import { authRouter } from "@/modules/auth";
 import { wordRouter } from "@/modules/word";
-import { userWordRouter } from "./modules/userWord/userWord.route";
-import { sentenceRouter } from "./modules/sentence/sentence.router";
+import { userWordRouter } from "@/modules/userWord";
+import { sentenceRouter } from "@/modules/sentence";
 
 const apiRouter = Router();
 

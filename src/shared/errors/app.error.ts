@@ -1,5 +1,5 @@
-import { ErrorStatusCode } from "../types/statusCode.type";
 import { ConstructorType } from "./type";
+import { ErrorStatusCode } from "@/shared/types/statusCode.type";
 
 type AppErrorConst<D extends unknown[]> = { statusCode: ErrorStatusCode } & ConstructorType<D>;
 

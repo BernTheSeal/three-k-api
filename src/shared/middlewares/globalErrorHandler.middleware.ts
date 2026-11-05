@@ -1,9 +1,10 @@
-import { AppError } from "../errors/app.error";
 import { ErrorRequestHandler } from "express";
-import { responseHelper } from "../helpers/response.helper";
-import { ErrorStatusCode } from "../types/statusCode.type";
-import { HTTP_STATUS } from "../constants/httpStatus.const";
-import { logUtil } from "../utils/log.util";
+
+import { AppError } from "@/shared/errors/app.error";
+import { responseHelper } from "@/shared/helpers/response.helper";
+import { ErrorStatusCode } from "@/shared/types/statusCode.type";
+import { HTTP_STATUS } from "@/shared/constants/httpStatus.const";
+import { logUtil } from "@/shared/utils/log.util";
 
 export const globalErrorHandler: ErrorRequestHandler = (err, req, res, next) => {
   logUtil.error("Some error occured!", { tag: "global error handler", payload: err });
