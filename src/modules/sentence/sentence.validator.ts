@@ -1,10 +1,9 @@
-import { stringSchema } from "@/shared/lib/validate/builders";
-import z from "zod";
+import { stringSchema, objectSchema, GetInfer } from "@/shared/lib/validate";
 
-export const createSchema = z.object({
-  body: z.object({
+export const createSchema = objectSchema("create", {
+  body: objectSchema("body", {
     sentence: stringSchema("sentence", { min: 1, max: 250 }),
   }),
 });
 
-export type CreateDto = z.infer<typeof createSchema>;
+export type CreateDto = GetInfer<typeof createSchema>;

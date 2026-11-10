@@ -5,7 +5,7 @@ import passport from "./auth.strategy";
 import {
   loginSchema,
   registerSchema,
-  verifiyEmailSchema,
+  verifyEmailSchema,
   changePasswordSchema,
   forgotPasswordSchema,
   resetPasswordSchema,
@@ -28,7 +28,7 @@ authRouter.get("/google/callback", passport.authenticate("google", { session: fa
 
 authRouter.post("/verify-email/send", authenticate, authController.requestEmailVerification);
 
-authRouter.post("/verify-email/confirm", validate(verifiyEmailSchema), authController.verifyEmail);
+authRouter.post("/verify-email/confirm", validate(verifyEmailSchema), authController.verifyEmail);
 
 authRouter.patch("/password/change", authenticate, validate(changePasswordSchema), authController.changePassword);
 

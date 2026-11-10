@@ -5,11 +5,7 @@ type booleanOptions = {
 };
 
 export const booleanSchema = (target: string, options?: booleanOptions) => {
-  let schema = options?.fromString
-    ? z
-        .enum(["true", "false"], `${target} must be a boolean!`)
-        .transform((val) => val === "true")
-    : z.boolean(`${target} must be a boolean!`);
+  const bool = z.boolean(`${target} must be a boolean!`);
 
-  return schema;
+  return options?.fromString ? z.preprocess((v) => (v === "true" ? true : v === "false" ? false : v), bool) : bool;
 };

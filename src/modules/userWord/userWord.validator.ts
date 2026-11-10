@@ -1,35 +1,31 @@
-import { booleanSchema, enumSchema, numberSchema, stringSchema } from "@/shared/lib/validate/builders";
-import z from "zod";
+import { booleanSchema, enumSchema, numberSchema, GetInfer, objectSchema, stringSchema } from "@/shared/lib/validate";
 
-export const createSchema = z.object({
-  body: z.object({
+export const createSchema = objectSchema("create", {
+  body: objectSchema("body", {
     wordId: numberSchema("wordId", { min: 1 }),
     status: enumSchema("status", ["known", "learning"]),
-    note: stringSchema("note", { emptyToNull: true }),
+    note: stringSchema("note").nullable(),
     isFavorite: booleanSchema("isFavorite"),
   }),
 });
 
-export const removeSchema = z.object({
-  params: z.object({
+export const removeSchema = objectSchema("remove", {
+  params: objectSchema("params", {
     wordId: numberSchema("wordId", { fromString: true }),
   }),
 });
 
-export const updateSchema = z.object({
-  body: z
-    .object({
-      status: enumSchema("status", ["known", "learning"]).optional(),
-      note: stringSchema("note", { emptyToNull: true }).optional(),
-      isFavorite: booleanSchema("isFavorite").optional(),
-    })
-    .refine((data) => Object.keys(data).length > 0, { error: "At least one field must be provided" }),
-
-  params: z.object({
+export const updateSchema = objectSchema("update", {
+  body: objectSchema("body", {
+    status: enumSchema("status", ["known", "learning"]).optional(),
+    note: stringSchema("note").nullable().optional(),
+    isFavorite: booleanSchema("isFavorite").optional(),
+  }),
+  params: objectSchema("params", {
     wordId: numberSchema("wordId", { min: 1, fromString: true }),
   }),
 });
 
-export type CreateDto = z.infer<typeof createSchema>;
-export type RemoveDto = z.infer<typeof removeSchema>;
-export type UpdateDto = z.infer<typeof updateSchema>;
+export type CreateDto = GetInfer<typeof createSchema>;
+export type RemoveDto = GetInfer<typeof removeSchema>;
+export type UpdateDto = GetInfer<typeof updateSchema>;

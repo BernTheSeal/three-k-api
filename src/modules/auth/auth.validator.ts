@@ -1,8 +1,7 @@
-import z from "zod";
-import { stringSchema, emailSchema } from "@/shared/lib/validate/builders";
+import { stringSchema, emailSchema, objectSchema, GetInfer } from "@/shared/lib/validate";
 
-export const registerSchema = z.object({
-  body: z.object({
+export const registerSchema = objectSchema("register", {
+  body: objectSchema("body", {
     username: stringSchema("username", { min: 3, max: 50 }),
     email: emailSchema(),
     password: stringSchema("password", {
@@ -15,21 +14,21 @@ export const registerSchema = z.object({
   }),
 });
 
-export const loginSchema = z.object({
-  body: z.object({
+export const loginSchema = objectSchema("login", {
+  body: objectSchema("body", {
     email: emailSchema(),
     password: stringSchema("password", { max: 255 }),
   }),
 });
 
-export const verifiyEmailSchema = z.object({
-  body: z.object({
+export const verifyEmailSchema = objectSchema("verify email", {
+  body: objectSchema("body", {
     token: stringSchema("token", { min: 1 }),
   }),
 });
 
-export const changePasswordSchema = z.object({
-  body: z.object({
+export const changePasswordSchema = objectSchema("change password", {
+  body: objectSchema("body", {
     currentPassword: stringSchema("password", { min: 1, max: 255 }),
     newPassword: stringSchema("new password", {
       min: 8,
@@ -44,14 +43,14 @@ export const changePasswordSchema = z.object({
   }),
 });
 
-export const forgotPasswordSchema = z.object({
-  body: z.object({
+export const forgotPasswordSchema = objectSchema("forgot password", {
+  body: objectSchema("body", {
     email: emailSchema(),
   }),
 });
 
-export const resetPasswordSchema = z.object({
-  body: z.object({
+export const resetPasswordSchema = objectSchema("reset password", {
+  body: objectSchema("body", {
     token: stringSchema("token", { min: 1 }),
     newPassword: stringSchema("new password", {
       min: 8,
@@ -64,9 +63,9 @@ export const resetPasswordSchema = z.object({
   }),
 });
 
-export type RegisterDto = z.infer<typeof registerSchema>;
-export type LoginDto = z.infer<typeof loginSchema>;
-export type VerifyEmailDto = z.infer<typeof verifiyEmailSchema>;
-export type ChangePasswordDto = z.infer<typeof changePasswordSchema>;
-export type ForgotPasswordDto = z.infer<typeof forgotPasswordSchema>;
-export type ResetPasswordDto = z.infer<typeof resetPasswordSchema>;
+export type RegisterDto = GetInfer<typeof registerSchema>;
+export type LoginDto = GetInfer<typeof loginSchema>;
+export type VerifyEmailDto = GetInfer<typeof verifyEmailSchema>;
+export type ChangePasswordDto = GetInfer<typeof changePasswordSchema>;
+export type ForgotPasswordDto = GetInfer<typeof forgotPasswordSchema>;
+export type ResetPasswordDto = GetInfer<typeof resetPasswordSchema>;
