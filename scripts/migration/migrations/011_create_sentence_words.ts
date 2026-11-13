@@ -18,6 +18,10 @@ const migration = {
             PRIMARY KEY (sentence_id, position),
             CHECK (word_id IS NOT NULL OR is_punc)
         );
+        
+        CREATE INDEX idx_sentence_words_word_id_sentence_id
+        ON sentence_words (word_id, sentence_id)
+        WHERE word_id IS NOT NULL;
     `);
   },
 

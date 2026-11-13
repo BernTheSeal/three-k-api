@@ -11,7 +11,7 @@ const migration = {
             created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
         );
 
-        CREATE INDEX idx_sentences_user_id_created_at ON sentences (user_id, created_at)
+        CREATE INDEX idx_sentences_user_id_sentence_id ON sentences (user_id, sentence_id);
     `);
   },
 
